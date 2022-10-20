@@ -83,8 +83,8 @@ namespace moonflow_system.Tools.MFUtilityTools
         private Vector2 _pixelVarScroll;
         private bool showBuffer;
         private bool _arranged = false;
-        private static readonly string[] DEFINITION_TYPE_VERTEX = new[] {"globalFlags", "constantbuffer", "input", "output_siv", "output", "sampler", "resource_texture2d", "resource_texture3d", "temps"};//dcl_input_sgv未知定义
-        private static readonly string[] DEFINITION_TYPE_PIXEL = new[] {"globalFlags", "constantbuffer", "input_ps", "input_ps_siv", "output", "sampler", "resource_texture2d", "resource_texture3d", "temps"};
+        private static readonly string[] DEFINITION_TYPE_VERTEX = new[] {"globalFlags", "constantbuffer", "input", "output_siv", "output", "sampler", "resource_texture2d", "resource_texture3d", "temps", "resource_buffer"};//dcl_input_sgv未知定义
+        private static readonly string[] DEFINITION_TYPE_PIXEL = new[] {"globalFlags", "constantbuffer", "input_ps", "input_ps_siv", "output", "sampler", "resource_texture2d", "resource_texture3d", "temps", "resource_buffer"};
         [MenuItem("Moonflow/Tools/ShaderRecover")]
         public static void ShowWindow()
         {
@@ -530,7 +530,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                 if (line.elipsised || line.empty) continue;
                 switch (line.opIndex)
                 {
-                    case 0:
+                    case 0://add
                     {
                         if (line.localVar[1].negative)
                         {
@@ -542,93 +542,139 @@ namespace moonflow_system.Tools.MFUtilityTools
                         }
                     }
                         break;
-                    case 1: line.str = $"({line.localVar[0].GetDisplayVar()} && {line.localVar[1].GetDisplayVar()})";
+                    case 1://and 
+                        line.str = $"({line.localVar[0].GetDisplayVar()} && {line.localVar[1].GetDisplayVar()})";
                         break;
-                    case 13: line.str = $"(clip({line.result.GetDisplayVar()}))";
+                    case 13://discard 
+                        line.str = $"(clip({line.result.GetDisplayVar()}))";
                         break;
-                    case 14: line.str = $"({line.localVar[0].GetDisplayVar()} / {line.localVar[1].GetDisplayVar()})";
+                    case 14://div 
+                        line.str = $"({line.localVar[0].GetDisplayVar()} / {line.localVar[1].GetDisplayVar()})";
                         break;
-                    case 15: line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
+                    case 15://dp2 
+                        line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
                         break;
-                    case 16: line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
+                    case 16://dp3 
+                        line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
                         break;
-                    case 17: line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
+                    case 17://dp4 
+                        line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
                         break;
-                    case 25: line.str = $"(exp({line.localVar[0].GetDisplayVar()}))";
+                    case 25://exp 
+                        line.str = $"(exp({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 26: line.str = $"(frac({line.localVar[0].GetDisplayVar()}))";
+                    case 26: //frc
+                        line.str = $"(frac({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 27: line.str = $"(round({line.localVar[0].GetDisplayVar()}))";
+                    case 27: //ftoi
+                        line.str = $"(round({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 30: line.str = $"({line.localVar[0].GetDisplayVar()} >= {line.localVar[1].GetDisplayVar()})";
+                    case 30: //ge
+                        line.str = $"({line.localVar[0].GetDisplayVar()} >= {line.localVar[1].GetDisplayVar()})";
                         break;
                     // case 31~44(int)
-                    case 49: line.str = $"(log2({line.localVar[0].GetDisplayVar()})";
+                    case 31 ://iadd
+                    {
+                        if (line.localVar[1].negative)
+                        {
+                            line.str = $"({line.localVar[0].GetDisplayVar()} - {line.localVar[1].GetDisplayVar(false)})";
+                        }
+                        else
+                        {
+                            line.str = $"({line.localVar[0].GetDisplayVar()} + {line.localVar[1].GetDisplayVar()})";
+                        }
                         break;
-                    case 51: line.str = $"({line.localVar[0].GetDisplayVar()} < {line.localVar[1].GetDisplayVar()})";
+                    }
+                    case 39://imul
+                    {
+                        line.result = line.localVar[1];
+                        line.str = $"({line.localVar[2].GetDisplayVar()}) * {line.localVar[3].GetDisplayVar()}";
                         break;
-                    case 52:
+                    }
+                        // break;
+                    case 49: //log
+                        line.str = $"(log2({line.localVar[0].GetDisplayVar()})";
+                        break;
+                    case 51: //lt
+                        line.str = $"({line.localVar[0].GetDisplayVar()} < {line.localVar[1].GetDisplayVar()})";
+                        break;
+                    case 52://mad
                         line.str =
                             $"({line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()} + {line.localVar[2].GetDisplayVar()})";
                         break;
-                    case 53:
+                    case 53://max
                         line.str = $"(max({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
                         break;
-                    case 54:
+                    case 54://min
                         line.str = $"(min({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
                         break;
-                    case 55: line.str = $"{line.localVar[0].GetDisplayVar()}";
+                    case 55: //mov
+                        line.str = $"{line.localVar[0].GetDisplayVar()}";
                         break;
-                    case 56: line.str = $"{line.localVar[0].GetDisplayVar()} ? {line.localVar[1].GetDisplayVar()} : {line.localVar[2].GetDisplayVar()}";
+                    case 56: //movc
+                        line.str = $"{line.localVar[0].GetDisplayVar()} ? {line.localVar[1].GetDisplayVar()} : {line.localVar[2].GetDisplayVar()}";
                         break;
-                    case 57: line.str = $"({line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()})";
+                    case 57: //mul
+                        line.str = $"({line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()})";
                         break;
-                    case 58: line.str = $"({line.localVar[0].GetDisplayVar()} != {line.localVar[1].GetDisplayVar()})";
+                    case 58: //ne
+                        line.str = $"({line.localVar[0].GetDisplayVar()} != {line.localVar[1].GetDisplayVar()})";
                         break;
-                    case 61: line.str = $"({line.localVar[0].GetDisplayVar()} | {line.localVar[1].GetDisplayVar()})";
+                    case 61: //or
+                        line.str = $"({line.localVar[0].GetDisplayVar()} | {line.localVar[1].GetDisplayVar()})";
                         break;
-                    case 65: line.str = $"(round({line.localVar[0].GetDisplayVar()}))";
+                    case 65: //round
+                        line.str = $"(round({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 67: line.str = $"(floor({line.localVar[0].GetDisplayVar()}))";
+                    case 67: //round_ni
+                        line.str = $"(floor({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 68: line.str = $"(ceil({line.localVar[0].GetDisplayVar()}))";
+                    case 68: //round_pi
+                        line.str = $"(ceil({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 70: line.str = $"(1/sqrt({line.localVar[0].GetDisplayVar()}))";
+                    case 70: //rsq
+                        line.str = $"(1/sqrt({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 71:
-                    case 72:
-                    case 73:
-                    case 74:
-                    case 75:
-                    case 76:
+                    case 71://sample
+                    case 72://sample_b
+                    case 73://sample_c
+                    case 74://sample_c_lz
+                    case 75://sample_d
+                    case 76://sample_l
                         line.str =
                             $"(SAMPLE_TEXTURE2D({line.localVar[1].linkedVar.name}, sampler_{line.localVar[1].linkedVar.name}, {line.localVar[0].GetDisplayVar()}))";
-                        
                         break;
-                    case 79: line.str = $"(sincos({line.localVar[0].GetDisplayVar()}))";
+                    case 79: //sincos
+                        line.str = $"(sincos({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 80: line.str = $"(sqrt({line.localVar[0].GetDisplayVar()}))";
+                    case 80: //sqrt
+                        line.str = $"(sqrt({line.localVar[0].GetDisplayVar()}))";
                         break;
                     // case 82~90(uncharted int)
-                    case 100:
+                    case 100://lerp
                         line.str =
                             $"(lerp({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}, {line.localVar[2].GetDisplayVar()}))";
                         break;
-                    case 101:
+                    case 101://linearstep
                         // line.str = $"(linearstep())"
                         break;
-                    case 102: line.str = $"(smoothstep({line.localVar[0].GetDisplayVar()}))";
+                    case 102: //smoothstep
+                        line.str = $"(smoothstep({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 103: line.str = $"(normalize({line.localVar[0].GetDisplayVar()}))";
+                    case 103://normalize 
+                        line.str = $"(normalize({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 104: line.str = $"(pow4({line.localVar[0].GetDisplayVar()}))";
+                    case 104://pow4
+                        line.str = $"(pow4({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 105:
+                    case 105://matrixMultiply
                         line.str = $"(mul({line.localVar[1].linkedVar.type} {line.localVar[1].linkedVar.name}, " +
                                    $"{line.localVar[0].GetDisplayVar()}" +
                                    $"))";
                         break;
                     case 106: //clamp
+                        break;
+                    default : MFDebug.LogError($"第{line.lineIndex}行检测到未做处理的计算类型，运算编号{line.opIndex}");
                         break;
                 }
                 line.opArranged = true;
@@ -848,12 +894,14 @@ namespace moonflow_system.Tools.MFUtilityTools
             singleLine.selfCal = false;
             singleLine.elipsised = false;
 
+            int matchCount = 0;
             for (var index = 0; index < Operation.Length; index++)
             {
                 var Op = Operation[index];
-                if (split[0].Contains(Op))
+                if (split[0].Contains(Op) && Op.Length > matchCount)
                 {
                     singleLine.opIndex = index;
+                    matchCount = Op.Length;
                 }
 
                 if (split[0].Contains("_sat"))
@@ -873,19 +921,38 @@ namespace moonflow_system.Tools.MFUtilityTools
                 }
 
                 split = split[1].Split(", ", StringSplitOptions.RemoveEmptyEntries);
-                singleLine.localVar = new shaderPropUsage[split.Length - 1];
+                int resultNum = GetResultNum(singleLine.opIndex);
+                singleLine.localVar = new shaderPropUsage[split.Length - 1 - resultNum];
                 for (int i = 0; i < split.Length; i++)
                 {
-                    LinkUsage(split, i, ref singleLine);
+                    LinkUsage(split, i, ref singleLine, resultNum);
                 }
 
                 RefreshSingleline(ref singleLine);
             }
 
-            void LinkUsage(string[] strings, int i, ref SingleLine singleline)
+            int GetResultNum(int op)
+            {
+                if (op == 39) return 1;
+                return 0;
+            }
+
+            void LinkUsage(string[] strings, int i, ref SingleLine singleline, int lastResultSerial = 0)
             {
                 shaderPropUsage target = new shaderPropUsage(){channel = "", linkedVar = null, negative = false, inlineOp = -1, additional = false};
                 string text = strings[i];
+                if (text == "null")
+                {
+                    if (i == lastResultSerial)
+                    {
+                        singleline.result = target;
+                    }
+                    else if(i > lastResultSerial)
+                    {
+                        singleline.localVar[i - lastResultSerial] = target;
+                    }
+                    return;
+                }
                 if (text[0] == '-')
                 {
                     target.negative = true;
@@ -936,14 +1003,14 @@ namespace moonflow_system.Tools.MFUtilityTools
                         target.channel = string.Join("", d);
                     }
                     
-                    if (i == 0)
+                    if (i == lastResultSerial)
                     {
                         singleline.result = target;
                     }
                     else
                     {
-                        singleline.localVar[i - 1] = target;
-                        if (target.linkedVar.name == singleline.result.linkedVar.name)
+                        singleline.localVar[i - 1 - lastResultSerial] = target;
+                        if (singleline.result !=null && target.linkedVar.name == singleline.result.linkedVar.name)
                         {
                             // target.channel.Contains(singleline.result.channel)   
                             if (IncludedChannelDeliver(target.channel, singleline.result.channel))
@@ -955,7 +1022,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                 }
                 else
                 {
-                    singleline.localVar[i - 1] = target;
+                    singleline.localVar[i - 1 - lastResultSerial] = target;
                 }
             }
         }
@@ -1255,7 +1322,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             }
             if (tuple[0].Equals(_definitionTypes[7]))
             {
-                //texture2d
+                //texture3d
                 MakeDef_Tex(tuple[2].Replace("\r", "").Replace("\n", ""), "3");
             }
 
@@ -1273,6 +1340,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                     };
                 }
             }
+
+            if (tuple[0].Equals(_definitionTypes[9]))
+            {
+                
+            }
+        }
+
+        private void MakeDef_Buffer(string name, string accuracy)
+        {
+            
         }
 
         private void MakeDef_Tex(string name, string demension)
