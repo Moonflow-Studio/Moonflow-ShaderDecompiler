@@ -585,6 +585,10 @@ namespace moonflow_system.Tools.MFUtilityTools
                         }
                         break;
                     }
+                    case 33:
+                    {
+                        break;
+                    }
                     case 39://imul
                     {
                         line.result = line.localVar[1];
@@ -943,6 +947,12 @@ namespace moonflow_system.Tools.MFUtilityTools
                 string text = strings[i];
                 if (text == "null")
                 {
+                    target.linkedVar = new shaderPropDefinition()
+                    {
+                        def = "",
+                        name = "null",
+                        type = ""
+                    };
                     if (i == lastResultSerial)
                     {
                         singleline.result = target;
@@ -1022,7 +1032,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                 }
                 else
                 {
-                    singleline.localVar[i - 1 - lastResultSerial] = target;
+                    try
+                    {
+
+                        singleline.localVar[i - 1 - lastResultSerial] = target;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
                 }
             }
         }
@@ -1219,11 +1238,39 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
 
                     break;
-                case 't': //tex
-                    string splitTexDef = singlesplit[0].Replace("t", "");
+                case 't': //tex of buffer
+                    
                     try
                     {
-                        target.linkedVar = _resultData.tex[Convert.ToInt16(splitTexDef)];
+                        // string splitTexDef = singlesplit[0].Replace("t", "");
+                        // target.linkedVar = _resultData.tex[Convert.ToInt16(splitTexDef)];
+                        bool isTex = false;
+                        for (int i = 0; i < _resultData.tex.Count; i++)
+                        {
+                            if (singlesplit[0] == _resultData.tex[i].name)
+                            {
+                                target.linkedVar = _resultData.tex[i];
+                                isTex = true;
+                                break;
+                            }
+                        }
+
+                        if (!isTex)
+                        {
+                            for (int i = 0; i < _resultData.buffer.Count; i++)
+                            {
+                                if (singlesplit[0] == _resultData.buffer[i].name)
+                                {
+                                    target.linkedVar = _resultData.buffer[i];
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (target.linkedVar == null)
+                        {
+                            MFDebug.LogError($"{singlesplit[0]} 找不到对应property");
+                        }
                     }
                     catch (Exception e)
                     {
@@ -1343,13 +1390,20 @@ namespace moonflow_system.Tools.MFUtilityTools
 
             if (tuple[0].Equals(_definitionTypes[9]))
             {
-                
+                MakeDef_Buffer(tuple[2].Replace("\r", "").Replace("\n", ""));
             }
         }
 
-        private void MakeDef_Buffer(string name, string accuracy)
+        private void MakeDef_Buffer(string n)
         {
-            
+            if (_resultData.buffer == null) _resultData.buffer = new List<shaderPropDefinition>();
+            shaderPropDefinition newBuffer = new shaderPropDefinition()
+            {
+                def = "xyzw",
+                name = n,
+                type = ""
+            };
+            _resultData.buffer.Add(newBuffer);
         }
 
         private void MakeDef_Tex(string name, string demension)
@@ -1611,6 +1665,7 @@ namespace moonflow_system.Tools.MFUtilityTools
     {
         public List<List<shaderPropDefinition>> properties;
         public List<shaderPropDefinition> attribute;
+        public List<shaderPropDefinition> buffer;
         // public List<shaderPropDefinition> v2g;
         // public List<shaderPropDefinition> g2f;
         public List<shaderPropDefinition> v2f;
