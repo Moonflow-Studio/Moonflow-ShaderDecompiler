@@ -959,7 +959,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     else if(i > lastResultSerial)
                     {
-                        singleline.localVar[i - lastResultSerial] = target;
+                        singleline.localVar[i - lastResultSerial - 1] = target;
                     }
                     return;
                 }
