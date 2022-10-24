@@ -35,10 +35,15 @@ namespace moonflow_system.Tools.MFUtilityTools
             /*52*/"mad", "max", "min", "mov", "movc", "mul", 
             /*58*/"ne", "nop", "not", 
             /*61*/"or", 
-            /*62*/"resinfo", "ret", "retc",  "round", "round_ne", "round_ni", "round_pi", "round_z", "rsq",
-            /*71*/"sample", "sample_b", "sample_c", "sample_c_lz", "sample_d", "sample_l", "sampleinfo", "samplepos", "sincos", "sqrt", "switch", 
-            /*82*/"udiv", "uge", "ult", "umad", "umax", "umin", "umul", "ushr", "utof", 
-            /*91*/"xor"
+            /*62*/"rcp", "resinfo", "ret", "retc",  "round", "round_ne", "round_ni", "round_pi", "round_z", "rsq",
+            /*72*/"sample", "sample_b", "sample_c", "sample_c_lz", "sample_d", "sample_l", "sampleinfo", "samplepos", "sincos", "sqrt", "switch", 
+            /*83*/"udiv", "uge", "ult", "umad", "umax", "umin", "umul", "ushr", "utof", 
+            /*92*/"xor"
+        };
+
+        public static string[] OperationAddition = new[]
+        {
+            "if_z", "if_nz"
         };
 
         public static string[] enhanceOperation = new[]
@@ -406,15 +411,24 @@ namespace moonflow_system.Tools.MFUtilityTools
                         }
                         using (new EditorGUILayout.VerticalScope("box"))
                         {
-                            EditorGUILayout.LabelField("tex",
+                            EditorGUILayout.LabelField("tex & Buffer",
                                 new GUIStyle("FrameBox") { fixedHeight = 30, alignment = TextAnchor.UpperCenter });
-                            for (int i = 0; i < _resultData.gbuffer.Count; i++)
+                            for (int i = 0; i < _resultData.tex.Count; i++)
                             {
                                 using (new EditorGUILayout.HorizontalScope("box"))
                                 {
                                     _resultData.tex[i].name =
                                         EditorGUILayout.TextField(_resultData.tex[i].name);
                                     EditorGUILayout.LabelField(_resultData.tex[i].type, _resultData.tex[i].def);
+                                }
+                            }
+                            for (int i = 0; i < _resultData.buffer.Count; i++)
+                            {
+                                using (new EditorGUILayout.HorizontalScope("box"))
+                                {
+                                    _resultData.buffer[i].name =
+                                        EditorGUILayout.TextField(_resultData.buffer[i].name);
+                                    EditorGUILayout.LabelField(_resultData.buffer[i].type, _resultData.buffer[i].def);
                                 }
                             }
                             // EditorGUILayout.TextArea(_resultGbuffer);
@@ -448,6 +462,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             _resultData.v2f = new List<shaderPropDefinition>();
             _resultData.gbuffer = new List<shaderPropDefinition>();
             _resultData.tex = new List<shaderPropDefinition>();
+            _resultData.buffer = new List<shaderPropDefinition>();
             _resultData.tempVertexVar = new List<shaderPropUsage>();
             _resultData.tempPixelVar = new List<shaderPropUsage>();
         }
@@ -546,6 +561,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                         line.str = $"({line.localVar[0].GetDisplayVar()} && {line.localVar[1].GetDisplayVar()})";
                         break;
                     case 13://discard 
+                        line.noEqualSign = true;
                         line.str = $"(clip({line.result.GetDisplayVar()}))";
                         break;
                     case 14://div 
@@ -585,14 +601,33 @@ namespace moonflow_system.Tools.MFUtilityTools
                         }
                         break;
                     }
-                    case 33:
+                    case 33://if
                     {
+                        MFDebug.LogError($"行{line.lineIndex} if判定有问题");
+                        break;
+                    }
+                    case 36://imad
+                    {
+                        if (line.localVar[2].negative)
+                        {
+                            line.str = $"({line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()} - {line.localVar[2].GetDisplayVar(false)})";
+                        }
+                        else
+                        {
+                            line.str = $"({line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()} + {line.localVar[2].GetDisplayVar()})";
+                        }
+
                         break;
                     }
                     case 39://imul
                     {
-                        line.result = line.localVar[1];
-                        line.str = $"({line.localVar[2].GetDisplayVar()}) * {line.localVar[3].GetDisplayVar()}";
+                        // line.result = line.localVar[1];
+                        line.str = $"({line.localVar[0].GetDisplayVar()}) * {line.localVar[1].GetDisplayVar()}";
+                        break;
+                    }
+                    case 46: //ld
+                    {
+                        line.str = $"({line.localVar[1].linkedVar.name}[{line.localVar[0].GetDisplayVar()}])";
                         break;
                     }
                         // break;
@@ -627,34 +662,42 @@ namespace moonflow_system.Tools.MFUtilityTools
                     case 61: //or
                         line.str = $"({line.localVar[0].GetDisplayVar()} | {line.localVar[1].GetDisplayVar()})";
                         break;
-                    case 65: //round
+                    case 62://rcp
+                        line.str = $"(1/{line.localVar[0].GetDisplayVar()})";
+                        break;
+                    case 66: //round
                         line.str = $"(round({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 67: //round_ni
+                    case 68: //round_ni
                         line.str = $"(floor({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 68: //round_pi
+                    case 69: //round_pi
                         line.str = $"(ceil({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 70: //rsq
+                    case 71: //rsq
                         line.str = $"(1/sqrt({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 71://sample
-                    case 72://sample_b
-                    case 73://sample_c
-                    case 74://sample_c_lz
-                    case 75://sample_d
-                    case 76://sample_l
+                    case 72://sample
+                    case 73://sample_b
+                    case 74://sample_c
+                    case 75://sample_c_lz
+                    case 76://sample_d
+                    case 77://sample_l
                         line.str =
                             $"(SAMPLE_TEXTURE2D({line.localVar[1].linkedVar.name}, sampler_{line.localVar[1].linkedVar.name}, {line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 79: //sincos
+                    case 80: //sincos
                         line.str = $"(sincos({line.localVar[0].GetDisplayVar()}))";
                         break;
-                    case 80: //sqrt
+                    case 81: //sqrt
                         line.str = $"(sqrt({line.localVar[0].GetDisplayVar()}))";
                         break;
                     // case 82~90(uncharted int)
+                    case 91:
+                    {
+                        line.str = $"(float){line.localVar[0].GetDisplayVar()}";
+                        break;
+                    }
                     case 100://lerp
                         line.str =
                             $"(lerp({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}, {line.localVar[2].GetDisplayVar()}))";
@@ -677,6 +720,14 @@ namespace moonflow_system.Tools.MFUtilityTools
                                    $"))";
                         break;
                     case 106: //clamp
+                        break;
+                    case 200: //if_z
+                        line.noEqualSign = true;
+                        line.str = $"if({line.result.GetDisplayVar()} == 0)";
+                        break;
+                    case 201: //if_nz
+                        line.noEqualSign = true;
+                        line.str = $"if({line.result.GetDisplayVar()} != 0)";
                         break;
                     default : MFDebug.LogError($"第{line.lineIndex}行检测到未做处理的计算类型，运算编号{line.opIndex}");
                         break;
@@ -870,7 +921,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                 }
                 if (needSplit)
                 {
-                    lines.Insert(i, new SingleLine(){empty = true});
+                    lines.Insert(i, new SingleLine(){empty = true, noEqualSign = false});
                     i++;
                     last = lines[i];
                 }
@@ -899,21 +950,8 @@ namespace moonflow_system.Tools.MFUtilityTools
             singleLine.elipsised = false;
 
             int matchCount = 0;
-            for (var index = 0; index < Operation.Length; index++)
-            {
-                var Op = Operation[index];
-                if (split[0].Contains(Op) && Op.Length > matchCount)
-                {
-                    singleLine.opIndex = index;
-                    matchCount = Op.Length;
-                }
-
-                if (split[0].Contains("_sat"))
-                {
-                    singleLine.saturate = true;
-                }
-                
-            }
+            
+            CheckOperation(ref singleLine, split, matchCount);
 
             if (split.Length > 1)
             {
@@ -926,7 +964,7 @@ namespace moonflow_system.Tools.MFUtilityTools
 
                 split = split[1].Split(", ", StringSplitOptions.RemoveEmptyEntries);
                 int resultNum = GetResultNum(singleLine.opIndex);
-                singleLine.localVar = new shaderPropUsage[split.Length - 1 - resultNum];
+                singleLine.localVar = new shaderPropUsage[split.Length - resultNum - 1];
                 for (int i = 0; i < split.Length; i++)
                 {
                     LinkUsage(split, i, ref singleLine, resultNum);
@@ -1042,6 +1080,40 @@ namespace moonflow_system.Tools.MFUtilityTools
                         Console.WriteLine(e);
                         throw;
                     }
+                }
+            }
+        }
+
+        private static void CheckOperation(ref SingleLine singleLine, string[] split, int matchCount)
+        {
+            for (var index = 0; index < Operation.Length; index++)
+            {
+                var Op = Operation[index];
+                if (split[0].Contains(Op) && Op.Length > matchCount)
+                {
+                    singleLine.opIndex = index;
+                    matchCount = Op.Length;
+                }
+
+                if (split[0].Contains("_sat"))
+                {
+                    singleLine.saturate = true;
+                }
+            }
+
+            if (singleLine.opIndex == 33)
+            {
+                CheckOperationAddition(ref singleLine, split[0]);
+            }
+        }
+        private static void CheckOperationAddition(ref SingleLine singleLine, string text)
+        {
+            for (var index = 0; index < OperationAddition.Length; index++)
+            {
+                var Op = Operation[index];
+                if (text.Contains(Op))
+                {
+                    singleLine.opIndex = index + 200;
                 }
             }
         }
@@ -1401,7 +1473,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             {
                 def = "xyzw",
                 name = n,
-                type = ""
+                type = "Buffer"
             };
             _resultData.buffer.Add(newBuffer);
         }
@@ -1598,20 +1670,29 @@ namespace moonflow_system.Tools.MFUtilityTools
                     if(defaultMode)RefreshSingleline(ref singleLine);
                     if (!singleLine.elipsised && singleLine.combineState!=1)
                     {
-                        if (singleLine.result != null && singleLine.result.linkedVar != null)
+                        if (singleLine.result != null && singleLine.result.linkedVar != null && !singleLine.noEqualSign)
                         {
                             if (defaultMode)
                             {
-                                string op = singleLine.opIndex < 100 ? Operation[singleLine.opIndex]: enhanceOperation[singleLine.opIndex - 100];
-                                if (singleLine.result.additional)
+                                try
                                 {
-                                    text += $"{singleLine.result.channel} {singleLine.result.linkedVar.name} => {op} ";
+                                    string op = singleLine.opIndex < 100 ? Operation[singleLine.opIndex]: enhanceOperation[singleLine.opIndex - 100];
+                                    if (singleLine.result.additional)
+                                    {
+                                        text += $"{singleLine.result.channel} {singleLine.result.linkedVar.name} => {op} ";
+                                    }
+                                    else
+                                    {
+                                        text +=
+                                            $"{singleLine.result.linkedVar.name}.{singleLine.result.channel} => {op} ";
+                                    }
                                 }
-                                else
+                                catch (Exception e)
                                 {
-                                    text +=
-                                        $"{singleLine.result.linkedVar.name}.{singleLine.result.channel} => {op} ";
+                                    Console.WriteLine(e);
+                                    throw;
                                 }
+                                
                             }
                             else
                             {
@@ -1655,6 +1736,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             for (int i = 0; i < m.Length; i++)
             {
                 var newTarget = new SingleLine();
+                newTarget.noEqualSign = false;
                 newTarget.str = m[i];
                 target.Add(newTarget);
             }
@@ -1699,6 +1781,7 @@ namespace moonflow_system.Tools.MFUtilityTools
         public bool empty;
         public shaderPropUsage[] localVar;
         public bool opArranged;
+        public bool noEqualSign;
     }
 
     public class shaderPropUsage
@@ -1708,7 +1791,6 @@ namespace moonflow_system.Tools.MFUtilityTools
         public bool negative;
         public int inlineOp;
         public bool additional;
-
         public string GetDisplayVar(bool needNegative = true)
         {
             string result = "";
@@ -1726,7 +1808,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     else
                     {
-                        result += channel;
+                        result += $"{channel}";
                     }
                 }
                 else

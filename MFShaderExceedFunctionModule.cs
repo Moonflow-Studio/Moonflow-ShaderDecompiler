@@ -59,15 +59,30 @@ namespace moonflow_system.Tools.MFUtilityTools
                         {
                             constant = 1;
                         }
-                        if (ReferenceEquals(line.localVar[1-constant].linkedVar, lastline.result.linkedVar))
+                        else
                         {
-                            if (lastline.result.channel == line.localVar[1-constant].channel &&
-                                line.localVar[constant].inlineOp == 0)
+                            searchStack = 0;
+                            continue;
+                        }
+
+                        try
+                        {
+                            if (ReferenceEquals(line.localVar[1-constant].linkedVar, lastline.result.linkedVar))
                             {
-                                text = line.localVar[constant].channel;
-                                matched = true;
+                                if (lastline.result.channel == line.localVar[1-constant].channel &&
+                                    line.localVar[constant].inlineOp == 0)
+                                {
+                                    text = line.localVar[constant].channel;
+                                    matched = true;
+                                }
                             }
                         }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                        
                         if (matched)
                         {
                             var split = text.Split(",");

@@ -1052,9 +1052,9 @@ ps_5_0
  986: add r14.xyz, r14.xyzx, l(0.5000, 0.5000, 0.5000, 0.0000)
  987: mul r14.xyz, r14.xyzx, cb0[220].xyzx
  988: if_nz r5.w
- 989:   sample_l(texture3d)(float,float,float,float) r5.z, r14.xyzx, t9.yzxw, s2, l(0)
+ 989: sample_l(texture3d)(float,float,float,float) r5.z, r14.xyzx, t9.yzxw, s2, l(0)
  990: else
- 991:   mov r5.z, l(1.0000)
+ 991: mov r5.z, l(1.0000)
  992: endif
  993: add r13.xyz, r13.xywx, cb1[5].yzxy
  994: add r13.xyz, r4.yzxy, -r13.xyzx
