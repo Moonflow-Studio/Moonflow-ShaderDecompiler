@@ -1393,7 +1393,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     break;
                 case 's': //sampler 忽略
-                    target.linkedVar = new shaderPropDefinition() { name = $"sampler_{singlesplit[0].Replace("s", "")}" };
+                    target.linkedVar = new shaderPropDefinition() { name = $"sampler{singlesplit[0].Replace("s", "")}" };
                     break;
                 case 'v': //input vs:attribute ps: v2f
                     if (_type == ShaderType.Vertex)
