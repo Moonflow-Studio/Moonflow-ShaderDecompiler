@@ -1,0 +1,211 @@
+Shader hash 8ae9a516-39979752-70e5deb7-676886ca
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[39], immediateIndexed
+      dcl_constantbuffer cb1[136], immediateIndexed
+      dcl_constantbuffer cb2[5], immediateIndexed
+      dcl_constantbuffer cb3[1], immediateIndexed
+      dcl_constantbuffer cb4[4], immediateIndexed
+      dcl_sampler s0, mode_default
+      dcl_sampler s1, mode_default
+      dcl_sampler s2, mode_default
+      dcl_sampler s3, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_resource_texture2d (float,float,float,float) t1
+      dcl_resource_texture2d (float,float,float,float) t2
+      dcl_resource_texture2d (uint,uint,uint,uint) t3
+      dcl_resource_texture2d (float,float,float,float) t4
+      dcl_input_ps_siv linear noperspective v0.xy, position
+      dcl_output o0.xyzw
+      dcl_temps 10
+   0: utof r0.xy, cb0[37].xyxx
+   1: add r0.xy, -r0.xyxx, v0.xyxx
+   2: mul r0.zw, r0.xxxy, cb0[38].zzzw
+   3: mad r1.xy, r0.zwzz, cb0[5].xyxx, cb0[4].xyxx
+   4: sample_indexable(texture2d)(float,float,float,float) r1.xyz, r1.xyxx, t4.xyzw, s3
+   5: mad r2.xy, r0.zwzz, cb1[131].xyxx, cb1[130].xyxx
+   6: mul r2.xy, r2.xyxx, cb1[132].zwzz
+   7: sample_l(texture2d)(float,float,float,float) r2.zw, r2.xyxx, t1.xyzw, s1, l(0)
+   8: mul r1.w, r2.w, l(255.0000)
+   9: round_ne r1.w, r1.w
+  10: ftou r1.w, r1.w
+  11: and r1.w, r1.w, l(15)
+  12: ieq r3.xy, r1.wwww, l(12, 13, 0, 0)
+  13: or r2.w, r3.y, r3.x
+  14: mov_sat r3.y, r2.z
+  15: mul r3.y, r3.y, l(255.0000)
+  16: ftoi r3.y, r3.y
+  17: and r3.yz, r3.yyyy, l(0, 128, 127, 0)
+  18: ult r3.y, l(0), r3.y
+  19: and r3.y, r3.y, l(1.0000)
+  20: movc r3.y, r2.w, r3.y, l(1.0000)
+  21: ine r1.w, r1.w, l(12)
+  22: sample_l(texture2d)(float,float,float,float) r3.w, r2.xyxx, t2.xyzw, s2, l(0)
+  23: utof r3.z, r3.z
+  24: mul r3.z, r3.z, l(0.0079)
+  25: movc r2.z, r2.w, r3.z, r2.z
+  26: lt r2.w, r3.w, l(0.9900)
+  27: ge r2.z, r2.z, l(0.0100)
+  28: and r2.z, r2.z, r2.w
+  29: and r2.z, r3.x, r2.z
+  30: and r2.z, r2.z, l(1.0000)
+  31: mul r2.z, r2.z, r3.y
+  32: mul r1.xyz, r1.xyzx, cb1[135].zzzz
+  33: lt r2.z, l(0.5000), r2.z
+  34: movc r1.w, r1.w, l(0), r2.z
+  35: if_nz r1.w
+  36: sample_l(texture2d)(float,float,float,float) r1.w, r2.xyxx, t0.yzwx, s0, l(0)
+  37: max r2.z, r1.w, l(0.0000)
+  38: mul r3.xyzw, v0.yyyy, cb1[46].xyzw
+  39: mad r3.xyzw, v0.xxxx, cb1[45].xyzw, r3.xyzw
+  40: mad r3.xyzw, r2.zzzz, cb1[47].xyzw, r3.xyzw
+  41: add r3.xyzw, r3.xyzw, cb1[48].xyzw
+  42: div r3.xyz, r3.xyzx, r3.wwww
+  43: add r3.xyz, r3.xyzx, -cb1[71].xyzx
+  44: mul r2.zw, cb1[131].zzzw, cb4[2].xxxx
+  45: mul r3.w, cb1[131].x, l(0.0005)
+  46: max r3.w, r3.w, l(1.0000)
+  47: mul r2.zw, r2.zzzw, r3.wwww
+  48: mad r4.xy, r0.xyxx, cb0[38].zwzz, -r2.zwzz
+  49: mad r5.xyzw, r2.zwzw, l(0.0000, -1.0000, 1.0000, -1.0000), r0.zwzw
+  50: mad r6.xyzw, r2.zwzw, l(-1.0000, 0.0000, 1.0000, 0.0000), r0.zwzw
+  51: mad r7.xyzw, r2.zwzw, l(-1.0000, 1.0000, 0.0000, 1.0000), r0.zwzw
+  52: mad r0.xy, r0.xyxx, cb0[38].zwzz, r2.zwzz
+  53: add r8.xyz, cb1[68].xyzx, -cb2[4].xyzx
+  54: add r9.xyz, r3.xyzx, -cb2[4].xyzx
+  55: dp3 r0.z, r9.xyzx, r8.xyzx
+  56: lt r0.w, l(0), r0.z
+  57: dp3 r2.z, r8.xyzx, r8.xyzx
+  58: ge r2.w, r0.z, r2.z
+  59: div r0.z, r0.z, r2.z
+  60: mad r3.zw, r8.xxxy, r0.zzzz, cb2[4].xxxy
+  61: movc r2.zw, r2.wwww, cb1[68].xxxy, r3.zzzw
+  62: movc r0.zw, r0.wwww, r2.zzzw, cb2[4].xxxy
+  63: add r0.zw, -r0.zzzw, r3.xxxy
+  64: dp2 r0.z, r0.zwzz, r0.zwzz
+  65: sqrt r0.z, r0.z
+  66: add r0.z, r0.z, -cb2[0].z
+  67: add r0.w, -cb2[0].z, cb2[0].y
+  68: div_sat r0.z, r0.z, r0.w
+  69: mul r0.w, cb2[0].x, cb4[2].y
+  70: mad r0.z, r0.w, -r0.z, l(1.0000)
+  71: mad r2.zw, r4.xxxy, cb1[131].xxxy, cb1[130].xxxy
+  72: mul r2.zw, r2.zzzw, cb1[132].zzzw
+  73: max r2.zw, r2.zzzw, cb1[133].xxxy
+  74: min r2.zw, r2.zzzw, cb1[133].zzzw
+  75: mad r3.xyzw, r5.xyzw, cb1[131].xyxy, cb1[130].xyxy
+  76: mul r3.xyzw, r3.xyzw, cb1[132].zwzw
+  77: max r3.xyzw, r3.xyzw, cb1[133].xyxy
+  78: min r3.xyzw, r3.xyzw, cb1[133].zwzw
+  79: mad r4.xyzw, r6.xyzw, cb1[131].xyxy, cb1[130].xyxy
+  80: mul r4.xyzw, r4.xyzw, cb1[132].zwzw
+  81: max r4.xyzw, r4.xyzw, cb1[133].xyxy
+  82: min r4.xyzw, r4.xyzw, cb1[133].zwzw
+  83: mad r5.xyzw, r7.xyzw, cb1[131].xyxy, cb1[130].xyxy
+  84: mul r5.xyzw, r5.xyzw, cb1[132].zwzw
+  85: max r5.xyzw, r5.xyzw, cb1[133].xyxy
+  86: min r5.xyzw, r5.xyzw, cb1[133].zwzw
+  87: mad r0.xy, r0.xyxx, cb1[131].xyxx, cb1[130].xyxx
+  88: mul r0.xy, r0.xyxx, cb1[132].zwzz
+  89: max r0.xy, r0.xyxx, cb1[133].xyxx
+  90: min r0.xy, r0.xyxx, cb1[133].zwzz
+  91: mul r2.xy, r2.xyxx, cb1[132].xyxx
+  92: round_z r2.xy, r2.xyxx
+  93: ftoi r6.xy, r2.xyxx
+  94: mov r6.zw, l(0, 0, 0, 0)
+  95: ld_indexable(texture2d)(uint,uint,uint,uint) r0.w, r6.xyzw, t3.xzwy
+  96: mad r2.x, r1.w, cb1[66].x, cb1[66].y
+  97: mad r1.w, r1.w, cb1[66].z, -cb1[66].w
+  98: div r1.w, l(1.0000, 1.0000, 1.0000, 1.0000), r1.w
+  99: add r1.w, r1.w, r2.x
+ 100: sample_l(texture2d)(float,float,float,float) r2.x, r2.zwzz, t0.xyzw, s0, l(0)
+ 101: mad r2.y, r2.x, cb1[66].x, cb1[66].y
+ 102: mad r2.x, r2.x, cb1[66].z, -cb1[66].w
+ 103: div r2.x, l(1.0000, 1.0000, 1.0000, 1.0000), r2.x
+ 104: add r2.x, r2.x, r2.y
+ 105: sample_l(texture2d)(float,float,float,float) r2.y, r3.xyxx, t0.yxzw, s0, l(0)
+ 106: mad r2.z, r2.y, cb1[66].x, cb1[66].y
+ 107: mad r2.y, r2.y, cb1[66].z, -cb1[66].w
+ 108: div r2.y, l(1.0000, 1.0000, 1.0000, 1.0000), r2.y
+ 109: add r2.y, r2.y, r2.z
+ 110: sample_l(texture2d)(float,float,float,float) r2.z, r3.zwzz, t0.yzxw, s0, l(0)
+ 111: mad r2.w, r2.z, cb1[66].x, cb1[66].y
+ 112: mad r2.z, r2.z, cb1[66].z, -cb1[66].w
+ 113: div r2.z, l(1.0000, 1.0000, 1.0000, 1.0000), r2.z
+ 114: add r2.z, r2.z, r2.w
+ 115: sample_l(texture2d)(float,float,float,float) r2.w, r4.xyxx, t0.yzwx, s0, l(0)
+ 116: mad r3.x, r2.w, cb1[66].x, cb1[66].y
+ 117: mad r2.w, r2.w, cb1[66].z, -cb1[66].w
+ 118: div r2.w, l(1.0000, 1.0000, 1.0000, 1.0000), r2.w
+ 119: add r2.w, r2.w, r3.x
+ 120: sample_l(texture2d)(float,float,float,float) r3.x, r4.zwzz, t0.xyzw, s0, l(0)
+ 121: mad r3.y, r3.x, cb1[66].x, cb1[66].y
+ 122: mad r3.x, r3.x, cb1[66].z, -cb1[66].w
+ 123: div r3.x, l(1.0000, 1.0000, 1.0000, 1.0000), r3.x
+ 124: add r3.x, r3.x, r3.y
+ 125: sample_l(texture2d)(float,float,float,float) r3.y, r5.xyxx, t0.yxzw, s0, l(0)
+ 126: mad r3.z, r3.y, cb1[66].x, cb1[66].y
+ 127: mad r3.y, r3.y, cb1[66].z, -cb1[66].w
+ 128: div r3.y, l(1.0000, 1.0000, 1.0000, 1.0000), r3.y
+ 129: add r3.y, r3.y, r3.z
+ 130: sample_l(texture2d)(float,float,float,float) r3.z, r5.zwzz, t0.yzxw, s0, l(0)
+ 131: mad r3.w, r3.z, cb1[66].x, cb1[66].y
+ 132: mad r3.z, r3.z, cb1[66].z, -cb1[66].w
+ 133: div r3.z, l(1.0000, 1.0000, 1.0000, 1.0000), r3.z
+ 134: add r3.z, r3.z, r3.w
+ 135: sample_l(texture2d)(float,float,float,float) r0.x, r0.xyxx, t0.xyzw, s0, l(0)
+ 136: mad r0.y, r0.x, cb1[66].x, cb1[66].y
+ 137: mad r0.x, r0.x, cb1[66].z, -cb1[66].w
+ 138: div r0.x, l(1.0000, 1.0000, 1.0000, 1.0000), r0.x
+ 139: add r0.x, r0.x, r0.y
+ 140: ieq r0.y, r0.w, l(1)
+ 141: and r0.y, r0.y, l(1.0000)
+ 142: mad r0.y, -cb3[0].x, r0.y, l(1.0000)
+ 143: add r0.w, -r1.w, r2.x
+ 144: add r2.x, -r1.w, r2.y
+ 145: add r2.y, -r1.w, r2.z
+ 146: add r2.z, -r1.w, r2.w
+ 147: add r2.w, -r1.w, r3.x
+ 148: add r3.x, -r1.w, r3.y
+ 149: add r3.y, -r1.w, r3.z
+ 150: add r0.x, -r1.w, r0.x
+ 151: max r0.x, r0.x, r3.y
+ 152: max r0.x, r0.x, r3.x
+ 153: max r0.x, r0.x, r2.w
+ 154: max r0.x, r0.x, r2.z
+ 155: max r0.x, r0.x, r2.y
+ 156: max r0.x, r0.x, r2.x
+ 157: max r0.x, r0.x, r2.x
+ 158: max r0.x, r0.x, r0.w
+ 159: max r0.x, r0.x, l(0)
+ 160: mul r0.w, r1.w, l(0.0050)
+ 161: mul r2.x, r0.w, cb4[2].z
+ 162: mad r0.w, r0.w, cb4[2].w, -r2.x
+ 163: mad r0.x, r0.x, l(2.0000), -r2.x
+ 164: div r0.w, l(1.0000, 1.0000, 1.0000, 1.0000), r0.w
+ 165: mul_sat r0.x, r0.w, r0.x
+ 166: mad r0.w, r0.x, l(-2.0000), l(3.0000)
+ 167: mul r0.x, r0.x, r0.x
+ 168: mul r0.x, r0.x, r0.w
+ 169: mul_sat r0.x, r0.z, r0.x
+ 170: add r0.z, cb2[0].w, -cb2[1].x
+ 171: add r0.w, -r0.z, cb2[0].w
+ 172: add r0.z, -r0.z, r1.w
+ 173: div r0.w, l(1.0000, 1.0000, 1.0000, 1.0000), r0.w
+ 174: mul_sat r0.z, r0.w, r0.z
+ 175: mad r0.w, r0.z, l(-2.0000), l(3.0000)
+ 176: mul r0.z, r0.z, r0.z
+ 177: mul r0.z, r0.z, r0.w
+ 178: mul r0.z, r0.z, r0.x
+ 179: mul r2.xyz, r1.xyzx, r0.xxxx
+ 180: mul r0.x, r0.y, r0.z
+ 181: mad r0.yzw, r2.xxyz, cb4[3].xxxx, -r1.xxyz
+ 182: mad r1.xyz, r0.xxxx, r0.yzwy, r1.xyzx
+ 183: endif
+ 184: add r0.xyz, -r1.xyzx, cb4[1].xyzx
+ 185: mad r0.xyz, cb4[3].yyyy, r0.xyzx, r1.xyzx
+ 186: max r0.xyz, r0.xyzx, l(0, 0, 0, 0)
+ 187: mul o0.xyz, r0.xyzx, cb1[135].yyyy
+ 188: mov o0.w, l(1.0000)
+ 189: ret

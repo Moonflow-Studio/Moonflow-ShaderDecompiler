@@ -1,0 +1,9 @@
+Shader hash cfe77870-b3afc55d-ffc7e0f3-84a07420
+
+vs_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_input v0.xy
+      dcl_output_siv o0.xyzw, position
+   0: mad o0.xy, v0.xyxx, l(2.0000, -2.0000, 0.0000, 0.0000), l(-1.0000, 1.0000, 0.0000, 0.0000)
+   1: mov o0.zw, l(0.0000, 0.0000, 0.0000, 1.0000)
+   2: ret
