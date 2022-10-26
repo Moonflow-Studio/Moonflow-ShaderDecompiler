@@ -88,6 +88,7 @@ namespace moonflow_system.Tools.MFUtilityTools
         private Vector2 _pixelVarScroll;
         private bool showBuffer;
         private bool _arranged = false;
+        private int _tabLevel = 0;
         private static readonly string[] DEFINITION_TYPE_VERTEX = new[] {"globalFlags", "constantbuffer", "input", "output_siv", "output", "sampler", "resource_texture2d", "resource_texture3d", "temps", "resource_buffer"};//dcl_input_sgv未知定义
         private static readonly string[] DEFINITION_TYPE_PIXEL = new[] {"globalFlags", "constantbuffer", "input_ps", "input_ps_siv", "output", "sampler", "resource_texture2d", "resource_texture3d", "temps", "resource_buffer"};
         [MenuItem("Moonflow/Tools/ShaderRecover")]
@@ -560,6 +561,18 @@ namespace moonflow_system.Tools.MFUtilityTools
                     case 1://and 
                         line.str = $"({line.localVar[0].GetDisplayVar()} && {line.localVar[1].GetDisplayVar()})";
                         break;
+                    case 2://break
+                    {
+                        line.str = "break;";
+                        line.noEqualSign = true;
+                    }
+                        break;
+                    case 6://case
+                    {
+                        line.str = "case " + line.localVar[0].GetDisplayVar();
+                        line.noEqualSign = true;
+                    }
+                        break;
                     case 13://discard 
                         line.noEqualSign = true;
                         line.str = $"(clip({line.result.GetDisplayVar()}))";
@@ -576,6 +589,20 @@ namespace moonflow_system.Tools.MFUtilityTools
                     case 17://dp4 
                         line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
                         break;
+                    case 18: //else
+                    {
+                        line.str = "";
+                        line.result = null;
+                        line.localVar =null;
+                        break;
+                    }
+                    case 21: //endif
+                    {
+                        line.str = "";
+                        line.result = null;
+                        line.localVar = null;
+                        break;
+                    }
                     case 25://exp 
                         line.str = $"(exp({line.localVar[0].GetDisplayVar()}))";
                         break;
@@ -623,6 +650,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         // line.result = line.localVar[1];
                         line.str = $"({line.localVar[0].GetDisplayVar()}) * {line.localVar[1].GetDisplayVar()}";
+                        break;
+                    }
+                    case 42: //ishl
+                    {
+                        line.str = $"({line.localVar[0].GetDisplayVar()} << {line.localVar[1].GetDisplayVar()})";
+                        break;
+                    }
+                    case 43: //ishl
+                    {
+                        line.str = $"({line.localVar[0].GetDisplayVar()} >> {line.localVar[1].GetDisplayVar()})";
                         break;
                     }
                     case 46: //ld
@@ -723,11 +760,11 @@ namespace moonflow_system.Tools.MFUtilityTools
                         break;
                     case 200: //if_z
                         line.noEqualSign = true;
-                        line.str = $"if({line.result.GetDisplayVar()} == 0)";
+                        line.str = "if("+line.result.GetDisplayVar()+" == 0){";
                         break;
                     case 201: //if_nz
                         line.noEqualSign = true;
-                        line.str = $"if({line.result.GetDisplayVar()} != 0)";
+                        line.str = "if("+line.result.GetDisplayVar()+" != 0){";
                         break;
                     default : MFDebug.LogError($"第{line.lineIndex}行检测到未做处理的计算类型，运算编号{line.opIndex}");
                         break;
@@ -741,7 +778,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             for (int i = lines.Count - 2; i >= 0; i--)
             {
                 var line = lines[i];
-                if (last.empty || last.localVar == null || last.elipsised)
+                if (last.empty || last.localVar == null || last.elipsised || line.noEqualSign)
                 {
                     last = line;
                     continue;
@@ -1105,12 +1142,17 @@ namespace moonflow_system.Tools.MFUtilityTools
             {
                 CheckOperationAddition(ref singleLine, split[0]);
             }
+
+            if (singleLine.opIndex is 2 or 6 or 13 or 18 or 21 or 82)
+            {
+                singleLine.noEqualSign = true;
+            }
         }
         private static void CheckOperationAddition(ref SingleLine singleLine, string text)
         {
             for (var index = 0; index < OperationAddition.Length; index++)
             {
-                var Op = Operation[index];
+                var Op = OperationAddition[index];
                 if (text.Contains(Op))
                 {
                     singleLine.opIndex = index + 200;
@@ -1657,6 +1699,7 @@ namespace moonflow_system.Tools.MFUtilityTools
         private void PrintResultData(ref List<SingleLine> target, ref string text, bool defaultMode = true)
         {
             text = "";
+            _tabLevel = 0;
             if (target?.Count > 0)
             {
                 for (int i = 0; i < target.Count; i++)
@@ -1667,7 +1710,13 @@ namespace moonflow_system.Tools.MFUtilityTools
                         text += "\n";
                         continue;
                     }
+
                     if(defaultMode)RefreshSingleline(ref singleLine);
+                    if (singleLine.opIndex is 18 or 21) _tabLevel--;
+                    for (int j = 0; j < _tabLevel; j++)
+                    {
+                        text += "  ";
+                    }
                     if (!singleLine.elipsised && singleLine.combineState!=1)
                     {
                         if (singleLine.result != null && singleLine.result.linkedVar != null && !singleLine.noEqualSign)
@@ -1676,7 +1725,15 @@ namespace moonflow_system.Tools.MFUtilityTools
                             {
                                 try
                                 {
-                                    string op = singleLine.opIndex < 100 ? Operation[singleLine.opIndex]: enhanceOperation[singleLine.opIndex - 100];
+                                    string op;
+                                    if (singleLine.opIndex < 200)
+                                    {
+                                        op = singleLine.opIndex < 100 ? Operation[singleLine.opIndex]: enhanceOperation[singleLine.opIndex - 100];
+                                    }
+                                    else
+                                    {
+                                        op = OperationAddition[singleLine.opIndex - 200];
+                                    }
                                     if (singleLine.result.additional)
                                     {
                                         text += $"{singleLine.result.channel} {singleLine.result.linkedVar.name} => {op} ";
@@ -1701,15 +1758,30 @@ namespace moonflow_system.Tools.MFUtilityTools
                         }
                         else
                         {
-                            text += "ret";
+                            if (singleLine.result == null &&!singleLine.noEqualSign)
+                            {
+                                text += "ret";
+                            }
+                            else
+                            {
+                                if (singleLine.noEqualSign)
+                                {
+                                    if (singleLine.opIndex is 2 or 18 or 21)
+                                    {
+                                        text += Operation[singleLine.opIndex];
+                                    }
+                                }
+                            }
                         }
-                        text += singleLine.str + ";\n";
+                        text += singleLine.str + (singleLine.noEqualSign ? "\n":";\n");
                     }
                     else
                     {
                         // text += "\n";
                     }
                     target[i] = singleLine;
+                    if (singleLine.opIndex is 6 or 18 or 33 or 82 or 200 or 201) _tabLevel++;
+                    if (singleLine.opIndex is 2 or 7) _tabLevel--;
                 }
             }
         }
