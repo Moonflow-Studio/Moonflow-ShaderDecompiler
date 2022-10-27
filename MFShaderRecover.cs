@@ -1,4 +1,6 @@
 
+#define MFDebug
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +10,6 @@ using Moonflow.Core;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
-
 namespace moonflow_system.Tools.MFUtilityTools
 {
     public class MFShaderRecover:EditorWindow
@@ -87,6 +88,7 @@ namespace moonflow_system.Tools.MFUtilityTools
         private Vector2 _vertVarScroll;
         private Vector2 _pixelVarScroll;
         private bool showBuffer;
+        private bool showFragmentBuffer;
         private bool _arranged = false;
         private int _tabLevel = 0;
         private static readonly string[] DEFINITION_TYPE_VERTEX = new[] {"globalFlags", "constantbuffer", "input", "output_siv", "output", "sampler", "resource_texture2d", "resource_texture3d", "temps", "resource_buffer"};//dcl_input_sgv未知定义
@@ -273,13 +275,18 @@ namespace moonflow_system.Tools.MFUtilityTools
 
                         if (showBuffer)
                         {
+                            if (GUILayout.Button(showFragmentBuffer ? "Fragment Buffer" : "Vertex Buffer", new GUIStyle("FrameBox"){fixedHeight = 40, alignment = TextAnchor.UpperCenter}))
+                            {
+                                showFragmentBuffer = !showFragmentBuffer;
+                            }
                             using (new EditorGUILayout.HorizontalScope())
                             {
-                                if (_propScroll == null || _propScroll.Length != _resultData.properties.Count)
+                                var props = showFragmentBuffer ? _resultData.fragProps:_resultData.vertProps;
+                                if (_propScroll == null || _propScroll.Length != props.Count)
                                 {
-                                    _propScroll = new Vector2[_resultData.properties.Count];
+                                    _propScroll = new Vector2[props.Count];
                                 }
-                                for (int i = 0; i < _resultData.properties.Count; i++)
+                                for (int i = 0; i < props.Count; i++)
                                 {
                                     using (new EditorGUILayout.VerticalScope())
                                     {
@@ -287,9 +294,9 @@ namespace moonflow_system.Tools.MFUtilityTools
                                         {
                                             _propScroll[i] = view.scrollPosition;
                                             EditorGUILayout.LabelField($"Constant Buffer{i}", new GUIStyle("HelpBox"){fixedHeight = 20, alignment = TextAnchor.UpperCenter});
-                                            for (int j = 0; j < _resultData.properties[i].Count; j++)
+                                            for (int j = 0; j < props[i].Count; j++)
                                             {
-                                                _resultData.properties[i][j].name = EditorGUILayout.TextField(_resultData.properties[i][j].name);
+                                                props[i][j].name = EditorGUILayout.TextField(props[i][j].name);
                                                 // EditorGUILayout.LabelField(resultData.attribute[i].type, resultData.attribute[i].def);
                                             }
                                         
@@ -458,7 +465,8 @@ namespace moonflow_system.Tools.MFUtilityTools
         private void InitResultData()
         {
             _resultData = new ShaderData();
-            _resultData.properties = new List<List<shaderPropDefinition>>();
+            _resultData.vertProps = new List<List<shaderPropDefinition>>();
+            _resultData.fragProps = new List<List<shaderPropDefinition>>();
             _resultData.attribute = new List<shaderPropDefinition>();
             _resultData.v2f = new List<shaderPropDefinition>();
             _resultData.gbuffer = new List<shaderPropDefinition>();
@@ -550,16 +558,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         if (line.localVar[1].negative)
                         {
-                            line.str = $"({line.localVar[0].GetDisplayVar()} - {line.localVar[1].GetDisplayVar(false)})";
+                            line.str = $"{line.localVar[0].GetDisplayVar()} - {line.localVar[1].GetDisplayVar(false)}";
                         }
                         else
                         {
-                            line.str = $"({line.localVar[0].GetDisplayVar()} + {line.localVar[1].GetDisplayVar()})";
+                            line.str = $"{line.localVar[0].GetDisplayVar()} + {line.localVar[1].GetDisplayVar()}";
                         }
                     }
                         break;
                     case 1://and 
-                        line.str = $"({line.localVar[0].GetDisplayVar()} && {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} && {line.localVar[1].GetDisplayVar()}";
                         break;
                     case 2://break
                     {
@@ -575,19 +583,19 @@ namespace moonflow_system.Tools.MFUtilityTools
                         break;
                     case 13://discard 
                         line.noEqualSign = true;
-                        line.str = $"(clip({line.result.GetDisplayVar()}))";
+                        line.str = $"clip({line.result.GetDisplayVar()})";
                         break;
                     case 14://div 
-                        line.str = $"({line.localVar[0].GetDisplayVar()} / {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"({line.localVar[0].GetDisplayVar()} / {line.localVar[1].GetDisplayVar()}";
                         break;
                     case 15://dp2 
-                        line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
+                        line.str = $"dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()})";
                         break;
                     case 16://dp3 
-                        line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
+                        line.str = $"dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()})";
                         break;
                     case 17://dp4 
-                        line.str = $"(dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
+                        line.str = $"dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()})";
                         break;
                     case 18: //else
                     {
@@ -604,28 +612,36 @@ namespace moonflow_system.Tools.MFUtilityTools
                         break;
                     }
                     case 25://exp 
-                        line.str = $"(exp({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"exp({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 26: //frc
-                        line.str = $"(frac({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"frac({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 27: //ftoi
-                        line.str = $"(round({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"round({line.localVar[0].GetDisplayVar()})";
+                        break;
+                    case 28: //ftou
+                        line.str = $"(int){line.localVar[0].GetDisplayVar()}";
                         break;
                     case 30: //ge
-                        line.str = $"({line.localVar[0].GetDisplayVar()} >= {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} >= {line.localVar[1].GetDisplayVar()}";
                         break;
                     // case 31~44(int)
                     case 31 ://iadd
                     {
                         if (line.localVar[1].negative)
                         {
-                            line.str = $"({line.localVar[0].GetDisplayVar()} - {line.localVar[1].GetDisplayVar(false)})";
+                            line.str = $"{line.localVar[0].GetDisplayVar()} - {line.localVar[1].GetDisplayVar(false)}";
                         }
                         else
                         {
-                            line.str = $"({line.localVar[0].GetDisplayVar()} + {line.localVar[1].GetDisplayVar()})";
+                            line.str = $"{line.localVar[0].GetDisplayVar()} + {line.localVar[1].GetDisplayVar()}";
                         }
+                        break;
+                    }
+                    case 32: //ieq
+                    {
+                        line.str = $"{line.localVar[0].GetDisplayVar()} == {line.localVar[1].GetDisplayVar(false)}";
                         break;
                     }
                     case 33://if
@@ -637,11 +653,11 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         if (line.localVar[2].negative)
                         {
-                            line.str = $"({line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()} - {line.localVar[2].GetDisplayVar(false)})";
+                            line.str = $"{line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()} - {line.localVar[2].GetDisplayVar(false)}";
                         }
                         else
                         {
-                            line.str = $"({line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()} + {line.localVar[2].GetDisplayVar()})";
+                            line.str = $"{line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()} + {line.localVar[2].GetDisplayVar()}";
                         }
 
                         break;
@@ -649,40 +665,44 @@ namespace moonflow_system.Tools.MFUtilityTools
                     case 39://imul
                     {
                         // line.result = line.localVar[1];
-                        line.str = $"({line.localVar[0].GetDisplayVar()}) * {line.localVar[1].GetDisplayVar()}";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()}";
+                        break;
+                    }
+                    case 40: //ine
+                    {
+                        line.str = $"{line.localVar[0].GetDisplayVar()} != {line.localVar[1].GetDisplayVar()}";
                         break;
                     }
                     case 42: //ishl
                     {
-                        line.str = $"({line.localVar[0].GetDisplayVar()} << {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} << {line.localVar[1].GetDisplayVar()}";
                         break;
                     }
                     case 43: //ishl
                     {
-                        line.str = $"({line.localVar[0].GetDisplayVar()} >> {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} >> {line.localVar[1].GetDisplayVar()}";
                         break;
                     }
                     case 46: //ld
                     {
-                        line.str = $"({line.localVar[1].linkedVar.name}[{line.localVar[0].GetDisplayVar()}])";
+                        line.str = $"{line.localVar[1].linkedVar.name}[{line.localVar[0].GetDisplayVar()}]";
                         break;
                     }
-                        // break;
                     case 49: //log
-                        line.str = $"(log2({line.localVar[0].GetDisplayVar()})";
+                        line.str = $"log2({line.localVar[0].GetDisplayVar()}";
                         break;
                     case 51: //lt
-                        line.str = $"({line.localVar[0].GetDisplayVar()} < {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} < {line.localVar[1].GetDisplayVar()}";
                         break;
                     case 52://mad
                         line.str =
-                            $"({line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()} + {line.localVar[2].GetDisplayVar()})";
+                            $"{line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()} + {line.localVar[2].GetDisplayVar()}";
                         break;
                     case 53://max
-                        line.str = $"(max({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
+                        line.str = $"max({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()})";
                         break;
                     case 54://min
-                        line.str = $"(min({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}))";
+                        line.str = $"min({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()})";
                         break;
                     case 55: //mov
                         line.str = $"{line.localVar[0].GetDisplayVar()}";
@@ -691,28 +711,31 @@ namespace moonflow_system.Tools.MFUtilityTools
                         line.str = $"{line.localVar[0].GetDisplayVar()} ? {line.localVar[1].GetDisplayVar()} : {line.localVar[2].GetDisplayVar()}";
                         break;
                     case 57: //mul
-                        line.str = $"({line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} * {line.localVar[1].GetDisplayVar()}";
                         break;
                     case 58: //ne
-                        line.str = $"({line.localVar[0].GetDisplayVar()} != {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} != {line.localVar[1].GetDisplayVar()}";
                         break;
                     case 61: //or
-                        line.str = $"({line.localVar[0].GetDisplayVar()} | {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} | {line.localVar[1].GetDisplayVar()}";
                         break;
                     case 62://rcp
-                        line.str = $"(1/{line.localVar[0].GetDisplayVar()})";
+                        line.str = $"1/{line.localVar[0].GetDisplayVar()}";
                         break;
                     case 66: //round
-                        line.str = $"(round({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"round({line.localVar[0].GetDisplayVar()})";
+                        break;
+                    case 67: //round_ne
+                        line.str = $"round({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 68: //round_ni
-                        line.str = $"(floor({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"floor({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 69: //round_pi
-                        line.str = $"(ceil({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"ceil({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 71: //rsq
-                        line.str = $"(1/sqrt({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"1/sqrt({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 72://sample
                     case 73://sample_b
@@ -721,40 +744,45 @@ namespace moonflow_system.Tools.MFUtilityTools
                     case 76://sample_d
                     case 77://sample_l
                         line.str =
-                            $"(SAMPLE_TEXTURE2D({line.localVar[1].linkedVar.name}, sampler_{line.localVar[1].linkedVar.name}, {line.localVar[0].GetDisplayVar()}))";
+                            $"SAMPLE_TEXTURE2D({line.localVar[1].linkedVar.name}, sampler{line.localVar[1].linkedVar.name}, {line.localVar[0].GetDisplayVar()})";
                         break;
                     case 80: //sincos
-                        line.str = $"(sincos({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"sincos({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 81: //sqrt
-                        line.str = $"(sqrt({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"sqrt({line.localVar[0].GetDisplayVar()})";
                         break;
                     // case 82~90(uncharted int)
-                    case 91:
+                    case 85: //ult
+                    {
+                        line.str = $"{line.localVar[0].GetDisplayVar()} < {line.localVar[1].GetDisplayVar()}";
+                        break;
+                    }
+                    case 91: //utof
                     {
                         line.str = $"(float){line.localVar[0].GetDisplayVar()}";
                         break;
                     }
                     case 100://lerp
                         line.str =
-                            $"(lerp({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}, {line.localVar[2].GetDisplayVar()}))";
+                            $"lerp({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}, {line.localVar[2].GetDisplayVar()})";
                         break;
                     case 101://linearstep
                         // line.str = $"(linearstep())"
                         break;
                     case 102: //smoothstep
-                        line.str = $"(smoothstep({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"smoothstep({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 103://normalize 
-                        line.str = $"(normalize({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"normalize({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 104://pow4
-                        line.str = $"(pow4({line.localVar[0].GetDisplayVar()}))";
+                        line.str = $"pow4({line.localVar[0].GetDisplayVar()})";
                         break;
                     case 105://matrixMultiply
-                        line.str = $"(mul({line.localVar[1].linkedVar.type} {line.localVar[1].linkedVar.name}, " +
+                        line.str = $"mul({line.localVar[1].linkedVar.type} {line.localVar[1].linkedVar.name}, " +
                                    $"{line.localVar[0].GetDisplayVar()}" +
-                                   $"))";
+                                   $")";
                         break;
                     case 106: //clamp
                         break;
@@ -790,10 +818,14 @@ namespace moonflow_system.Tools.MFUtilityTools
                 {
                     for (int j = 0; j < last.localVar.Length; j++)
                     {
-                        if (ReferenceEquals(last.localVar[j].linkedVar, line.result.linkedVar) && last.localVar[j].channel == line.result.channel && last.opArranged && line.opArranged && (last.opIndex<71 || last.opIndex>78)/*&& last.combineState!=2*/)
+                        if (ReferenceEquals(last.localVar[j].linkedVar, line.result.linkedVar) 
+                            && last.localVar[j].channel == line.result.channel 
+                            && last.opArranged
+                            && line.opArranged 
+                            && (last.opIndex<71 || last.opIndex>78)/*&& last.combineState!=2*/)
                         {
                             string replaced = line.result.GetDisplayVar();
-                            last.str = last.str.Replace(replaced, line.str);
+                            last.str = last.str.Replace(replaced, "("+line.str+")");
                             line.combineState = 1;
                             last.combineState = 2;
                             push = false;
@@ -817,7 +849,8 @@ namespace moonflow_system.Tools.MFUtilityTools
             exceed.Merge_Lerp(ref lines);
             exceed.Merge_Pow4(ref lines);
             exceed.Merge_Clamp(ref lines);
-            exceed.Merge_MatrixMultiply(ref lines, ref _resultData.properties);
+            var resultDataVertProps = (_type == ShaderType.Vertex ? _resultData.vertProps : _resultData.fragProps);
+            exceed.Merge_MatrixMultiply(ref lines, ref resultDataVertProps);
         }
 
         private void MakeTempVariable(ref List<SingleLine> lines)
@@ -1335,7 +1368,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         int indexInBuffer =
                             Convert.ToInt16(serialSplit[1]);
-                        target.linkedVar = _resultData.properties[bufferIndex][indexInBuffer];
+                        target.linkedVar = _type == ShaderType.Vertex ? _resultData.vertProps[bufferIndex][indexInBuffer] : _resultData.fragProps[bufferIndex][indexInBuffer];
                     }
                     catch (Exception e)
                     {
@@ -1666,11 +1699,12 @@ namespace moonflow_system.Tools.MFUtilityTools
                 newPropertiesList.Add(newDef);
             }
 
-            if (_resultData.properties == null) _resultData.properties = new List<List<shaderPropDefinition>>();
+            var props = _type == ShaderType.Vertex ? _resultData.vertProps : _resultData.fragProps;
+            if (props == null) props = new List<List<shaderPropDefinition>>();
             string[] index = text.Split('[');
             index = index[0].Split("cb");
-            if(_resultData.properties.Count < Convert.ToInt16(index[1]+1))
-                _resultData.properties.Add(newPropertiesList);
+            if(props.Count < Convert.ToInt16(index[1]+1))
+                props.Add(newPropertiesList);
         }
 
         private void CleanPrefix(ref List<SingleLine> target)
@@ -1817,7 +1851,8 @@ namespace moonflow_system.Tools.MFUtilityTools
 
     public struct ShaderData
     {
-        public List<List<shaderPropDefinition>> properties;
+        public List<List<shaderPropDefinition>> vertProps;
+        public List<List<shaderPropDefinition>> fragProps;
         public List<shaderPropDefinition> attribute;
         public List<shaderPropDefinition> buffer;
         // public List<shaderPropDefinition> v2g;
