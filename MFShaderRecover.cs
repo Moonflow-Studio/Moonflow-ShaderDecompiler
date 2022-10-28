@@ -182,6 +182,13 @@ namespace moonflow_system.Tools.MFUtilityTools
                                     PrintResultData(ref _resultData.frag, ref fragResultText);
                                 }
                             }
+
+                            if (GUILayout.Button("复制结果"))
+                            {
+                                GUIUtility.systemCopyBuffer =
+                                    MFShaderRecoverTextOutput.MakeURPText(_resultData, vertResultText, fragResultText);
+                                MFDebug.Log("已复制到剪贴板");
+                            }
                         }
 
                         using (new EditorGUILayout.HorizontalScope("box"))
@@ -586,7 +593,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                         line.str = $"clip({line.result.GetDisplayVar()})";
                         break;
                     case 14://div 
-                        line.str = $"({line.localVar[0].GetDisplayVar()} / {line.localVar[1].GetDisplayVar()}";
+                        line.str = $"({line.localVar[0].GetDisplayVar()} / {line.localVar[1].GetDisplayVar()})";
                         break;
                     case 15://dp2 
                         line.str = $"dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()})";
@@ -606,7 +613,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     case 21: //endif
                     {
-                        line.str = "";
+                        line.str = "}";
                         line.result = null;
                         line.localVar = null;
                         break;
@@ -806,11 +813,13 @@ namespace moonflow_system.Tools.MFUtilityTools
             for (int i = lines.Count - 2; i >= 0; i--)
             {
                 var line = lines[i];
+                //上一行是空或者没有临时变量或者被优化了或者没有运算符直接重新建立堆栈
                 if (last.empty || last.localVar == null || last.elipsised || line.noEqualSign)
                 {
                     last = line;
                     continue;
                 }
+                //本条如果是被优化了或者空或者没结果或者没有进行运算符重显示则直接跳过
                 if (line.elipsised || line.empty || line.result == null || !line.opArranged) continue;
                 
                 bool push = true;
@@ -818,16 +827,41 @@ namespace moonflow_system.Tools.MFUtilityTools
                 {
                     for (int j = 0; j < last.localVar.Length; j++)
                     {
-                        if (ReferenceEquals(last.localVar[j].linkedVar, line.result.linkedVar) 
-                            && last.localVar[j].channel == line.result.channel 
-                            && last.opArranged
-                            && line.opArranged 
-                            && (last.opIndex<71 || last.opIndex>78)/*&& last.combineState!=2*/)
+                        bool a = ReferenceEquals(last.localVar[j].linkedVar, line.result.linkedVar) && last.localVar[j].linkedVar!=null;
+                        bool b = last.localVar[j].channel == line.result.channel;
+                        bool c = last.opArranged && line.opArranged;
+                        bool d = last.opIndex < 71 || last.opIndex > 78;
+                        // bool e = last.combineState != 2;
+                        // bool f = line.combineState != 1;
+                        if (a && b && c && d/* && e && f*/)
                         {
                             string replaced = line.result.GetDisplayVar();
                             last.str = last.str.Replace(replaced, "("+line.str+")");
                             line.combineState = 1;
                             last.combineState = 2;
+                            // var localVarArray = last.localVar.ToList();
+                            // localVarArray.RemoveAt(j);
+                            // for (int k = 0; k < line.localVar.Length; k++)
+                            // {
+                            //     var lineLink = line.localVar[k];
+                            //     bool hasSame = false;
+                            //     for (int l = 0; l < localVarArray.Count; l++)
+                            //     {
+                            //         if (ReferenceEquals(lineLink.linkedVar, localVarArray[l].linkedVar) &&
+                            //             lineLink.channel == localVarArray[l].channel)
+                            //         {
+                            //             hasSame = true;
+                            //             break;
+                            //         }
+                            //     }
+                            //
+                            //     if (!hasSame)
+                            //     {
+                            //         localVarArray.Add(lineLink);
+                            //     }
+                            // }
+                            // // localVarArray.AddRange(line.localVar);
+                            // last.localVar = localVarArray.ToArray();
                             push = false;
                         }
                     }
@@ -1598,7 +1632,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         type = $"float{(temp.Split(new []{'.', '\r'}, StringSplitOptions.RemoveEmptyEntries)[1]).Length.ToString()}",
                         name = $"gbuffer_{index}",
-                        def = $"",
+                        def = $"TEXCOORD{index}",
                         
                     });
                     break;
@@ -1683,6 +1717,8 @@ namespace moonflow_system.Tools.MFUtilityTools
 
         private void MakeDef_Constant(string text)
         {
+            bool isVertex = _type == ShaderType.Vertex;
+            string tag = isVertex ? "v" : "f";
             string[] split1 = text.Split('[');
             split1 = split1[1].Split(']');
             // Regex r = new Regex("[()],");
@@ -1692,14 +1728,14 @@ namespace moonflow_system.Tools.MFUtilityTools
             {
                 var newDef = new shaderPropDefinition()
                 {
-                    type = "",
-                    name = $"props_{_cbufferCount.ToString()}_{i}",
+                    type = "float4",
+                    name = $"props_{tag}_{_cbufferCount.ToString()}_{i}",
                     def = ""
                 };
                 newPropertiesList.Add(newDef);
             }
 
-            var props = _type == ShaderType.Vertex ? _resultData.vertProps : _resultData.fragProps;
+            var props = isVertex ? _resultData.vertProps : _resultData.fragProps;
             if (props == null) props = new List<List<shaderPropDefinition>>();
             string[] index = text.Split('[');
             index = index[0].Split("cb");
@@ -1800,9 +1836,11 @@ namespace moonflow_system.Tools.MFUtilityTools
                             {
                                 if (singleLine.noEqualSign)
                                 {
-                                    if (singleLine.opIndex is 2 or 18 or 21)
+                                    if (singleLine.opIndex is 2 or 18)
                                     {
                                         text += Operation[singleLine.opIndex];
+                                    }else if (singleLine.opIndex is 21)
+                                    {
                                     }
                                 }
                             }
