@@ -68,6 +68,7 @@ namespace moonflow_system.Tools.MFUtilityTools
         public Object oriFragmentFile;
         public string vertResultText;
         public string fragResultText;
+        public string shaderName;
         private ShaderData _resultData;
         private string _original;
         private string[] _definitions;
@@ -122,6 +123,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         oriVertexFile = EditorGUILayout.ObjectField("Vertex Shader", oriVertexFile, typeof(Object), false) as UnityEngine.Object;
                         oriFragmentFile = EditorGUILayout.ObjectField("Fragment Shader", oriFragmentFile, typeof(Object), false) as UnityEngine.Object;
+                        shaderName = EditorGUILayout.TextField("ShaderName", shaderName);
                         using (new EditorGUILayout.HorizontalScope("box"))
                         {
                             if (GUILayout.Button("还原"))
@@ -186,7 +188,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                             if (GUILayout.Button("复制结果"))
                             {
                                 GUIUtility.systemCopyBuffer =
-                                    MFShaderRecoverTextOutput.MakeURPText(_resultData, vertResultText, fragResultText);
+                                    MFShaderRecoverTextOutput.MakeURPText(_resultData, vertResultText, fragResultText, shaderName);
                                 MFDebug.Log("已复制到剪贴板");
                             }
                         }
@@ -792,6 +794,8 @@ namespace moonflow_system.Tools.MFUtilityTools
                                    $")";
                         break;
                     case 106: //clamp
+                        line.str =
+                            $"clamp({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}, {line.localVar[2].GetDisplayVar()})";
                         break;
                     case 200: //if_z
                         line.noEqualSign = true;
