@@ -141,60 +141,6 @@ namespace moonflow_system.Tools.MFUtilityTools
                                     DoRecover(ref _resultData.frag);
                                 }
                             }
-                            if (GUILayout.Button("刷新显示"))
-                            {
-                                if (_arranged)
-                                {
-                                    if (oriVertexFile != null)
-                                    {
-                                        ChangeOperationDisplay(ref _resultData.vert);
-                                        CombineDisplay(ref _resultData.vert);
-                                        PrintResultData(ref _resultData.vert, ref vertResultText, false);
-                                    }
-
-                                    if (oriFragmentFile != null)
-                                    {
-                                        ChangeOperationDisplay(ref _resultData.frag);
-                                        CombineDisplay(ref _resultData.frag);
-                                        PrintResultData(ref _resultData.frag, ref fragResultText, false);
-                                    }
-                                }
-                                else
-                                {
-                                    if (oriVertexFile != null)
-                                    {
-                                        PrintResultData(ref _resultData.vert, ref vertResultText);
-                                    }
-                                    if (oriFragmentFile != null)
-                                    {
-                                        PrintResultData(ref _resultData.frag, ref fragResultText);
-                                    }
-                                }
-                            }
-                            if (GUILayout.Button("清空"))
-                            {
-                                _arranged = false;
-                                InitResultData();
-                                if (oriVertexFile != null)
-                                {
-                                    PrintResultData(ref _resultData.vert, ref vertResultText);
-                                }
-                                if (oriFragmentFile != null)
-                                {
-                                    PrintResultData(ref _resultData.frag, ref fragResultText);
-                                }
-                            }
-
-                            if (GUILayout.Button("复制结果"))
-                            {
-                                GUIUtility.systemCopyBuffer =
-                                    MFShaderRecoverTextOutput.MakeURPText(_resultData, vertResultText, fragResultText, shaderName);
-                                MFDebug.Log("已复制到剪贴板");
-                            }
-                        }
-
-                        using (new EditorGUILayout.HorizontalScope("box"))
-                        {
                             if (GUILayout.Button("智能函数识别"))
                             {
                                 if (oriVertexFile != null)
@@ -258,6 +204,61 @@ namespace moonflow_system.Tools.MFUtilityTools
                                     PrintResultData(ref _resultData.frag, ref fragResultText, false);
                                 }
                             }
+                            
+                        }
+
+                        using (new EditorGUILayout.HorizontalScope("box"))
+                        {
+                            if (GUILayout.Button("刷新显示"))
+                            {
+                                if (_arranged)
+                                {
+                                    if (oriVertexFile != null)
+                                    {
+                                        ChangeOperationDisplay(ref _resultData.vert);
+                                        CombineDisplay(ref _resultData.vert);
+                                        PrintResultData(ref _resultData.vert, ref vertResultText, false);
+                                    }
+
+                                    if (oriFragmentFile != null)
+                                    {
+                                        ChangeOperationDisplay(ref _resultData.frag);
+                                        CombineDisplay(ref _resultData.frag);
+                                        PrintResultData(ref _resultData.frag, ref fragResultText, false);
+                                    }
+                                }
+                                else
+                                {
+                                    if (oriVertexFile != null)
+                                    {
+                                        PrintResultData(ref _resultData.vert, ref vertResultText);
+                                    }
+                                    if (oriFragmentFile != null)
+                                    {
+                                        PrintResultData(ref _resultData.frag, ref fragResultText);
+                                    }
+                                }
+                            }
+                            if (GUILayout.Button("清空"))
+                            {
+                                _arranged = false;
+                                InitResultData();
+                                if (oriVertexFile != null)
+                                {
+                                    PrintResultData(ref _resultData.vert, ref vertResultText);
+                                }
+                                if (oriFragmentFile != null)
+                                {
+                                    PrintResultData(ref _resultData.frag, ref fragResultText);
+                                }
+                            }
+
+                            if (GUILayout.Button("复制结果"))
+                            {
+                                GUIUtility.systemCopyBuffer =
+                                    MFShaderRecoverTextOutput.MakeURPText(_resultData, vertResultText, fragResultText, shaderName);
+                                MFDebug.Log("已复制到剪贴板");
+                            }
                             if (GUILayout.Button("生成临时变量"))
                             {
                                 if (oriVertexFile != null)
@@ -277,14 +278,14 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     using (new EditorGUILayout.VerticalScope("box"))
                     {
-                        if (GUILayout.Button(showBuffer ? "Constant Buffer" : "Temp Variable", new GUIStyle("FrameBox"){fixedHeight = 40, alignment = TextAnchor.UpperCenter}))
+                        if (GUILayout.Button(showBuffer ? "Constant Buffer(点击切换至临时变量列表)" : "Temp Variable(点击切换至CBuffer列表)", new GUIStyle("FrameBox"){fixedHeight = 40, alignment = TextAnchor.UpperCenter}))
                         {
                             showBuffer = !showBuffer;
                         }
 
                         if (showBuffer)
                         {
-                            if (GUILayout.Button(showFragmentBuffer ? "Fragment Buffer" : "Vertex Buffer", new GUIStyle("FrameBox"){fixedHeight = 40, alignment = TextAnchor.UpperCenter}))
+                            if (GUILayout.Button(showFragmentBuffer ? "Fragment Buffer(点击切换至Vertex CBuffer列表)" : "Vertex Buffer(点击切换至Fragment CBuffer列表)", new GUIStyle("FrameBox"){fixedHeight = 40, alignment = TextAnchor.UpperCenter}))
                             {
                                 showFragmentBuffer = !showFragmentBuffer;
                             }
@@ -827,54 +828,61 @@ namespace moonflow_system.Tools.MFUtilityTools
                 if (line.elipsised || line.empty || line.result == null || !line.opArranged) continue;
                 
                 bool push = true;
-                try
-                {
                     for (int j = 0; j < last.localVar.Length; j++)
                     {
                         bool a = ReferenceEquals(last.localVar[j].linkedVar, line.result.linkedVar) && last.localVar[j].linkedVar!=null;
                         bool b = last.localVar[j].channel == line.result.channel;
                         bool c = last.opArranged && line.opArranged;
                         bool d = last.opIndex < 71 || last.opIndex > 78;
+                        
+                        
                         // bool e = last.combineState != 2;
                         // bool f = line.combineState != 1;
                         if (a && b && c && d/* && e && f*/)
                         {
-                            string replaced = line.result.GetDisplayVar();
-                            last.str = last.str.Replace(replaced, "("+line.str+")");
-                            line.combineState = 1;
-                            last.combineState = 2;
-                            // var localVarArray = last.localVar.ToList();
-                            // localVarArray.RemoveAt(j);
-                            // for (int k = 0; k < line.localVar.Length; k++)
-                            // {
-                            //     var lineLink = line.localVar[k];
-                            //     bool hasSame = false;
-                            //     for (int l = 0; l < localVarArray.Count; l++)
-                            //     {
-                            //         if (ReferenceEquals(lineLink.linkedVar, localVarArray[l].linkedVar) &&
-                            //             lineLink.channel == localVarArray[l].channel)
-                            //         {
-                            //             hasSame = true;
-                            //             break;
-                            //         }
-                            //     }
-                            //
-                            //     if (!hasSame)
-                            //     {
-                            //         localVarArray.Add(lineLink);
-                            //     }
-                            // }
-                            // // localVarArray.AddRange(line.localVar);
-                            // last.localVar = localVarArray.ToArray();
-                            push = false;
+                            try
+                            {
+                                bool reDefined = false;
+                                bool usedAgain = false;
+                                for (int k = last.lineIndex; k < lines.Count; k++)
+                                {
+                                    var current = lines[k];
+                                    if (current.result!=null && current.result.linkedVar != null)
+                                    {
+                                        if (ReferenceEquals(current.result.linkedVar,
+                                                line.result.linkedVar))
+                                        {
+                                            reDefined = true;
+                                            break;
+                                        }
+                                        for (int l = 0; l < current.localVar.Length; l++)
+                                        {
+                                            if (ReferenceEquals(current.localVar[l].linkedVar, line.result.linkedVar))
+                                            {
+                                                usedAgain = true;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (!reDefined ||!usedAgain)
+                                {
+                                    string replaced = line.result.GetDisplayVar();
+                                    last.str = last.str.Replace(replaced, "("+line.str+")");
+                                    line.combineState = 1;
+                                    last.combineState = 2;
+                                    push = false;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                throw;
+                            }
+
+                           
                         }
                     }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
                 
                 if(push)last = line;
             }
