@@ -14,7 +14,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                 for (int j = 0; j < buffer.Count; j++)
                 {
                     var prop = buffer[j];
-                    property += $"      {prop.name}(\"{prop.name}\", Vector) = (0,0,0,0)\n";
+                    property += $"        {prop.name}(\"{prop.name}\", Vector) = (0,0,0,0)\n";
                 }
             }
 
@@ -31,7 +31,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                 for (int j = 0; j < buffer.Count; j++)
                 {
                     var prop = buffer[j];
-                    property += $"          {prop.type} {prop.name};\n";
+                    property += $"            {prop.type} {prop.name};\n";
                 }
             }
 
@@ -66,7 +66,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                 for (int i = 0; i < list.Count; i++)
                 {
                     var attr = list[i];
-                    property += $"              {attr.type} {attr.name} : {attr.def};\n";
+                    property += $"                {attr.type} {attr.name} : {attr.def};\n";
                 }
             }
 
@@ -98,8 +98,8 @@ namespace moonflow_system.Tools.MFUtilityTools
                 for (int i = 0; i < list.Count; i++)
                 {
                     var tex = list[i];
-                    property += $"          {tex.type} {tex.name};\n";
-                    property += $"          SamplerState sampler{tex.name};\n";
+                    property += $"            {tex.type} {tex.name};\n";
+                    property += $"            SamplerState sampler{tex.name};\n";
                     property += $"\n";
                 }
             }
@@ -111,51 +111,51 @@ namespace moonflow_system.Tools.MFUtilityTools
         {
             string text = "Shader\"" + shaderName + "\"\n";
             text += "{\n";
-            text += " Properties\n";
-            text += " {\n";
+            text += "    Properties\n";
+            text += "    {\n";
             text += MakeProperty(data);
             text += MakeProperty(data, true);
             text += MakeTexProperty(data);
-            text += " }\n" +
-                    "   SubShader\n" +
-                    "   {\n" +
-                    "       Tags{\"RenderType\" = \"Opaque\"}\n\n" +
-                    "       Pass\n" +
-                    "       {\n" +
-                    "           HLSLPROGRAM\n" +
-                    "           #pragma vertex vert\n" +
-                    "           #pragma fragment frag\n" +
-                    "           #include \"Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl\"\n\n" +
-                    "           struct appdata\n" +
-                    "           {\n" +
+            text += "    }\n" +
+                    "    SubShader\n" +
+                    "    {\n" +
+                    "        Tags{\"RenderType\" = \"Opaque\"}\n\n" +
+                    "        Pass\n" +
+                    "        {\n" +
+                    "            HLSLPROGRAM\n" +
+                    "            #pragma vertex vert\n" +
+                    "            #pragma fragment frag\n" +
+                    "            #include \"Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl\"\n\n" +
+                    "            struct appdata\n" +
+                    "            {\n" +
                     MakeStruct(data, 0) +
-                    "           };" + '\n' +
-                    "           struct v2f\n" +
-                    "           {\n" +
+                    "            };" + '\n' +
+                    "            struct v2f\n" +
+                    "            {\n" +
                     MakeStruct(data, 1) + '\n' +
-                    "           };" + '\n' +
-                    "           struct gbuffer\n" +
-                    "           {\n" +
+                    "            };" + '\n' +
+                    "            struct gbuffer\n" +
+                    "            {\n" +
                     MakeStruct(data, 2) + '\n' +
-                    "           };" + '\n' +
+                    "            };" + '\n' +
                     MakePropertyDefine(data) + '\n' +
                     MakePropertyDefine(data, true) + '\n' +
                     MakeTexBuffer(data) + '\n' +
-                    "           v2f vert(appdata v)\n" +
-                    "           {\n" +
-                    "               v2f o;\n" +
+                    "            v2f vert(appdata v)\n" +
+                    "            {\n" +
+                    "                v2f o;\n" +
                     vertText.Replace("v2f_", "o.v2f_").Replace("attr_", "v.attr_").Replace("ret;", "") +
-                    "               return o;\n"+
-                    "           }\n\n" +
-                    "           gbuffer frag(v2f i)\n" +
-                    "           {\n" +
-                    "               gbuffer o;\n" +
+                    "                return o;\n"+
+                    "            }\n\n" +
+                    "            gbuffer frag(v2f i)\n" +
+                    "            {\n" +
+                    "                gbuffer o;\n" +
                     fragText.Replace("v2f_", "i.v2f_").Replace("gbuffer_", "o.gbuffer_").Replace("ret;", "") +
-                    "               return o;\n"+
-                    "           }\n" +
-                    "           ENDHLSL\n" +
-                    "       }\n" +
-                    "   }\n"+
+                    "                return o;\n"+
+                    "            }\n" +
+                    "            ENDHLSL\n" +
+                    "        }\n" +
+                    "    }\n"+
                     "}";
             return text;
         }

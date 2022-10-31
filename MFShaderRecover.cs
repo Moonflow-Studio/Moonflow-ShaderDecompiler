@@ -1957,7 +1957,8 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     else
                     {
-                        result += $"{channel}";
+                        string[] split = channel.Split(",");
+                        result += (split.Length > 1) ? $"float{split.Length}({channel})":$"{channel}" ;
                     }
                 }
                 else
@@ -1974,7 +1975,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                         }
                     }
                     // channel += ")";
-                    result += $"{linkedVar.name}({single})";
+                    result += $"{linkedVar.type}({single})";
                 }
             }else if (inlineOp == 1)
             {
