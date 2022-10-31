@@ -1059,6 +1059,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             }
         }
 
+        //TODO：对于多通道常量的识别仍然有问题
         private void ProcessSingleLine(ref SingleLine singleLine)
         {
             string[] split = singleLine.str.Split(' ', 2);
