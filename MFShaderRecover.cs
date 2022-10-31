@@ -577,7 +577,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                         break;
                     case 1://and 
-                        line.str = $"{line.localVar[0].GetDisplayVar()} && {line.localVar[1].GetDisplayVar()}";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} & {line.localVar[1].GetDisplayVar()}";
                         break;
                     case 2://break
                     {
