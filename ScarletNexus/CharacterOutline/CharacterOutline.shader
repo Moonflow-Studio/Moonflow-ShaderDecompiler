@@ -445,6 +445,7 @@ Shader"ScarletNexus/CharacterOutline"
                 gbuffer o;
                 // r0.zw = (-((float)props_f_0_37.xy) + i.v2f_0_sv_position.xy) * _perPixelSize.zw;
                 // r1.xy = r0.zw * props_f_0_5.xy + props_f_0_4.xy;
+                // r1.xyz = SAMPLE_TEXTURE2D(_CameraColorTexture, sampler_CameraColorTexture, r1.xy);
                 float3 color = SAMPLE_TEXTURE2D(_CameraColorTexture, sampler_CameraColorTexture, i.replaceUV/*r1.xy*/);
                 // r2.xy = (r0.zw * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw;
                 // r2.zw = SAMPLE_TEXTURE2D(t1, samplert1, r2.xy).zw;
@@ -481,14 +482,20 @@ Shader"ScarletNexus/CharacterOutline"
                 uint charaBitMask = SAMPLE_TEXTURE2D(_CharaBitMask, sampler_CharaBitMask, i.replaceUV).w;
                 
                 // r3.z = ((float)r3.z) * 0.0079;
-                r3.z = ((float)mask4) / 127;
+                float threshold = ((float)mask4) / 127;
                 
-                r2.z = sketchMask ? r3.z : mask.x/*r2.z*/;
+                // r2.z = r2.w ? r3.z : r2.z;
+                r2.z = sketchMask ? threshold : mask.x/*r2.z*/;
+                
                 // r2.w = r3.w < 0.99;
                 r2.w = charaBitMask < 0.99;
+                
                 // r2.z = ((r3.x && ((r2.z >= 0.01) & r2.w)) && 1) * r3.y;
                 r2.z = ((mask1 && ((r2.z >= 0.01) && r2.w)) && 1) * open0;
+                
+                // r1.xyz = r1.xyz * props_f_1_135.z;
                 color = color * props_f_1_135.z;
+                
                 r2.z = 0.5 < r2.z;
                 
                 // r1.w = r1.w ? 0 : r2.z;
