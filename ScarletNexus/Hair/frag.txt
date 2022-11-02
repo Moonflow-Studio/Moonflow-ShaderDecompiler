@@ -184,20 +184,20 @@ ps_5_0
  125: mad r13.xyz, r5.wwww, cb4[19].xyzx, r13.xyzx
  126: lt r5.w, l(0), cb4[155].w
  127: if_nz r5.w
- 128:   mul r14.xy, r1.zwzz, l(50.0000, 50.0000, 0.0000, 0.0000)
- 129:   mul r14.zw, r1.zzzw, cb4[155].zzzz
- 130:   sample_indexable(texture2d)(float,float,float,float) r5.w, r14.xyxx, t16.yzwx, s0
- 131:   sample_indexable(texture2d)(float,float,float,float) r6.w, r14.zwzz, t17.yzwx, s0
- 132:   add r5.w, r5.w, r6.w
- 133:   mul r5.w, r5.w, l(0.5000)
- 134:   max r5.w, r5.w, l(0.0000)
- 135:   mul r6.w, cb4[155].w, l(1.5000)
- 136:   div_sat r5.w, r6.w, r5.w
- 137:   ge r6.w, l(-0.8000), cb4[156].x
- 138:   movc r5.w, r6.w, r5.w, cb4[156].x
- 139:   mul r14.xyz, r5.wwww, cb4[21].xyzx
+ 128: mul r14.xy, r1.zwzz, l(50.0000, 50.0000, 0.0000, 0.0000)
+ 129: mul r14.zw, r1.zzzw, cb4[155].zzzz
+ 130: sample_indexable(texture2d)(float,float,float,float) r5.w, r14.xyxx, t16.yzwx, s0
+ 131: sample_indexable(texture2d)(float,float,float,float) r6.w, r14.zwzz, t17.yzwx, s0
+ 132: add r5.w, r5.w, r6.w
+ 133: mul r5.w, r5.w, l(0.5000)
+ 134: max r5.w, r5.w, l(0.0000)
+ 135: mul r6.w, cb4[155].w, l(1.5000)
+ 136: div_sat r5.w, r6.w, r5.w
+ 137: ge r6.w, l(-0.8000), cb4[156].x
+ 138: movc r5.w, r6.w, r5.w, cb4[156].x
+ 139: mul r14.xyz, r5.wwww, cb4[21].xyzx
  140: else
- 141:   mov r14.xyz, l(0, 0, 0, 0)
+ 141: mov r14.xyz, l(0, 0, 0, 0)
  142: endif
  143: add r13.xyz, r13.xyzx, r14.xyzx
  144: ld_indexable(texture2d)(float,float,float,float) r5.w, l(0, 0, 0, 0), t13.yzwx
@@ -846,23 +846,23 @@ ps_5_0
  787: mul r15.xyz, r8.xyzx, cb0[190].wwww
  788: ne r5.w, cb0[180].y, l(0)
  789: if_nz r5.w
- 790:   sample_l(texture3d)(float,float,float,float) r10.xyw, r10.xywx, t8.xywz, s1, l(0)
- 791:   mad r10.xyw, r10.xyxw, l(2.0000, 2.0000, 0.0000, 2.0000), l(-1.0000, -1.0000, 0.0000, -1.0000)
- 792:   dp3 r5.w, r10.xywx, r10.xywx
- 793:   sqrt r5.w, r5.w
- 794:   max r6.w, r5.w, l(0.0001)
- 795:   div r10.xyw, r10.xyxw, r6.wwww
- 796:   add r6.w, -r5.w, l(1.0000)
- 797:   mad r6.w, -r6.w, r6.w, l(1.0000)
- 798:   add r18.xyz, r2.xyzx, -r10.xywx
- 799:   mad r18.xyz, r6.wwww, r18.xyzx, r10.xywx
- 800:   dp3_sat r8.w, r10.xywx, r2.xyzx
- 801:   add r9.w, -r8.w, l(1.0000)
- 802:   mad r19.z, r6.w, r9.w, r8.w
+ 790: sample_l(texture3d)(float,float,float,float) r10.xyw, r10.xywx, t8.xywz, s1, l(0)
+ 791: mad r10.xyw, r10.xyxw, l(2.0000, 2.0000, 0.0000, 2.0000), l(-1.0000, -1.0000, 0.0000, -1.0000)
+ 792: dp3 r5.w, r10.xywx, r10.xywx
+ 793: sqrt r5.w, r5.w
+ 794: max r6.w, r5.w, l(0.0001)
+ 795: div r10.xyw, r10.xyxw, r6.wwww
+ 796: add r6.w, -r5.w, l(1.0000)
+ 797: mad r6.w, -r6.w, r6.w, l(1.0000)
+ 798: add r18.xyz, r2.xyzx, -r10.xywx
+ 799: mad r18.xyz, r6.wwww, r18.xyzx, r10.xywx
+ 800: dp3_sat r8.w, r10.xywx, r2.xyzx
+ 801: add r9.w, -r8.w, l(1.0000)
+ 802: mad r19.z, r6.w, r9.w, r8.w
  803: else
- 804:   mov r18.xyz, r2.xyzx
- 805:   mov r5.w, l(1.0000)
- 806:   mov r19.z, l(1.0000)
+ 804: mov r18.xyz, r2.xyzx
+ 805: mov r5.w, l(1.0000)
+ 806: mov r19.z, l(1.0000)
  807: endif
  808: mov r18.w, l(1.0000)
  809: dp4 r20.x, cb0[182].xyzw, r18.xyzw
@@ -1070,17 +1070,17 @@ ps_5_0
 1011: max r6.yzw, r13.xxyz, l(0, 0, 0, 0)
 1012: lt r1.w, l(0), cb0[140].x
 1013: if_nz r1.w
-1014:   add r7.xyz, r4.xyzx, -cb1[5].xyzx
-1015:   add r8.xyz, cb1[19].xyzx, l(1.0000, 1.0000, 1.0000, 0.0000)
-1016:   lt r7.xyz, r8.xyzx, abs(r7.xyzx)
-1017:   or r1.w, r7.y, r7.x
-1018:   or r1.w, r7.z, r1.w
-1019:   dp3 r2.w, r4.xyzx, l(0.5770, 0.5770, 0.5770, 0.0000)
-1020:   mul r2.w, r2.w, l(0.0020)
-1021:   frc r2.w, r2.w
-1022:   lt r2.w, l(0.5000), r2.w
-1023:   movc r4.xyz, r2.wwww, l(0.0000, 1.0000, 1.0000, 0.0000), l(1.0000, 1.0000, 0.0000, 0.0000)
-1024:   movc r6.yzw, r1.wwww, r4.xxyz, r6.yyzw
+1014: add r7.xyz, r4.xyzx, -cb1[5].xyzx
+1015: add r8.xyz, cb1[19].xyzx, l(1.0000, 1.0000, 1.0000, 0.0000)
+1016: lt r7.xyz, r8.xyzx, abs(r7.xyzx)
+1017: or r1.w, r7.y, r7.x
+1018: or r1.w, r7.z, r1.w
+1019: dp3 r2.w, r4.xyzx, l(0.5770, 0.5770, 0.5770, 0.0000)
+1020: mul r2.w, r2.w, l(0.0020)
+1021: frc r2.w, r2.w
+1022: lt r2.w, l(0.5000), r2.w
+1023: movc r4.xyz, r2.wwww, l(0.0000, 1.0000, 1.0000, 0.0000), l(1.0000, 1.0000, 0.0000, 0.0000)
+1024: movc r6.yzw, r1.wwww, r4.xxyz, r6.yyzw
 1025: endif
 1026: mad r1.xyz, cb0[145].yyyy, r1.xyzx, r6.yzwy
 1027: mul r4.xyz, v9.xyxx, l(0.0078, 0.0078, 0.0078, 0.0000)

@@ -113,240 +113,240 @@ vs_5_0
   80: dp4 o10.x, cb0[128].xyzw, r2.xyzw
   81: lt r1.w, l(0.0001), cb2[147].y
   82: if_nz r1.w
-  83:   mul r2.xyz, r3.xxxx, cb1[1].xyzx
-  84:   mad r2.xyz, r3.zzzz, cb1[0].xyzx, r2.xyzx
-  85:   mad r2.xyz, r3.yyyy, cb1[2].xyzx, r2.xyzx
-  86:   utof r5.x, r0.w
-  87:   utof r5.yzw, r1.xxyz
-  88:   add r5.xyzw, r5.xyzw, l(0.5000, 0.5000, 0.5000, 0.5000)
-  89:   mul r5.xyzw, r5.xyzw, cb2[0].xxxx
-  90:   mad r2.w, cb2[147].x, l(3.0000), l(0.5000)
-  91:   mul r6.y, r2.w, cb2[0].y
-  92:   mad r6.z, r2.w, cb2[0].y, cb2[0].y
-  93:   add r6.w, r6.z, cb2[0].y
-  94:   mov r6.x, r5.x
-  95:   sample_l(texture2d)(float,float,float,float) r7.xyz, r6.xyxx, t0.xyzw, s0, l(0)
-  96:   sample_l(texture2d)(float,float,float,float) r8.xyz, r6.xzxx, t0.xyzw, s0, l(0)
-  97:   sample_l(texture2d)(float,float,float,float) r9.xyz, r6.xwxx, t0.xyzw, s0, l(0)
-  98:   mov r6.x, r5.y
-  99:   sample_l(texture2d)(float,float,float,float) r10.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 100:   sample_l(texture2d)(float,float,float,float) r11.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 101:   sample_l(texture2d)(float,float,float,float) r12.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 102:   mov r6.x, r5.z
- 103:   sample_l(texture2d)(float,float,float,float) r5.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 104:   sample_l(texture2d)(float,float,float,float) r13.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 105:   sample_l(texture2d)(float,float,float,float) r14.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 106:   mov r6.x, r5.w
- 107:   sample_l(texture2d)(float,float,float,float) r15.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 108:   sample_l(texture2d)(float,float,float,float) r16.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 109:   sample_l(texture2d)(float,float,float,float) r6.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 110:   mov r17.x, r7.x
- 111:   mov r17.y, r8.x
- 112:   mov r17.z, r9.x
- 113:   mov r18.x, r7.y
- 114:   mov r18.y, r8.y
- 115:   mov r18.z, r9.y
- 116:   mov r9.x, r7.z
- 117:   mov r9.y, r8.z
- 118:   mov r7.x, r10.x
- 119:   mov r7.y, r11.x
- 120:   mov r7.z, r12.x
- 121:   mul r7.xyz, r7.xyzx, v5.yyyy
- 122:   mov r8.x, r10.y
- 123:   mov r8.y, r11.y
- 124:   mov r8.z, r12.y
- 125:   mul r8.xyz, r8.xyzx, v5.yyyy
- 126:   mov r12.x, r10.z
- 127:   mov r12.y, r11.z
- 128:   mul r10.xyz, r12.xyzx, v5.yyyy
- 129:   mad r7.xyz, v5.xxxx, r17.xyzx, r7.xyzx
- 130:   mad r8.xyz, v5.xxxx, r18.xyzx, r8.xyzx
- 131:   mad r9.xyz, v5.xxxx, r9.xyzx, r10.xyzx
- 132:   mov r10.x, r5.x
- 133:   mov r10.y, r13.x
- 134:   mov r10.z, r14.x
- 135:   mov r11.x, r5.y
- 136:   mov r11.y, r13.y
- 137:   mov r11.z, r14.y
- 138:   mov r14.x, r5.z
- 139:   mov r14.y, r13.z
- 140:   mad r5.xyz, v5.zzzz, r10.xyzx, r7.xyzx
- 141:   mad r7.xyz, v5.zzzz, r11.xyzx, r8.xyzx
- 142:   mad r8.xyz, v5.zzzz, r14.xyzx, r9.xyzx
- 143:   mov r9.x, r15.x
- 144:   mov r9.y, r16.x
- 145:   mov r9.z, r6.x
- 146:   mov r10.x, r15.y
- 147:   mov r10.y, r16.y
- 148:   mov r10.z, r6.y
- 149:   mov r6.x, r15.z
- 150:   mov r6.y, r16.z
- 151:   mad r5.xyz, v5.wwww, r9.xyzx, r5.xyzx
- 152:   mad r7.xyz, v5.wwww, r10.xyzx, r7.xyzx
- 153:   mad r6.xyz, v5.wwww, r6.xyzx, r8.xyzx
- 154:   dp3 r5.x, r5.xyzx, v2.xyzx
- 155:   dp3 r5.y, r7.xyzx, v2.xyzx
- 156:   dp3 r5.z, r6.xyzx, v2.xyzx
- 157:   dp3 r2.x, r2.xyzx, r5.xyzx
+  83: mul r2.xyz, r3.xxxx, cb1[1].xyzx
+  84: mad r2.xyz, r3.zzzz, cb1[0].xyzx, r2.xyzx
+  85: mad r2.xyz, r3.yyyy, cb1[2].xyzx, r2.xyzx
+  86: utof r5.x, r0.w
+  87: utof r5.yzw, r1.xxyz
+  88: add r5.xyzw, r5.xyzw, l(0.5000, 0.5000, 0.5000, 0.5000)
+  89: mul r5.xyzw, r5.xyzw, cb2[0].xxxx
+  90: mad r2.w, cb2[147].x, l(3.0000), l(0.5000)
+  91: mul r6.y, r2.w, cb2[0].y
+  92: mad r6.z, r2.w, cb2[0].y, cb2[0].y
+  93: add r6.w, r6.z, cb2[0].y
+  94: mov r6.x, r5.x
+  95: sample_l(texture2d)(float,float,float,float) r7.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+  96: sample_l(texture2d)(float,float,float,float) r8.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+  97: sample_l(texture2d)(float,float,float,float) r9.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+  98: mov r6.x, r5.y
+  99: sample_l(texture2d)(float,float,float,float) r10.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 100: sample_l(texture2d)(float,float,float,float) r11.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 101: sample_l(texture2d)(float,float,float,float) r12.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 102: mov r6.x, r5.z
+ 103: sample_l(texture2d)(float,float,float,float) r5.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 104: sample_l(texture2d)(float,float,float,float) r13.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 105: sample_l(texture2d)(float,float,float,float) r14.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 106: mov r6.x, r5.w
+ 107: sample_l(texture2d)(float,float,float,float) r15.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 108: sample_l(texture2d)(float,float,float,float) r16.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 109: sample_l(texture2d)(float,float,float,float) r6.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 110: mov r17.x, r7.x
+ 111: mov r17.y, r8.x
+ 112: mov r17.z, r9.x
+ 113: mov r18.x, r7.y
+ 114: mov r18.y, r8.y
+ 115: mov r18.z, r9.y
+ 116: mov r9.x, r7.z
+ 117: mov r9.y, r8.z
+ 118: mov r7.x, r10.x
+ 119: mov r7.y, r11.x
+ 120: mov r7.z, r12.x
+ 121: mul r7.xyz, r7.xyzx, v5.yyyy
+ 122: mov r8.x, r10.y
+ 123: mov r8.y, r11.y
+ 124: mov r8.z, r12.y
+ 125: mul r8.xyz, r8.xyzx, v5.yyyy
+ 126: mov r12.x, r10.z
+ 127: mov r12.y, r11.z
+ 128: mul r10.xyz, r12.xyzx, v5.yyyy
+ 129: mad r7.xyz, v5.xxxx, r17.xyzx, r7.xyzx
+ 130: mad r8.xyz, v5.xxxx, r18.xyzx, r8.xyzx
+ 131: mad r9.xyz, v5.xxxx, r9.xyzx, r10.xyzx
+ 132: mov r10.x, r5.x
+ 133: mov r10.y, r13.x
+ 134: mov r10.z, r14.x
+ 135: mov r11.x, r5.y
+ 136: mov r11.y, r13.y
+ 137: mov r11.z, r14.y
+ 138: mov r14.x, r5.z
+ 139: mov r14.y, r13.z
+ 140: mad r5.xyz, v5.zzzz, r10.xyzx, r7.xyzx
+ 141: mad r7.xyz, v5.zzzz, r11.xyzx, r8.xyzx
+ 142: mad r8.xyz, v5.zzzz, r14.xyzx, r9.xyzx
+ 143: mov r9.x, r15.x
+ 144: mov r9.y, r16.x
+ 145: mov r9.z, r6.x
+ 146: mov r10.x, r15.y
+ 147: mov r10.y, r16.y
+ 148: mov r10.z, r6.y
+ 149: mov r6.x, r15.z
+ 150: mov r6.y, r16.z
+ 151: mad r5.xyz, v5.wwww, r9.xyzx, r5.xyzx
+ 152: mad r7.xyz, v5.wwww, r10.xyzx, r7.xyzx
+ 153: mad r6.xyz, v5.wwww, r6.xyzx, r8.xyzx
+ 154: dp3 r5.x, r5.xyzx, v2.xyzx
+ 155: dp3 r5.y, r7.xyzx, v2.xyzx
+ 156: dp3 r5.z, r6.xyzx, v2.xyzx
+ 157: dp3 r2.x, r2.xyzx, r5.xyzx
  158: endif
  159: movc o4.x, r1.w, r2.x, v2.x
  160: if_nz r1.w
- 161:   mul r2.xyz, r3.xyzx, r4.xyzx
- 162:   mad r2.xyz, r4.zxyz, r3.yzxy, -r2.xyzx
- 163:   mul r2.xyz, r2.xyzx, v2.wwww
- 164:   mul r5.xyz, r2.yyyy, cb1[1].xyzx
- 165:   mad r2.xyw, r2.xxxx, cb1[0].xyxz, r5.xyxz
- 166:   mad r2.xyz, r2.zzzz, cb1[2].xyzx, r2.xywx
- 167:   utof r5.x, r0.w
- 168:   utof r5.yzw, r1.xxyz
- 169:   add r5.xyzw, r5.xyzw, l(0.5000, 0.5000, 0.5000, 0.5000)
- 170:   mul r5.xyzw, r5.xyzw, cb2[0].xxxx
- 171:   mad r2.w, cb2[147].x, l(3.0000), l(0.5000)
- 172:   mul r6.y, r2.w, cb2[0].y
- 173:   mad r6.z, r2.w, cb2[0].y, cb2[0].y
- 174:   add r6.w, r6.z, cb2[0].y
- 175:   mov r6.x, r5.x
- 176:   sample_l(texture2d)(float,float,float,float) r7.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 177:   sample_l(texture2d)(float,float,float,float) r8.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 178:   sample_l(texture2d)(float,float,float,float) r9.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 179:   mov r6.x, r5.y
- 180:   sample_l(texture2d)(float,float,float,float) r10.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 181:   sample_l(texture2d)(float,float,float,float) r11.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 182:   sample_l(texture2d)(float,float,float,float) r12.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 183:   mov r6.x, r5.z
- 184:   sample_l(texture2d)(float,float,float,float) r5.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 185:   sample_l(texture2d)(float,float,float,float) r13.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 186:   sample_l(texture2d)(float,float,float,float) r14.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 187:   mov r6.x, r5.w
- 188:   sample_l(texture2d)(float,float,float,float) r15.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 189:   sample_l(texture2d)(float,float,float,float) r16.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 190:   sample_l(texture2d)(float,float,float,float) r6.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 191:   mov r17.x, r7.x
- 192:   mov r17.y, r8.x
- 193:   mov r17.z, r9.x
- 194:   mov r18.x, r7.y
- 195:   mov r18.y, r8.y
- 196:   mov r18.z, r9.y
- 197:   mov r9.x, r7.z
- 198:   mov r9.y, r8.z
- 199:   mov r7.x, r10.x
- 200:   mov r7.y, r11.x
- 201:   mov r7.z, r12.x
- 202:   mul r7.xyz, r7.xyzx, v5.yyyy
- 203:   mov r8.x, r10.y
- 204:   mov r8.y, r11.y
- 205:   mov r8.z, r12.y
- 206:   mul r8.xyz, r8.xyzx, v5.yyyy
- 207:   mov r12.x, r10.z
- 208:   mov r12.y, r11.z
- 209:   mul r10.xyz, r12.xyzx, v5.yyyy
- 210:   mad r7.xyz, v5.xxxx, r17.xyzx, r7.xyzx
- 211:   mad r8.xyz, v5.xxxx, r18.xyzx, r8.xyzx
- 212:   mad r9.xyz, v5.xxxx, r9.xyzx, r10.xyzx
- 213:   mov r10.x, r5.x
- 214:   mov r10.y, r13.x
- 215:   mov r10.z, r14.x
- 216:   mov r11.x, r5.y
- 217:   mov r11.y, r13.y
- 218:   mov r11.z, r14.y
- 219:   mov r14.x, r5.z
- 220:   mov r14.y, r13.z
- 221:   mad r5.xyz, v5.zzzz, r10.xyzx, r7.xyzx
- 222:   mad r7.xyz, v5.zzzz, r11.xyzx, r8.xyzx
- 223:   mad r8.xyz, v5.zzzz, r14.xyzx, r9.xyzx
- 224:   mov r9.x, r15.x
- 225:   mov r9.y, r16.x
- 226:   mov r9.z, r6.x
- 227:   mov r10.x, r15.y
- 228:   mov r10.y, r16.y
- 229:   mov r10.z, r6.y
- 230:   mov r6.x, r15.z
- 231:   mov r6.y, r16.z
- 232:   mad r5.xyz, v5.wwww, r9.xyzx, r5.xyzx
- 233:   mad r7.xyz, v5.wwww, r10.xyzx, r7.xyzx
- 234:   mad r6.xyz, v5.wwww, r6.xyzx, r8.xyzx
- 235:   dp3 r5.x, r5.xyzx, v2.xyzx
- 236:   dp3 r5.y, r7.xyzx, v2.xyzx
- 237:   dp3 r5.z, r6.xyzx, v2.xyzx
- 238:   dp3 r2.x, r2.xyzx, r5.xyzx
+ 161: mul r2.xyz, r3.xyzx, r4.xyzx
+ 162: mad r2.xyz, r4.zxyz, r3.yzxy, -r2.xyzx
+ 163: mul r2.xyz, r2.xyzx, v2.wwww
+ 164: mul r5.xyz, r2.yyyy, cb1[1].xyzx
+ 165: mad r2.xyw, r2.xxxx, cb1[0].xyxz, r5.xyxz
+ 166: mad r2.xyz, r2.zzzz, cb1[2].xyzx, r2.xywx
+ 167: utof r5.x, r0.w
+ 168: utof r5.yzw, r1.xxyz
+ 169: add r5.xyzw, r5.xyzw, l(0.5000, 0.5000, 0.5000, 0.5000)
+ 170: mul r5.xyzw, r5.xyzw, cb2[0].xxxx
+ 171: mad r2.w, cb2[147].x, l(3.0000), l(0.5000)
+ 172: mul r6.y, r2.w, cb2[0].y
+ 173: mad r6.z, r2.w, cb2[0].y, cb2[0].y
+ 174: add r6.w, r6.z, cb2[0].y
+ 175: mov r6.x, r5.x
+ 176: sample_l(texture2d)(float,float,float,float) r7.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 177: sample_l(texture2d)(float,float,float,float) r8.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 178: sample_l(texture2d)(float,float,float,float) r9.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 179: mov r6.x, r5.y
+ 180: sample_l(texture2d)(float,float,float,float) r10.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 181: sample_l(texture2d)(float,float,float,float) r11.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 182: sample_l(texture2d)(float,float,float,float) r12.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 183: mov r6.x, r5.z
+ 184: sample_l(texture2d)(float,float,float,float) r5.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 185: sample_l(texture2d)(float,float,float,float) r13.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 186: sample_l(texture2d)(float,float,float,float) r14.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 187: mov r6.x, r5.w
+ 188: sample_l(texture2d)(float,float,float,float) r15.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 189: sample_l(texture2d)(float,float,float,float) r16.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 190: sample_l(texture2d)(float,float,float,float) r6.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 191: mov r17.x, r7.x
+ 192: mov r17.y, r8.x
+ 193: mov r17.z, r9.x
+ 194: mov r18.x, r7.y
+ 195: mov r18.y, r8.y
+ 196: mov r18.z, r9.y
+ 197: mov r9.x, r7.z
+ 198: mov r9.y, r8.z
+ 199: mov r7.x, r10.x
+ 200: mov r7.y, r11.x
+ 201: mov r7.z, r12.x
+ 202: mul r7.xyz, r7.xyzx, v5.yyyy
+ 203: mov r8.x, r10.y
+ 204: mov r8.y, r11.y
+ 205: mov r8.z, r12.y
+ 206: mul r8.xyz, r8.xyzx, v5.yyyy
+ 207: mov r12.x, r10.z
+ 208: mov r12.y, r11.z
+ 209: mul r10.xyz, r12.xyzx, v5.yyyy
+ 210: mad r7.xyz, v5.xxxx, r17.xyzx, r7.xyzx
+ 211: mad r8.xyz, v5.xxxx, r18.xyzx, r8.xyzx
+ 212: mad r9.xyz, v5.xxxx, r9.xyzx, r10.xyzx
+ 213: mov r10.x, r5.x
+ 214: mov r10.y, r13.x
+ 215: mov r10.z, r14.x
+ 216: mov r11.x, r5.y
+ 217: mov r11.y, r13.y
+ 218: mov r11.z, r14.y
+ 219: mov r14.x, r5.z
+ 220: mov r14.y, r13.z
+ 221: mad r5.xyz, v5.zzzz, r10.xyzx, r7.xyzx
+ 222: mad r7.xyz, v5.zzzz, r11.xyzx, r8.xyzx
+ 223: mad r8.xyz, v5.zzzz, r14.xyzx, r9.xyzx
+ 224: mov r9.x, r15.x
+ 225: mov r9.y, r16.x
+ 226: mov r9.z, r6.x
+ 227: mov r10.x, r15.y
+ 228: mov r10.y, r16.y
+ 229: mov r10.z, r6.y
+ 230: mov r6.x, r15.z
+ 231: mov r6.y, r16.z
+ 232: mad r5.xyz, v5.wwww, r9.xyzx, r5.xyzx
+ 233: mad r7.xyz, v5.wwww, r10.xyzx, r7.xyzx
+ 234: mad r6.xyz, v5.wwww, r6.xyzx, r8.xyzx
+ 235: dp3 r5.x, r5.xyzx, v2.xyzx
+ 236: dp3 r5.y, r7.xyzx, v2.xyzx
+ 237: dp3 r5.z, r6.xyzx, v2.xyzx
+ 238: dp3 r2.x, r2.xyzx, r5.xyzx
  239: endif
  240: movc o4.y, r1.w, r2.x, v2.y
  241: if_nz r1.w
- 242:   mul r2.xyz, r4.zzzz, cb1[1].xyzx
- 243:   mad r2.xyz, r4.yyyy, cb1[0].xyzx, r2.xyzx
- 244:   mad r2.xyz, r4.xxxx, cb1[2].xyzx, r2.xyzx
- 245:   utof r5.x, r0.w
- 246:   utof r5.yzw, r1.xxyz
- 247:   add r5.xyzw, r5.xyzw, l(0.5000, 0.5000, 0.5000, 0.5000)
- 248:   mul r5.xyzw, r5.xyzw, cb2[0].xxxx
- 249:   mad r0.w, cb2[147].x, l(3.0000), l(0.5000)
- 250:   mul r6.y, r0.w, cb2[0].y
- 251:   mad r6.z, r0.w, cb2[0].y, cb2[0].y
- 252:   add r6.w, r6.z, cb2[0].y
- 253:   mov r6.x, r5.x
- 254:   sample_l(texture2d)(float,float,float,float) r1.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 255:   sample_l(texture2d)(float,float,float,float) r7.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 256:   sample_l(texture2d)(float,float,float,float) r8.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 257:   mov r6.x, r5.y
- 258:   sample_l(texture2d)(float,float,float,float) r9.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 259:   sample_l(texture2d)(float,float,float,float) r10.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 260:   sample_l(texture2d)(float,float,float,float) r11.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 261:   mov r6.x, r5.z
- 262:   sample_l(texture2d)(float,float,float,float) r5.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 263:   sample_l(texture2d)(float,float,float,float) r12.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 264:   sample_l(texture2d)(float,float,float,float) r13.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 265:   mov r6.x, r5.w
- 266:   sample_l(texture2d)(float,float,float,float) r14.xyz, r6.xyxx, t0.xyzw, s0, l(0)
- 267:   sample_l(texture2d)(float,float,float,float) r15.xyz, r6.xzxx, t0.xyzw, s0, l(0)
- 268:   sample_l(texture2d)(float,float,float,float) r6.xyz, r6.xwxx, t0.xyzw, s0, l(0)
- 269:   mov r16.x, r1.x
- 270:   mov r16.y, r7.x
- 271:   mov r16.z, r8.x
- 272:   mov r17.x, r1.y
- 273:   mov r17.y, r7.y
- 274:   mov r17.z, r8.y
- 275:   mov r8.x, r1.z
- 276:   mov r8.y, r7.z
- 277:   mov r1.x, r9.x
- 278:   mov r1.y, r10.x
- 279:   mov r1.z, r11.x
- 280:   mul r1.xyz, r1.xyzx, v5.yyyy
- 281:   mov r7.x, r9.y
- 282:   mov r7.y, r10.y
- 283:   mov r7.z, r11.y
- 284:   mul r7.xyz, r7.xyzx, v5.yyyy
- 285:   mov r11.x, r9.z
- 286:   mov r11.y, r10.z
- 287:   mul r9.xyz, r11.xyzx, v5.yyyy
- 288:   mad r1.xyz, v5.xxxx, r16.xyzx, r1.xyzx
- 289:   mad r7.xyz, v5.xxxx, r17.xyzx, r7.xyzx
- 290:   mad r8.xyz, v5.xxxx, r8.xyzx, r9.xyzx
- 291:   mov r9.x, r5.x
- 292:   mov r9.y, r12.x
- 293:   mov r9.z, r13.x
- 294:   mov r10.x, r5.y
- 295:   mov r10.y, r12.y
- 296:   mov r10.z, r13.y
- 297:   mov r13.x, r5.z
- 298:   mov r13.y, r12.z
- 299:   mad r1.xyz, v5.zzzz, r9.xyzx, r1.xyzx
- 300:   mad r5.xyz, v5.zzzz, r10.xyzx, r7.xyzx
- 301:   mad r7.xyz, v5.zzzz, r13.xyzx, r8.xyzx
- 302:   mov r8.x, r14.x
- 303:   mov r8.y, r15.x
- 304:   mov r8.z, r6.x
- 305:   mov r9.x, r14.y
- 306:   mov r9.y, r15.y
- 307:   mov r9.z, r6.y
- 308:   mov r6.x, r14.z
- 309:   mov r6.y, r15.z
- 310:   mad r1.xyz, v5.wwww, r8.xyzx, r1.xyzx
- 311:   mad r5.xyz, v5.wwww, r9.xyzx, r5.xyzx
- 312:   mad r6.xyz, v5.wwww, r6.xyzx, r7.xyzx
- 313:   dp3 r1.x, r1.xyzx, v2.xyzx
- 314:   dp3 r1.y, r5.xyzx, v2.xyzx
- 315:   dp3 r1.z, r6.xyzx, v2.xyzx
- 316:   dp3 r0.w, r2.xyzx, r1.xyzx
+ 242: mul r2.xyz, r4.zzzz, cb1[1].xyzx
+ 243: mad r2.xyz, r4.yyyy, cb1[0].xyzx, r2.xyzx
+ 244: mad r2.xyz, r4.xxxx, cb1[2].xyzx, r2.xyzx
+ 245: utof r5.x, r0.w
+ 246: utof r5.yzw, r1.xxyz
+ 247: add r5.xyzw, r5.xyzw, l(0.5000, 0.5000, 0.5000, 0.5000)
+ 248: mul r5.xyzw, r5.xyzw, cb2[0].xxxx
+ 249: mad r0.w, cb2[147].x, l(3.0000), l(0.5000)
+ 250: mul r6.y, r0.w, cb2[0].y
+ 251: mad r6.z, r0.w, cb2[0].y, cb2[0].y
+ 252: add r6.w, r6.z, cb2[0].y
+ 253: mov r6.x, r5.x
+ 254: sample_l(texture2d)(float,float,float,float) r1.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 255: sample_l(texture2d)(float,float,float,float) r7.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 256: sample_l(texture2d)(float,float,float,float) r8.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 257: mov r6.x, r5.y
+ 258: sample_l(texture2d)(float,float,float,float) r9.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 259: sample_l(texture2d)(float,float,float,float) r10.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 260: sample_l(texture2d)(float,float,float,float) r11.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 261: mov r6.x, r5.z
+ 262: sample_l(texture2d)(float,float,float,float) r5.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 263: sample_l(texture2d)(float,float,float,float) r12.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 264: sample_l(texture2d)(float,float,float,float) r13.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 265: mov r6.x, r5.w
+ 266: sample_l(texture2d)(float,float,float,float) r14.xyz, r6.xyxx, t0.xyzw, s0, l(0)
+ 267: sample_l(texture2d)(float,float,float,float) r15.xyz, r6.xzxx, t0.xyzw, s0, l(0)
+ 268: sample_l(texture2d)(float,float,float,float) r6.xyz, r6.xwxx, t0.xyzw, s0, l(0)
+ 269: mov r16.x, r1.x
+ 270: mov r16.y, r7.x
+ 271: mov r16.z, r8.x
+ 272: mov r17.x, r1.y
+ 273: mov r17.y, r7.y
+ 274: mov r17.z, r8.y
+ 275: mov r8.x, r1.z
+ 276: mov r8.y, r7.z
+ 277: mov r1.x, r9.x
+ 278: mov r1.y, r10.x
+ 279: mov r1.z, r11.x
+ 280: mul r1.xyz, r1.xyzx, v5.yyyy
+ 281: mov r7.x, r9.y
+ 282: mov r7.y, r10.y
+ 283: mov r7.z, r11.y
+ 284: mul r7.xyz, r7.xyzx, v5.yyyy
+ 285: mov r11.x, r9.z
+ 286: mov r11.y, r10.z
+ 287: mul r9.xyz, r11.xyzx, v5.yyyy
+ 288: mad r1.xyz, v5.xxxx, r16.xyzx, r1.xyzx
+ 289: mad r7.xyz, v5.xxxx, r17.xyzx, r7.xyzx
+ 290: mad r8.xyz, v5.xxxx, r8.xyzx, r9.xyzx
+ 291: mov r9.x, r5.x
+ 292: mov r9.y, r12.x
+ 293: mov r9.z, r13.x
+ 294: mov r10.x, r5.y
+ 295: mov r10.y, r12.y
+ 296: mov r10.z, r13.y
+ 297: mov r13.x, r5.z
+ 298: mov r13.y, r12.z
+ 299: mad r1.xyz, v5.zzzz, r9.xyzx, r1.xyzx
+ 300: mad r5.xyz, v5.zzzz, r10.xyzx, r7.xyzx
+ 301: mad r7.xyz, v5.zzzz, r13.xyzx, r8.xyzx
+ 302: mov r8.x, r14.x
+ 303: mov r8.y, r15.x
+ 304: mov r8.z, r6.x
+ 305: mov r9.x, r14.y
+ 306: mov r9.y, r15.y
+ 307: mov r9.z, r6.y
+ 308: mov r6.x, r14.z
+ 309: mov r6.y, r15.z
+ 310: mad r1.xyz, v5.wwww, r8.xyzx, r1.xyzx
+ 311: mad r5.xyz, v5.wwww, r9.xyzx, r5.xyzx
+ 312: mad r6.xyz, v5.wwww, r6.xyzx, r7.xyzx
+ 313: dp3 r1.x, r1.xyzx, v2.xyzx
+ 314: dp3 r1.y, r5.xyzx, v2.xyzx
+ 315: dp3 r1.z, r6.xyzx, v2.xyzx
+ 316: dp3 r0.w, r2.xyzx, r1.xyzx
  317: endif
  318: movc o5.x, r1.w, r0.w, v2.z
  319: min r0.w, abs(v2.x), abs(v2.y)

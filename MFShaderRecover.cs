@@ -591,6 +591,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                         line.noEqualSign = true;
                     }
                         break;
+                    case 11: //deriv_rtx
+                    {
+                        line.str = $"ddx({line.localVar[0].GetDisplayVar()})";
+                        break;
+                    }
+                    case 12: //deriv_rty
+                    {
+                        line.str = $"ddy({line.localVar[0].GetDisplayVar()})";
+                        break;
+                    }
                     case 13://discard 
                         line.noEqualSign = true;
                         line.str = $"clip({line.result.GetDisplayVar()})";
@@ -1123,6 +1133,12 @@ namespace moonflow_system.Tools.MFUtilityTools
                     target.negative = true;
                     text = text.Substring(1, text.Length - 1);
                 }
+
+                if (text.Contains("sample"))
+                {
+                    string[] ips = text.Split(" ");
+                    text = ips[1];
+                }
                 if (text.Contains("("))
                 {
                     string[] inPropSplit = text.Split(new[] { "(", ")" }, StringSplitOptions.RemoveEmptyEntries);
@@ -1174,8 +1190,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     else
                     {
-                        singleline.localVar[i - 1 - lastResultSerial] = target;
-                        if (singleline.result !=null && target.linkedVar.name == singleline.result.linkedVar.name)
+                        if (i == lastResultSerial)
+                        {
+                            singleline.result = target;
+                        }
+                        else if(i > lastResultSerial)
+                        {
+                            singleline.localVar[i - lastResultSerial - 1] = target;
+                        }
+                        // singleline.localVar[i - 1 - lastResultSerial] = target;
+                        if (singleline.result !=null && target.linkedVar!=null && singleline.result.linkedVar!=null && target.linkedVar.name == singleline.result.linkedVar.name)
                         {
                             // target.channel.Contains(singleline.result.channel)   
                             if (IncludedChannelDeliver(target.channel, singleline.result.channel))
@@ -1189,8 +1213,15 @@ namespace moonflow_system.Tools.MFUtilityTools
                 {
                     try
                     {
-
-                        singleline.localVar[i - 1 - lastResultSerial] = target;
+                        if (i == lastResultSerial)
+                        {
+                            singleline.result = target;
+                        }
+                        else if(i > lastResultSerial)
+                        {
+                            singleline.localVar[i - lastResultSerial - 1] = target;
+                        }
+                        // singleline.localVar[i - 1 - lastResultSerial] = target;
                     }
                     catch (Exception e)
                     {
