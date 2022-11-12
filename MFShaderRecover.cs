@@ -1511,7 +1511,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         try
                         {
-                            target.linkedVar = _resultData.attribute[Convert.ToInt16(singlesplit[0].Split("v")[1])];
+                            string attrName = "attr_"+singlesplit[0].Split("v")[1];
+                            for (int i = 0; i < _resultData.attribute.Count; i++)
+                            {
+                                if (_resultData.attribute[i].name == attrName)
+                                {
+                                    target.linkedVar = _resultData.attribute[i];
+                                }
+                            }
+                            
+                            // target.linkedVar = _resultData.attribute[Convert.ToInt16(singlesplit[0].Split("v")[1])];
                         }
                         catch (Exception e)
                         {
@@ -1521,7 +1530,15 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     else if (_type == ShaderType.Pixel)
                     {
-                        target.linkedVar = _resultData.v2f[Convert.ToInt16(singlesplit[0].Split("v")[1])];
+                        string attrName = "v2f_"+singlesplit[0].Split("v")[1];
+                        for (int i = 0; i < _resultData.v2f.Count; i++)
+                        {
+                            if (_resultData.v2f[i].name == attrName)
+                            {
+                                target.linkedVar = _resultData.v2f[i];
+                            }
+                        }
+                        // target.linkedVar = _resultData.v2f[Convert.ToInt16(singlesplit[0].Split("v")[1])];
                     }
 
                     break;
@@ -1986,20 +2003,28 @@ namespace moonflow_system.Tools.MFUtilityTools
             if (negative && needNegative) result += "-";
             if (inlineOp == -1)
             {
-                result += $"{linkedVar.name}.{channel}";
+                try
+                {
+                    result += $"{linkedVar.name}.{channel}";
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }else if (inlineOp == 0)
             {
                 if (linkedVar == null)
                 {
-                    if (channel.Contains('.'))
-                    {
-                        result += channel.TrimEnd('0').TrimEnd('.');
-                    }
-                    else
-                    {
+                    // if (channel.Contains('.'))
+                    // {
+                    //     result += channel.TrimEnd('0').TrimEnd('.');
+                    // }
+                    // else
+                    // {
                         string[] split = channel.Split(",");
                         result += (split.Length > 1) ? $"float{split.Length}({channel})":$"{channel}" ;
-                    }
+                    // }
                 }
                 else
                 {
@@ -2019,7 +2044,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                 }
             }else if (inlineOp == 1)
             {
-                result += $"abs({channel})";
+                result += $"abs({linkedVar.name}.{channel})";
             }
 
             return result;

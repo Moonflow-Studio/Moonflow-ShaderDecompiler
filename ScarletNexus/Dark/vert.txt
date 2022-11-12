@@ -1,0 +1,24 @@
+Shader hash b4d76109-b94df64d-1efdfff8-495b7d2c
+
+vs_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[56], immediateIndexed
+      dcl_constantbuffer cb1[3], immediateIndexed
+      dcl_input v0.xyzw
+      dcl_input v1.xy
+      dcl_output o0.xy
+      dcl_output o1.xyz
+      dcl_output_siv o2.xyzw, position
+      dcl_temps 2
+   0: mad r0.xy, v1.xyxx, cb1[1].xyxx, cb1[1].zwzz
+   1: mul o0.xy, r0.xyxx, cb1[2].zwzz
+   2: mad r0.xy, v0.xyxx, cb1[0].xyxx, cb1[0].zwzz
+   3: mul r0.xy, r0.xyxx, cb1[2].xyxx
+   4: mad r0.xy, r0.xyxx, l(2.0000, 2.0000, 0.0000, 0.0000), l(-1.0000, -1.0000, 0.0000, 0.0000)
+   5: mul r0.xy, r0.xyxx, l(1.0000, -1.0000, 0.0000, 0.0000)
+   6: mul r1.xyz, r0.yyyy, cb0[54].xyzx
+   7: mad r1.xyz, r0.xxxx, cb0[53].xyzx, r1.xyzx
+   8: mov o2.xy, r0.xyxx
+   9: add o1.xyz, r1.xyzx, cb0[55].xyzx
+  10: mov o2.zw, v0.zzzw
+  11: ret

@@ -1,0 +1,155 @@
+Shader hash c11b9833-66d7f2b5-16017da7-d9b5ada4
+
+ps_4_0
+      dcl_constantbuffer cb0[28], immediateIndexed
+      dcl_constantbuffer cb1[7], immediateIndexed
+      dcl_sampler s0, mode_default
+      dcl_sampler s1, mode_default
+      dcl_sampler s2, mode_comparison
+      dcl_sampler s3, mode_default
+      dcl_sampler s4, mode_default
+      dcl_sampler s5, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_resource_texture2d (float,float,float,float) t1
+      dcl_resource_texture2d (float,float,float,float) t2
+      dcl_resource_texture2d (float,float,float,float) t3
+      dcl_resource_texture2d (float,float,float,float) t4
+      dcl_resource_texture2d (float,float,float,float) t5
+      dcl_input_ps linear v0.xy
+      dcl_input_ps linear v0.zw
+      dcl_input_ps linear v1.xyz
+      dcl_input_ps linear v2.xyzw
+      dcl_input_ps linear v3.xyz
+      dcl_output o0.xyzw
+      dcl_output o1.xyzw
+      dcl_output o2.xyzw
+      dcl_output o3.xyzw
+      dcl_temps 6
+   0: add r0.xy, -cb0[17].xyxx, cb0[17].zwzz
+   1: mad r1.xyz, v1.xyzx, l(0.4500, 0.4500, 0.4500, 0.0000), v3.xyzx
+   2: add r0.zw, r1.xxxz, -cb0[17].xxxy
+   3: add r1.x, r1.y, l(100.0500)
+   4: mul r1.x, r1.x, l(0.0033)
+   5: div r0.xy, r0.zwzz, r0.xyxx
+   6: mad r0.zw, r0.xxxy, l(0.0000, 0.0000, 512.0000, 512.0000), l(0.0000, 0.0000, 0.5000, 0.5000)
+   7: round_ni r0.zw, r0.zzzw
+   8: mad r0.xy, r0.xyxx, l(512.0000, 512.0000, 0.0000, 0.0000), -r0.zwzz
+   9: add r1.yz, -r0.xxyx, l(0.0000, 1.0000, 1.0000, 0.0000)
+  10: min r2.xy, r0.xyxx, l(0, 0, 0, 0)
+  11: mad r2.xy, -r2.xyxx, r2.xyxx, r1.yzyy
+  12: mov r3.y, r2.x
+  13: max r1.yz, r0.xxyx, l(0, 0, 0, 0)
+  14: add r4.xyzw, r0.xxyy, l(0.5000, 1.0000, 0.5000, 1.0000)
+  15: mad r2.xz, -r1.yyzy, r1.yyzy, r4.yywy
+  16: mul r1.yz, r4.xxzx, r4.xxzx
+  17: mov r3.z, r2.x
+  18: mad r0.xy, r1.yzyy, l(0.5000, 0.5000, 0.0000, 0.0000), -r0.xyxx
+  19: mov r3.x, r0.x
+  20: mov r2.x, r0.y
+  21: mov r3.w, r1.y
+  22: mov r2.w, r1.z
+  23: mul r2.xyzw, r2.xyzw, l(0.4444, 0.4444, 0.4444, 0.2222)
+  24: mul r3.xyzw, r3.xyzw, l(0.4444, 0.4444, 0.4444, 0.2222)
+  25: add r4.xyzw, r3.ywyw, r3.xzxz
+  26: div r0.xy, r3.ywyy, r4.zwzz
+  27: add r0.xy, r0.xyxx, l(-1.5000, 0.5000, 0.0000, 0.0000)
+  28: mul r3.xy, r0.xyxx, l(0.0020, 0.0020, 0.0000, 0.0000)
+  29: add r5.xyzw, r2.yyww, r2.xxzz
+  30: div r0.xy, r2.ywyy, r5.ywyy
+  31: mul r2.xyzw, r4.xyzw, r5.xyzw
+  32: add r0.xy, r0.xyxx, l(-1.5000, 0.5000, 0.0000, 0.0000)
+  33: mul r3.zw, r0.xxxy, l(0.0000, 0.0000, 0.0020, 0.0020)
+  34: mad r4.xyzw, r0.zwzw, l(0.0020, 0.0020, 0.0020, 0.0020), r3.xzyz
+  35: mad r0.xyzw, r0.zwzw, l(0.0020, 0.0020, 0.0020, 0.0020), r3.xwyw
+  36: sample_c_lz r1.y, r4.xyxx, t0.xxxx, s2, r1.x
+  37: sample_c_lz r1.z, r4.zwzz, t0.xxxx, s2, r1.x
+  38: mul r1.z, r1.z, r2.y
+  39: mad r1.y, r2.x, r1.y, r1.z
+  40: sample_c_lz r0.x, r0.xyxx, t0.xxxx, s2, r1.x
+  41: sample_c_lz r0.y, r0.zwzz, t0.xxxx, s2, r1.x
+  42: mad r0.x, r2.z, r0.x, r1.y
+  43: mad r0.x, r2.w, r0.y, r0.x
+  44: lt r0.y, r0.x, l(0.8500)
+  45: mul r0.z, r0.x, l(1.1765)
+  46: mul r1.xy, v3.xzxx, cb0[18].xxxx
+  47: sample_indexable r1.xyzw, r1.xyxx, t1.xyzw, s1
+  48: mov r2.yz, l(0.0000, -0.6000, -0.0000, 0.0000)
+  49: mov r1.yz, v1.yyyy
+  50: mov r2.x, -cb0[18].y
+  51: add r1.xyz, r1.xyzx, r2.xyzx
+  52: add r2.x, r2.x, cb0[18].z
+  53: mov r2.yz, l(0.0000, 0.2000, 0.8000, 0.0000)
+  54: div_sat r1.xyz, r1.xyzx, r2.xyzx
+  55: add r0.w, -r1.x, l(1.0000)
+  56: mad r0.z, r0.z, r0.w, r1.x
+  57: mul r0.z, r0.z, r0.x
+  58: movc r0.x, r0.y, r0.z, r0.x
+  59: mul r0.y, r0.x, cb0[15].w
+  60: mul r0.z, r1.z, r0.y
+  61: lt r0.w, l(0.5000), cb0[18].w
+  62: movc r2.x, r0.w, l(1.0000), r1.x
+  63: mul r2.yz, r0.yyyy, r2.xxxx
+  64: add r0.w, r2.x, l(-0.8500)
+  65: mad r0.w, r1.y, r0.w, l(0.8500)
+  66: lt r1.x, r1.y, l(0.0001)
+  67: max r0.x, r0.w, r2.x
+  68: movc r0.xzw, r1.xxxx, r0.xxyz, r2.xxyz
+  69: add r0.zw, r0.zzzw, l(0.0000, 0.0000, 0.0000, -0.2000)
+  70: mul_sat r0.zw, r0.zzzw, l(0.0000, 0.0000, 2.8571, 1.2500)
+  71: sample_indexable r1.xyzw, v0.xyxx, t5.xyzw, s5
+  72: add_sat r1.y, -r1.y, l(1.0000)
+  73: mul r1.y, r1.y, cb1[6].y
+  74: min r2.x, r1.y, l(0.9900)
+  75: add r1.y, -r2.x, l(1.0000)
+  76: mad r3.x, r0.w, r1.y, r2.x
+  77: mul r0.z, r0.z, cb0[16].w
+  78: mul r0.x, r0.x, r0.z
+  79: mul r0.z, r0.y, l(0.6000)
+  80: lt r0.y, l(0), r0.y
+  81: sample_indexable r4.xyzw, v0.xyxx, t4.xzyw, s4
+  82: mul r4.y, r4.x, r4.w
+  83: mad r1.yw, r4.yyyz, l(0.0000, 2.0000, 0.0000, 2.0000), l(0.0000, -1.0000, 0.0000, -1.0000)
+  84: dp2 r0.w, r1.ywyy, r1.ywyy
+  85: mul r2.yz, r1.yywy, cb1[6].zzzz
+  86: min r0.w, r0.w, l(1.0000)
+  87: add r0.w, -r0.w, l(1.0000)
+  88: sqrt r2.w, r0.w
+  89: add r4.xyz, -r2.yzwy, l(0.0000, 0.0000, 1.0000, 0.0000)
+  90: mad r3.yzw, r0.zzzz, r4.xxyz, r2.yyzw
+  91: lt r0.z, l(-0.5000), v1.y
+  92: and r0.y, r0.z, r0.y
+  93: movc r2.xyzw, r0.yyyy, r3.xyzw, r2.xyzw
+  94: mul r3.xyz, v1.zxyz, v2.yzxy
+  95: mad r3.xyz, v1.yzxy, v2.zxyz, -r3.xyzx
+  96: mul r3.xyz, r3.xyzx, v2.wwww
+  97: mul r3.xyz, r2.zzzz, r3.xyzx
+  98: mad r3.xyz, r2.yyyy, v2.xyzx, r3.xyzx
+  99: mad r2.yzw, r2.wwww, v1.xxyz, r3.xxyz
+ 100: mov o2.y, r2.x
+ 101: dp3 r0.z, r2.yzwy, r2.yzwy
+ 102: rsq r0.z, r0.z
+ 103: mul r2.xyz, r0.zzzz, r2.yzwy
+ 104: dp3 r0.z, v1.xyzx, v1.xyzx
+ 105: rsq r0.z, r0.z
+ 106: mul r3.xyz, r0.zzzz, v1.xyzx
+ 107: dp3_sat r0.z, r2.xyzx, r3.xyzx
+ 108: mad o3.xyz, r2.xyzx, l(0.5000, 0.5000, 0.5000, 0.0000), l(0.5000, 0.5000, 0.5000, 0.0000)
+ 109: mad r0.z, r0.z, l(0.7000), l(0.3000)
+ 110: sample_indexable r2.xyzw, v0.zwzz, t2.xyzw, s0
+ 111: mul r2.xyz, r0.zzzz, r2.xyzx
+ 112: mul r2.xyz, r2.xyzx, cb0[27].wwww
+ 113: mul o0.xyz, r2.xyzx, cb0[27].xyzx
+ 114: mov o0.w, l(0)
+ 115: sample_indexable r2.xyzw, v0.xyxx, t3.xyzw, s3
+ 116: mul r2.xyz, r2.xyzx, cb1[4].xyzx
+ 117: mad r3.xyz, r2.xyzx, r2.xyzx, -r2.xyzx
+ 118: mad r0.xzw, r0.xxxx, r3.xxyz, r2.xxyz
+ 119: movc o1.xyz, r0.yyyy, r0.xzwx, r2.xyzx
+ 120: mul o1.w, r1.x, cb1[6].x
+ 121: mul r0.x, r1.z, cb1[5].x
+ 122: sqrt r0.x, r0.x
+ 123: min r0.x, r0.x, l(20.0000)
+ 124: mul o2.x, r0.x, l(0.0500)
+ 125: mov o2.zw, l(0.0000, 0.0000, 1.0000, 0.0000)
+ 126: mov o3.w, l(0)
+ 127: ret

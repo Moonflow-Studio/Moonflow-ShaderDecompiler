@@ -787,7 +787,7 @@ Shader "Reverse/Hair"
             {
                 float3 attr_0 : TEXCOORD0;
                 float3 attr_1 : TEXCOORD1;
-                float4 attr_2 : TEXCOORD2;
+                float4 normal : TEXCOORD2;
                 float4 attr_3 : TEXCOORD3;
                 float4 attr_4 : TEXCOORD4;
                 float4 attr_5 : TEXCOORD5;
@@ -797,26 +797,26 @@ Shader "Reverse/Hair"
             };
             struct v2f
             {
-                float4 sphereTangent : TEXCOORD0;
-                float4 sphereNormal : TEXCOORD1;
-                float4 v2f_2 : TEXCOORD2;
-                float2 v2f_3 : TEXCOORD3;
-                float2 v2f_4 : TEXCOORD4;
-                float2 v2f_5 : TEXCOORD5;
-                float2 v2f_6 : TEXCOORD6;
-                float2 anistophParams : TEXCOORD7;
-                float3 v2f_8 : TEXCOORD8;
-                float4 v2f_9_sv_position : SV_POSITION;
-                float4 v2f_10_sv_position : SV_POSITION;
+                float4 tangent : TEXCOORD10;
+                float4 normal : TEXCOORD11;
+                float4 color : COLOR;
+                float2 uv : TEXCOORD0;
+                float2 suspectNormal : TEXCOORD1;
+                float2 suspectTangent : TEXCOORD2;
+                float2 suspectPosition : TEXCOORD3;
+                float2 anistophParams : TEXCOORD4;
+                float3 posWorld : TEXCOORD9;
+                float4 position : SV_POSITION;
+                float4 isFrontFace : SV_POSITION;
 
             };
             struct gbuffer
             {
-                float4 gbuffer_0 : TEXCOORD0;
-                float4 gbuffer_1 : TEXCOORD1;
+                float4 emissive : TEXCOORD0;
+                float4 worldNormal : TEXCOORD1;
                 float4 gbuffer_2 : TEXCOORD2;
-                float4 gbuffer_3 : TEXCOORD3;
-                float4 gbuffer_4 : TEXCOORD4;
+                float4 diffuse : TEXCOORD3;
+                float4 charaLight : TEXCOORD4;
                 float4 gbuffer_5 : TEXCOORD5;
                 float4 gbuffer_6 : TEXCOORD6;
 
@@ -1703,9 +1703,9 @@ Shader "Reverse/Hair"
                 r3.z = dot(r0.xyz, v.attr_1.xyz);
                 r3.x = dot(r1.xyz, v.attr_1.xyz);
                 r3.y = dot(r2.xyz, v.attr_1.xyz);
-                r4.y = dot(r0.xyz, v.attr_2.xyz);
-                r4.z = dot(r1.xyz, v.attr_2.xyz);
-                r4.x = dot(r2.xyz, v.attr_2.xyz);
+                r4.y = dot(r0.xyz, v.normal.xyz);
+                r4.z = dot(r1.xyz, v.normal.xyz);
+                r4.x = dot(r2.xyz, v.normal.xyz);
                 r5.xyz = v.attr_0.xyz;
                 r5.w = 1;
                 r0.x = dot(r0.xyzw, r5.xyzw);
@@ -1720,11 +1720,11 @@ Shader "Reverse/Hair"
                 r1.y = _Buffer2[v.attr_3.z];
                 r1.z = _Buffer2[v.attr_3.w];
                 r2.xyzw = r0.z * props_v_0_3.xyzw + (r0.x * props_v_0_1.xyzw + (r0.y * props_v_0_2.xyzw));
-                o.v2f_9_sv_position.xyzw = r2.xyzw + props_v_0_4.xyzw;
+                o.position.xyzw = r2.xyzw + props_v_0_4.xyzw;
                 r2.xyz = r0.xyz - props_v_0_71.xyz;
                 r2.w = 1;
-                o.v2f_10_sv_position.x = dot(props_v_0_128.xyzw, r2.xyzw);
-                r1.w = 0.0001 < props_v_2_147.y;
+                o.isFrontFace.x = dot(props_v_0_128.xyzw, r2.xyzw);
+                r1.w = 0.0001 < props_v_2_147.y;//props_v_2_147==0
                 if(r1.w != 0){
                       r2.xyz = r3.y * props_v_1_2.xyz + (r3.z * props_v_1_0.xyz + (r3.x * props_v_1_1.xyz));
                   r5.x = (float)r0.w;
@@ -1793,14 +1793,14 @@ Shader "Reverse/Hair"
                   r5.xyz = v.attr_5.w * r9.xyz + r5.xyz;
                   r7.xyz = v.attr_5.w * r10.xyz + r7.xyz;
                   r6.xyz = v.attr_5.w * r6.xyz + r8.xyz;
-                  r5.x = dot(r5.xyz, v.attr_2.xyz);
-                  r5.y = dot(r7.xyz, v.attr_2.xyz);
-                  r5.z = dot(r6.xyz, v.attr_2.xyz);
+                  r5.x = dot(r5.xyz, v.normal.xyz);
+                  r5.y = dot(r7.xyz, v.normal.xyz);
+                  r5.z = dot(r6.xyz, v.normal.xyz);
                   r2.x = dot(r2.xyz, r5.xyz);
                 }
-                o.v2f_4.x = r1.w ? r2.x : v.attr_2.x;
+                o.suspectNormal.x = r1.w ? r2.x : v.normal.x;
                 if(r1.w != 0){
-                      r2.xyz = (r4.zxy * r3.yzx + -(r3.xyz * r4.xyz)) * v.attr_2.w;
+                      r2.xyz = (r4.zxy * r3.yzx + -(r3.xyz * r4.xyz)) * v.normal.w;
                   r5.xyz = r2.y * props_v_1_1.xyz;
                     r2.xyz = r2.z * props_v_1_2.xyz + (r2.x * props_v_1_0.xyz + r5.xyz);
                   r5.x = (float)r0.w;
@@ -1869,12 +1869,12 @@ Shader "Reverse/Hair"
                   r5.xyz = v.attr_5.w * r9.xyz + r5.xyz;
                   r7.xyz = v.attr_5.w * r10.xyz + r7.xyz;
                   r6.xyz = v.attr_5.w * r6.xyz + r8.xyz;
-                  r5.x = dot(r5.xyz, v.attr_2.xyz);
-                  r5.y = dot(r7.xyz, v.attr_2.xyz);
-                  r5.z = dot(r6.xyz, v.attr_2.xyz);
+                  r5.x = dot(r5.xyz, v.normal.xyz);
+                  r5.y = dot(r7.xyz, v.normal.xyz);
+                  r5.z = dot(r6.xyz, v.normal.xyz);
                   r2.x = dot(r2.xyz, r5.xyz);
                 }
-                o.v2f_4.y = r1.w ? r2.x : v.attr_2.y;
+                o.suspectNormal.y = r1.w ? r2.x : v.normal.y;
                 if(r1.w != 0){
                       r2.xyz = r4.x * props_v_1_2.xyz + (r4.y * props_v_1_0.xyz + (r4.z * props_v_1_1.xyz));
                   r5.x = (float)r0.w;
@@ -1943,37 +1943,39 @@ Shader "Reverse/Hair"
                   r1.xyz = v.attr_5.w * r8.xyz + r1.xyz;
                   r5.xyz = v.attr_5.w * r9.xyz + r5.xyz;
                   r6.xyz = v.attr_5.w * r6.xyz + r7.xyz;
-                  r1.x = dot(r1.xyz, v.attr_2.xyz);
-                  r1.y = dot(r5.xyz, v.attr_2.xyz);
-                  r1.z = dot(r6.xyz, v.attr_2.xyz);
+                  r1.x = dot(r1.xyz, v.normal.xyz);
+                  r1.y = dot(r5.xyz, v.normal.xyz);
+                  r1.z = dot(r6.xyz, v.normal.xyz);
                   r0.w = dot(r2.xyz, r1.xyz);
                 }
-                o.v2f_5.x = r1.w ? r0.w : v.attr_2.z;
-                r0.w = min(abs(x), abs(y));
-                r1.x = (1 / (max(abs(x), abs(y))));
+                o.suspectTangent.x = r1.w ? r0.w : v.normal.z;
+                
+                r0.w = min(abs(v.normal.x), abs(v.normal.y));
+                r1.x = (1 / (max(abs(v.normal.x), abs(v.normal.y))));
                 r0.w = r0.w * r1.x;
                 r1.x = (r0.w * r0.w) * ((r0.w * r0.w) * ((r0.w * r0.w) * ((r0.w * r0.w) * 0.0208 + -0.0851) + 0.1801) + -0.3303) + 0.9999;
-                r1.y = (abs(x) < abs(y)) & ((r0.w * r1.x) * -2 + 1.5708);
+                r1.y = (abs(v.normal.x) < abs(v.normal.y)) & ((r0.w * r1.x) * -2 + 1.5708);
                 r0.w = r0.w * r1.x + r1.y;
-                r1.x = (v.attr_2.x < -v.attr_2.x) & -3.1416;
+                r1.x = (v.normal.x < -v.normal.x) & -3.1416;
                 r0.w = r0.w + r1.x;
-                r1.x = ((max(v.attr_2.x, v.attr_2.y)) >= -(max(v.attr_2.x, v.attr_2.y))) & ((min(v.attr_2.x, v.attr_2.y)) < -(min(v.attr_2.x, v.attr_2.y)));
+                r1.x = ((max(v.normal.x, v.normal.y)) >= -(max(v.normal.x, v.normal.y))) & ((min(v.normal.x, v.normal.y)) < -(min(v.normal.x, v.normal.y)));
                 o.anistophParams.x = frac(((r1.x ? -r0.w : r0.w) * 0.1592));
-                o.anistophParams.y = -abs(z) + 1;
+                o.anistophParams.y = -abs(v.normal.z) + 1;
+                
                 r1.xyz = props_v_1_0.xyz * props_v_1_4.x;
                 r2.xyz = props_v_1_1.xyz * props_v_1_4.y;
                 r5.xyz = props_v_1_2.xyz * props_v_1_4.z;
                 r6.xyz = r2.xyz * r3.x;
-                o.sphereTangent.xyz = r3.y * r5.xyz + (r3.z * r1.xyz + r6.xyz);
+                o.tangent.xyz = r3.y * r5.xyz + (r3.z * r1.xyz + r6.xyz);
                 r2.xyz = r2.xyz * r4.z;
-                o.sphereNormal.xyz = r4.x * r5.xyz + (r4.y * r1.xyz + r2.xyz);
-                o.sphereNormal.w = v.attr_2.w * props_v_1_4.w;
-                o.sphereTangent.w = 0;
-                o.v2f_2.xyzw = v.attr_8.xyzw;
-                o.v2f_8.xyz = r0.xyz;
-                o.v2f_3.xy = v.attr_7.xy;
-                o.v2f_5.y = v.attr_0.x;
-                o.v2f_6.xy = v.attr_0.yz;
+                o.normal.xyz = r4.x * r5.xyz + (r4.y * r1.xyz + r2.xyz);
+                o.normal.w = v.normal.w * props_v_1_4.w;
+                o.tangent.w = 0;
+                o.color.xyzw = v.attr_8.xyzw;
+                o.posWorld.xyz = r0.xyz;
+                o.uv.xy = v.attr_7.xy;
+                o.suspectTangent.y = v.attr_0.x;
+                o.suspectPosition.xy = v.attr_0.yz;
 
 
                 return o;
@@ -1982,22 +1984,26 @@ Shader "Reverse/Hair"
             gbuffer frag(v2f i)
             {
                 gbuffer o;
-                r0.xyz = (i.sphereNormal.yzx * i.sphereTangent.zxy + -(i.sphereTangent.yzx * i.sphereNormal.zxy)) * i.sphereNormal.w;
-                r1.zw = (i.v2f_9_sv_position.xy - props_f_0_130.xy) * props_f_0_131.zw;
+                // r0.xyz = (i.normal.yzx * i.tangent.zxy + -(i.tangent.yzx * i.normal.zxy)) * i.normal.w;
+                float3 unknownVector1 = (i.normal.yzx * i.tangent.zxy + -(i.tangent.yzx * i.normal.zxy)) * i.normal.w;
+                
+                r1.zw = (i.position.xy - props_f_0_130.xy) * props_f_0_131.zw;
                 r1.xy = r1.xy * props_f_0_131.zw + -0.5;
-                r2.xy = r1.xy * i.v2f_9_sv_position.w;
-                r2.z = i.v2f_9_sv_position.w;
+                r2.xy = r1.xy * i.position.w;
+                r2.z = i.position.w;
                 r2.xyz = r2.xyz * 2;
-                r3.xyzw = (i.v2f_9_sv_position.z * props_f_0_47.xyzw + (i.v2f_9_sv_position.x * props_f_0_45.xyzw + (i.v2f_9_sv_position.y * props_f_0_46.xyzw))) + props_f_0_48.xyzw;
+                r3.xyzw = (i.position.z * props_f_0_47.xyzw + (i.position.x * props_f_0_45.xyzw + (i.position.y * props_f_0_46.xyzw))) + props_f_0_48.xyzw;
                 r3.xyz = (r3.xyz / r3.w);
                 r4.xyz = r3.xyz - props_f_0_71.xyz;
-                r5.xyz = i.v2f_8.xyz - props_f_0_71.xyz;
-                r0.w = dot(-r3.xyz, -r3.xyz);
-                r0.w = 1/sqrt(r0.w);
-                r6.xyz = r0.w * -r3.xyz;
+                r5.xyz = i.posWorld.xyz - props_f_0_71.xyz;
+                
+                // r0.w = dot(-r3.xyz, -r3.xyz);
+                // r0.w = 1/sqrt(r0.w);
+                // r6.xyz = r0.w * -r3.xyz;
+                r6.xyz = normalize(-r3.xyz);
                 
                 // r1.xy = SAMPLE_TEXTURE2D(_NormalTex, sampler_NormalTex, i.v2f_3.xy);
-                float2 normal = SAMPLE_TEXTURE2D(_NormalTex, sampler_NormalTex, i.v2f_3.xy);
+                float2 normal = SAMPLE_TEXTURE2D(_NormalTex, sampler_NormalTex, i.uv.xy);
                 
                 // r7.xy = r1.xy * 2 + -1;
                 float3 unpackedNormal;
@@ -2013,7 +2019,7 @@ Shader "Reverse/Hair"
                 // r8.z = i.v2f_5.x;
                 // r1.x = sqrt((dot(r8.xyz, r8.xyz)));
                 // r8.xyz = (r8.xyz / r1.x);
-                float3 normalOffsetValue = normalized(i.v2f_4.xy, i.v2f_5.x);
+                float3 normalOffsetValue = normalized(i.suspectNormal.xy, i.suspectTangent.x);
                 
                 // r9.xy = r7.xy + r8.xy;
                 // r9.z = r7.z * r8.z;
@@ -2026,8 +2032,8 @@ Shader "Reverse/Hair"
                 float normalOffsetStr = props_f_4_147.w;
                 float mixedNormal = lerp(-unpackedNormal.xyz, normalized(offsetedNormal), normalOffsetStr);
                 
-                r9.x = i.v2f_5.y;
-                r9.yz = i.v2f_6.xy;
+                r9.x = i.suspectTangent.y;
+                r9.yz = i.suspectPosition.xy;
                 r10.xyz = r9.xyz + 184.5;
                 r11.xy = r10.xz * 0.0027;
                 r1.xy = r9.xz * 0.001;
@@ -2051,6 +2057,7 @@ Shader "Reverse/Hair"
                 r13.z = r1.x * 2;
                 r10.zw = r11.xz * props_f_4_148.y + r13.zw;
                 r13.xyzw = SAMPLE_TEXTURE2D(_Tex15, sampler_Tex15, r10.zw);
+                
                 r1.x = r10.x * 0.0027 + -0.5;
                 r2.w = -props_f_4_149.w + props_f_4_149.y;
                 r1.x = abs(x) - props_f_4_149.w;
@@ -2065,7 +2072,7 @@ Shader "Reverse/Hair"
                 r1.x = sqrt((dot(r10.xyz, r10.xyz)));
                 r10.xyz = ((r10.xyz / r1.x)) - 0.5;
                 r11.xyz = r10.xyz + r10.xyz;
-                r1.x = (i.sphereNormal.z - 0.5) * 10;
+                r1.x = (i.normal.z - 0.5) * 10;
                 r10.xyz = r1.x * (-r10.xyz * 2 + 0) + r11.xyz;
                 r2.w = min(r10.w, 1);
                 r3.w = -r2.w + 1;
@@ -2079,27 +2086,29 @@ Shader "Reverse/Hair"
                 // r10.xyw = r2.w * r10.xyw;
                 finalNormal = normalized(finalNormal);
                 
-                r11.xyz = r10.x * i.sphereTangent.xyz + (r0.xyz * r10.y);
-                r10.xyw = r10.w * i.sphereNormal.xyz + r11.xyz;
+                // r11.xyz = r10.x * i.tangent.xyz + (r0.xyz * r10.y);
+                // r10.xyw = r10.w * i.normal.xyz + r11.xyz;
+                finalNormal = finalNormal.z * i.normal.xyz + finalNormal.x * i.tangent.xyz + (unknownVector1 * finalNormal.y);
                 
                 // r2.w = dot(r10.xyw, r10.xyw);
                 // r2.w = 1/sqrt(r2.w);
                 // r11.xyz = r2.w * r10.xyw;
-                 r11.xyz = normalized(r10.xyw);
+                 float3 nFinalNormal = normalize(finalNormal);
                 
-                r12.xw = i.v2f_2.xw * props_f_4_4.xw;
-                r13.xyz = r12.w * _unknownColor0.xyz;
-                r3.w = dot(r11.xyz, r6.xyz);
-                r4.w = max(abs(w), 0);
-                r5.w = (exp(((log2(r4.w) * props_f_4_151.w))) * props_f_4_152.y + props_f_4_152.x);
+                // r12.xw = i.color.xw * props_f_4_4.xw;
+                // r13.xyz = r12.w * _unknownColor0.xyz;//0
+                // r3.w = dot(r11.xyz, r6.xyz);
+                // r4.w = 1 - max(r3.w, 0);
+                // r4.w = max(abs(r4.w), 0);
+                // r5.w = (exp(((log2(r4.w) * props_f_4_151.w))) * props_f_4_152.y + props_f_4_152.x);
                     
-                r13.xyz = (r13.xyz * r5.w + props_f_4_12.xyz) + props_f_4_15.xyz;
-                r5.w = (((-r10.z + 1) - props_f_4_153.w) / props_f_4_154.x);
-                r3.w = -r3.w + 1;
-                r6.w = (((r3.w - props_f_4_154.z) / props_f_4_154.x)) * props_f_4_154.w;
-                r5.w = r5.w * props_f_4_154.y + r6.w;
-                r13.xyz = r5.w * props_f_4_19.xyz + r13.xyz;
-                r5.w = 0 < props_f_4_155.w;
+                // r13.xyz = (r13.xyz * r5.w + props_f_4_12.xyz) + props_f_4_15.xyz;
+                // r5.w = (((-r10.z + 1) - props_f_4_153.w) / props_f_4_154.x);
+                // r3.w = -r3.w + 1;
+                // r6.w = (((r3.w - props_f_4_154.z) / props_f_4_154.x)) * props_f_4_154.w;
+                // r5.w = r5.w * props_f_4_154.y + r6.w;
+                // r13.xyz = r5.w * props_f_4_19.xyz + r13.xyz;//props_f_4_19为0
+                r5.w = 0 < props_f_4_155.w;//false
 
                 //电子化噪声细节
                 float3 detailNoiseColor = 0;
@@ -2138,9 +2147,9 @@ Shader "Reverse/Hair"
                 r13.xyz = (r13.xyz / r7.w);
                 r14.xyz = -r13.xyz + props_f_4_22.xyz;
                 r13.xyz = props_f_4_156.z * r14.xyz + r13.xyz;
-                r14.xyz = SAMPLE_TEXTURE2D(_LightenColorTex, sampler_Tex18, i.v2f_3.xy);
+                r14.xyz = SAMPLE_TEXTURE2D(_LightenColorTex, sampler_Tex18, i.uv.xy);
                 r15.xyz = r14.xyz * props_f_4_25.xyz;
-                r16.xyz = SAMPLE_TEXTURE2D(_DarkColorTex, sampler_Tex19, i.v2f_3.xy);
+                r16.xyz = SAMPLE_TEXTURE2D(_DarkColorTex, sampler_Tex19, i.uv.xy);
                 r17.xyz = r16.xyz * props_f_4_27.xyz;
                 r18.xyz = props_f_0_196.xyz * props_f_4_157.y;
                 r19.xyz = r16.xyz * props_f_4_27.xyz + -r15.xyz;
@@ -2150,7 +2159,9 @@ Shader "Reverse/Hair"
                 r19.xyz = r15.xyz - r18.xyz;
                 r18.xyz = r7.w * r19.xyz + r18.xyz;
                 r19.xyz = lerp(-props_f_4_31.xyz, 0.3125, props_f_4_148.x);
+                
                 r4.w = (r4.w * r4.w) * 0.96 + 0.04;
+                
                 r19.xyz = -r18.xyz + r19.xyz;
                 r18.xyz = r4.w * r19.xyz + r18.xyz;
                 r19.xyz = -r15.xyz + r18.xyz;
@@ -2190,27 +2201,29 @@ Shader "Reverse/Hair"
                 r9.w = (-(((r9.w - props_f_4_163.x) / props_f_4_163.z)) + 1) * r10.z;
                 r15.xyz = lerp(-r9.xyz, props_f_4_62.xyz, r9.w);
                 r9.xyz = lerp(-r15.xyz, (props_f_4_62.xyz * r9.w + r9.xyz), props_f_4_163.w);
-                r10.z = props_f_0_19.z * 0.5 + (i.v2f_6.y * 0.001 + (r11.z * 0.6));
-                r11.w = r11.z * props_f_0_23.x + (r11.x * props_f_0_21.x + (r11.y * props_f_0_22.x));
-                r4.w = (r4.w * abs(w)) * props_f_0_19.z + r10.z;
                 
-//                r15.xy = i.anistophParams.x * 0.4;
-                float anistophUV = i.anistophParams.x * 0.4;
+                // r10.z = props_f_0_19.z * 0.5 + (i.suspectPosition.y * 0.001 + (r11.z * 0.6));
+                r10.z = props_f_0_19.z * 0.5 + (i.suspectPosition.y * 0.001 + (nFinalNormal.z * 0.6));
+                // float temp0 = r11.z * props_f_0_23.x + (r11.x * props_f_0_21.x + (r11.y * props_f_0_22.x));
+                float temp0 = mul(nFinalNormal, matrix(f_0_21_22_23));
+                r4.w = (r4.w * abs(temp0)) * props_f_0_19.z + r10.z;
+                
+//                r15.xy = i.anistophParams.xx * float2(0.4,0);
+                float2 anistophUV = i.anistophParams.xx * float2(0.4,0);
                 
                 r10.z = ((( r15.x) * 512) * 512) * ((( r15.x) * 512) * 512);
                 r11.w = ((( r15.x) * 512) * 512) * ((( r15.x) * 512) * 512);
                 
 //                r10.z = ((SAMPLE_TEXTURE2D(_Anistoph, sampler_Anistoph, r15.xy)) * i.anistophParams.y) * props_f_4_164.x;
                 float AnistophStr = props_f_4_164.x;
-                float anistoph = ((SAMPLE_TEXTURE2D(_Anistoph, sampler_Anistoph, float2(anistophUV, 0))) * i.anistophParams.y) * AnistophStr;
+                float anistoph = ((SAMPLE_TEXTURE2D(_Anistoph, sampler_Anistoph, anistophUV)) * i.anistophParams.y) * AnistophStr;
 
 //                r15.xyz = -(r11.xyz * r10.z + r4.xyz) + props_f_0_68.xyz;
-                float3 dir = -(r11.xyz * anistoph + r4.xyz) + props_f_0_68.xyz;
+                float3 dir = -(nFinalNormal * anistoph + r4.xyz) + props_f_0_68.xyz;
                 
 //                r10.z = (r15.x / (sqrt((dot(r15.xyz, r15.xyz)))));
-                r10.z = (r15.x / length(dir));
-                
-                r15.x = r4.w - r10.z;
+                // r15.x = r4.w - r10.z;
+                r15.x = r4.w - (dir.x / length(dir));
                 r15.yz = 0;
 //                r21.xyz = SAMPLE_TEXTURE2D(_HairGradientTex, sampler_HairGradientTex, r15.xy);
                 float3 hairGradient = SAMPLE_TEXTURE2D(_HairGradientTex, sampler_HairGradientTex, r15.xy);
@@ -2221,7 +2234,7 @@ Shader "Reverse/Hair"
                 r9.xyz = lerp(hairGradient.xyz * props_f_4_164.y, r9.xyz, props_f_4_164.w);
                 
                 // r4.w = (((r11.z / props_f_4_165.x)) + 1) * 0.5;
-                float balance = (((r11.z / props_f_4_165.x)) + 1) * 0.5;
+                float balance = (((nFinalNormal.z / props_f_4_165.x)) + 1) * 0.5;
                 
                 // r22.xyz = lerp(_unknownColor1.xyz, _unknownColor2.xyz, r4.w);
                 float3 unknownBalancedColor = lerp(_unknownColor1.xyz, _unknownColor2.xyz, balance);
@@ -2234,8 +2247,8 @@ Shader "Reverse/Hair"
                 // r7.xyz = lerp(r7.xyz, r8.xyz, props_f_4_147.y);
                 r7.xyz = lerp(unpackedNormal.xyz, mixedNormal, props_f_4_147.y);
                 
-                r8.xyz = r7.x * i.sphereTangent.xyz + (r0.xyz * r7.y);
-                r7.xyz = r7.z * i.sphereNormal.xyz + r8.xyz;
+                r8.xyz = r7.x * i.tangent.xyz + (r0.xyz * r7.y);
+                r7.xyz = r7.z * i.normal.xyz + r8.xyz;
                 r4.w = exp(((log2((max(abs(w), 0))) * props_f_4_166.z)));
                 r7.x = -props_f_4_166.w + 1;
                 r4.w = r4.w * r7.x + 0.04;
@@ -2243,7 +2256,7 @@ Shader "Reverse/Hair"
                 r24.xyzw = lerp((lerp(props_f_4_74.xyzw, props_f_4_75.xyzw, props_f_4_148.x)), props_f_4_76.xyzw, props_f_4_150.y);
                 r25.xyzw = -r24.xyzw + props_f_4_79.xyzw;
                 r24.xyzw = r1.x * r25.xyzw + r24.xyzw;
-                r25.xyzw = SAMPLE_TEXTURE2D(_HighlightMask, sampler_HighlightMask, i.v2f_3.xy);
+                r25.xyzw = SAMPLE_TEXTURE2D(_HighlightMask, sampler_HighlightMask, i.uv.xy);
                 r26.xyw = r24.xyw * r25.xyw;
                 r26.z = r24.z * r25.z + props_f_4_170.x;
                 r24.xyzw = r26.xyzw + props_f_4_86.xyzw;
@@ -2258,19 +2271,27 @@ Shader "Reverse/Hair"
                 r9.xyz = r9.xyz + props_f_4_98.xyz;
                 r7.x = sqrt((dot(r9.xyz, r9.xyz)));
                 r9.xyz = (r9.xyz / r7.x);
-                r7.x = (SAMPLE_TEXTURE2D(_Anistoph, sampler_Anistoph, i.v2f_3.xy)) * props_f_4_176.y;
-                r23.xyz = -(r11.xyz * r7.x + r4.xyz) + props_f_0_68.xyz;
+                
+                // r7.x = (SAMPLE_TEXTURE2D(_Anistoph, sampler_Anistoph, i.v2f_3.xy)) * props_f_4_176.y;
+                float anistophResult = (SAMPLE_TEXTURE2D(_Anistoph, sampler_Anistoph, i.uv.xy)) * props_f_4_176.y;
+                
+                // r23.xyz = -(r11.xyz * r7.x + r4.xyz) + props_f_0_68.xyz;
+                r23.xyz = -(nFinalNormal * anistophResult + r4.xyz) + props_f_0_68.xyz;
+                
                 r7.x = sqrt((dot(r23.xyz, r23.xyz)));
                 r23.xyz = (r23.xyz / r7.x);
                 r9.xyz = r9.xyz - r23.xyz;
                 r7.x = sqrt((dot(r9.xyz, r9.xyz)));
                 r9.xyz = (r9.xyz / r7.x);
-                r7.x = dot(r11.xyz, r9.xyz);
-                r23.xyz = props_f_4_100.z * i.sphereNormal.xyz + (props_f_4_100.x * i.sphereTangent.xyz + (r0.xyz * props_f_4_100.y));
+                
+                // r7.x = dot(r11.xyz, r9.xyz);
+                r7.x = dot(nFinalNormal.xyz, r9.xyz);
+                
+                r23.xyz = props_f_4_100.z * i.normal.xyz + (props_f_4_100.x * i.tangent.xyz + (r0.xyz * props_f_4_100.y));
                 r7.z = sqrt((dot(r23.xyz, r23.xyz)));
                 r23.xyz = (r23.xyz / r7.z);
                 r7.z = (((dot(r23.xyz, r9.xyz)) * (dot(r23.xyz, r9.xyz))) / props_f_4_178.z);
-                r0.xyz = props_f_4_102.z * i.sphereNormal.xyz + (props_f_4_102.x * i.sphereTangent.xyz + (r0.xyz * props_f_4_102.y));
+                r0.xyz = props_f_4_102.z * i.normal.xyz + (props_f_4_102.x * i.tangent.xyz + (r0.xyz * props_f_4_102.y));
                 r10.z = sqrt((dot(r0.xyz, r0.xyz)));
                 r0.xyz = (r0.xyz / r10.z);
                 r0.x = ((pow4((max(props_f_4_179.w, 0)))) * (pow4((max(props_f_4_179.w, 0))))) * ((1 / ((((((((dot(r0.xyz, r9.xyz)) * (dot(r0.xyz, r9.xyz))) / props_f_4_179.y)) + r7.z) + r7.x) * ((((((dot(r0.xyz, r9.xyz)) * (dot(r0.xyz, r9.xyz))) / props_f_4_179.y)) + r7.z) + r7.x)) * props_f_4_179.z)));
@@ -2321,7 +2342,10 @@ Shader "Reverse/Hair"
                 r11.w = r6.y * (r12.x * props_f_4_184.z + r27.y) + r12.w;
                 r12.x = r12.y * props_f_4_184.z + props_f_4_184.y;
                 r26.z = r6.z * r12.x + r11.w;
-                r11.w = exp(((log2((max((-(dot(r26.xyz, r11.xyz)) + 1), 0))) * props_f_4_185.x));
+                
+                // r11.w = exp(((log2((max((-(dot(r26.xyz, r11.xyz)) + 1), 0))) * props_f_4_185.x));
+                r11.w = exp(((log2((max((-(dot(r26.xyz, nFinalNormal.xyz)) + 1), 0))) * props_f_4_185.x));
+                    
                 r3.w = clamp(r3.w, 1, r11.w);
                 r11.w = -r7.x * r7.z + r3.w;
                 r7.x = (r11.w / (-r7.x * r7.z + 1));
@@ -2376,7 +2400,10 @@ Shader "Reverse/Hair"
                 r17.xyz = (props_f_4_195.xz >= -8) ? props_f_4_195.xz : props_f_4_195.yw;
                 r16.xyz = r16.xyz ? r17.xyz : props_f_4_195.yw;
                 r17.xyz = max(r16.yz, 0);
-                r10.xyz = r17.yz * (-r10.xyw * r2.w + -r14.xyz) + r11.xyz;
+                
+                // r10.xyz = r17.yz * (-r10.xyw * r2.w + -r14.xyz) + r11.xyz;
+                r10.xyz = r17.yz * (-finalNormal * r2.w + -r14.xyz) + nFinalNormal.xyz;
+                
                 r16.xyz = max(-r16.xyz, 0);
                 r18.xyz = -r10.xyz + r14.xyz;
                 r10.xyz = r16.yz * r18.xyz + r10.xyz;
@@ -2458,14 +2485,22 @@ Shader "Reverse/Hair"
                 r15.xyzw = SAMPLE_TEXTURE2D(_Tex10, sampler_Tex10, r2.xy);
                 r18.xyzw = SAMPLE_TEXTURE2D(_Tex11, sampler_Tex11, r2.xy);
                 r19.xyzw = SAMPLE_TEXTURE2D(_Tex12, sampler_Tex12, r2.xy);
-                r2.xyz = r11.xyz * r18.w + (r18.xyz * 2 + -1.0039);
-                r5.w = dot(r2.xyz, r2.xyz);
-                r5.w = 1/sqrt(r5.w);
-                r2.xyz = r2.xyz * r5.w;
+                
+                // r2.xyz = r11.xyz * r18.w + (r18.xyz * 2 + -1.0039);
+                r2.xyz = nFinalNormal.xyz ;//r18=0.5,0.5,0.5,1
+                
+                // r5.w = dot(r2.xyz, r2.xyz);
+                // r5.w = 1/sqrt(r5.w);
+                // r2.xyz = r2.xyz * r5.w;
+                r2.xyz = normalize(r2.xyz);
+                
                 r18.xyz = r10.xyw * r19.w + r19.xyz;
                 r19.xyz = r7.xzw * r15.w + r15.xyz;
                 r15.xyz = r0.xyz * r15.w + r15.xyz;
-                r2.xyz = r3.w ? r2.xyz : r11.xyz;
+                
+                // r2.xyz = r3.w ? r2.xyz : r11.xyz;
+                r2.xyz = r3.w ? r2.xyz : nFinalNormal.xyz;
+                
                 r0.xyz = r3.w ? r15.xyz : r0.xyz;
                 r11.xyz = r3.w ? r18.xyz : r10.xyw;
                 r7.xzw = r3.w ? r19.xyz : r7.xzw;
@@ -2548,6 +2583,7 @@ Shader "Reverse/Hair"
                   r19.z = 1;
                 }
                 r18.w = 1;
+                //r18 =>normal
                 r20.x = dot(props_f_0_182.xyzw, r18.xyzw);
                 r20.y = dot(props_f_0_183.xyzw, r18.xyzw);
                 r20.z = dot(props_f_0_184.xyzw, r18.xyzw);
@@ -2673,7 +2709,7 @@ Shader "Reverse/Hair"
                 r9.xyz = max(r10.xyw, 0);
                 o.gbuffer_6.xyz = (r12.xyz * r9.xyz + r8.xyz) + r12.xyz;
                 r8.xyz = r1.xyz * r9.xyz + r8.xyz;
-                o.gbuffer_4.xyz = r1.xyz + r8.xyz;
+                o.charaLight.xyz = r1.xyz + r8.xyz;
                 r1.xyz = r6.yzw * 0.45 + r7.xyz;
                 r6.yzw = max(r13.xyz, 0);
                 r1.w = 0 < props_f_0_140.x;
@@ -2684,25 +2720,28 @@ Shader "Reverse/Hair"
                   r4.xyz = r2.w ? 0 : 1;
                   r6.yzw = r1.w ? r4.xyz : r6.yzw;
                 }
-                r1.xyz = props_f_0_145.y * r1.xyz + r6.yzw;
-                r4.xyz = r4.xy * ((frac((i.v2f_9_sv_position.xy * 0.0078))) * 128 + -64.3406);
+                // r1.xyz = props_f_0_145.y * r1.xyz + r6.yzw;
+                float3 emissive = props_f_0_145.y * r1.xyz + r6.yzw;
+                
+                r4.xyz = r4.xy * ((frac((i.position.xy * 0.0078))) * 128 + -64.3406);
                 r1.w = (frac((dot(r4.xyz, 20.3906)))) - 0.5;
-                o.gbuffer_1.xyz = r2.xyz * 0.5 + 0.5;
+                o.worldNormal.xyz = r2.xyz * 0.5 + 0.5;
                 r0.w = (log2(((r0.w * r5.w) * props_f_0_135.y + 0.0039)) * 0.0625 + 0.5;
-                o.gbuffer_3.w = r1.w * 0.0039 + r0.w;
+                o.diffuse.w = r1.w * 0.0039 + r0.w;
                 r11.x = r11.x;
                 r0.w = round((r11.x * 127));
                 r2.xy = r3.xy & 128;
                 r0.w =  (((r0.w + r2.x) + r2.x) + r2.x);
                 o.gbuffer_2.x = r0.w * 0.0039;
                 o.gbuffer_2.z = ( (r2.y + (round((r5.z * 127))))) * 0.0039;
-                o.gbuffer_0.xyz = r1.xyz * props_f_0_135.y;
-                o.gbuffer_0.w = 0;
-                o.gbuffer_1.w = props_f_1_20.y;
+                // o.emissive.xyz = r1.xyz * props_f_0_135.y;
+                o.emissive.xyz = emissive * props_f_0_135.y;
+                o.emissive.w = 0;
+                o.worldNormal.w = props_f_1_20.y;
                 o.gbuffer_2.w = 0.549;
                 o.gbuffer_2.y = r6.x;
-                o.gbuffer_3.xyz = r0.xyz;
-                o.gbuffer_4.w = r24.w;
+                o.diffuse.xyz = r0.xyz;
+                o.charaLight.w = r24.w;
                 o.gbuffer_5.x = r3.w;
                 o.gbuffer_5.yzw = 0;
                 o.gbuffer_6.w = 0;

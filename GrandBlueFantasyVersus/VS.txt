@@ -1,0 +1,129 @@
+Shader hash 56fdd850-f237d6a2-f315f469-94f77161
+
+vs_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[181], immediateIndexed
+      dcl_constantbuffer cb1[5], immediateIndexed
+      dcl_constantbuffer cb2[39], immediateIndexed
+      dcl_resource_buffer (float,float,float,float) t0
+      dcl_input v0.xyz
+      dcl_input v1.xyz
+      dcl_input v2.xyzw
+      dcl_input v3.xyzw
+      dcl_input v4.xyzw
+      dcl_input v5.xyzw
+      dcl_input v6.xyzw
+      dcl_input v7.xy
+      dcl_input v8.xy
+      dcl_input v9.xyzw
+      dcl_output o0.xyzw
+      dcl_output o1.xyzw
+      dcl_output o2.xyzw
+      dcl_output o3.xy
+      dcl_output o4.xy
+      dcl_output o5.xyz
+      dcl_output_siv o6.xyzw, position
+      dcl_temps 10
+   0: imul null, r0.xyzw, v3.xyzw, l(3, 3, 3, 3)
+   1: ld_indexable(buffer)(float,float,float,float) r1.xyzw, r0.yyyy, t0.xyzw
+   2: mul r1.xyzw, r1.xyzw, v5.yyyy
+   3: ld_indexable(buffer)(float,float,float,float) r2.xyzw, r0.xxxx, t0.xyzw
+   4: mad r1.xyzw, v5.xxxx, r2.xyzw, r1.xyzw
+   5: ld_indexable(buffer)(float,float,float,float) r2.xyzw, r0.zzzz, t0.xyzw
+   6: ld_indexable(buffer)(float,float,float,float) r0.xyzw, r0.wwww, t0.xyzw
+   7: mad r1.xyzw, v5.zzzz, r2.xyzw, r1.xyzw
+   8: mad r0.xyzw, v5.wwww, r0.xyzw, r1.xyzw
+   9: imul null, r1.xyzw, v4.xyzw, l(3, 3, 3, 3)
+  10: ld_indexable(buffer)(float,float,float,float) r2.xyzw, r1.xxxx, t0.xyzw
+  11: mad r0.xyzw, v6.xxxx, r2.xyzw, r0.xyzw
+  12: ld_indexable(buffer)(float,float,float,float) r2.xyzw, r1.yyyy, t0.xyzw
+  13: mad r0.xyzw, v6.yyyy, r2.xyzw, r0.xyzw
+  14: ld_indexable(buffer)(float,float,float,float) r2.xyzw, r1.zzzz, t0.xyzw
+  15: ld_indexable(buffer)(float,float,float,float) r1.xyzw, r1.wwww, t0.xyzw
+  16: mad r0.xyzw, v6.zzzz, r2.xyzw, r0.xyzw
+  17: mad r0.xyzw, v6.wwww, r1.xyzw, r0.xyzw
+  18: dp3 r1.x, r0.xyzx, v1.xyzx
+  19: imad r2.xyzw, v3.xxyy, l(3, 3, 3, 3), l(1, 2, 1, 2)
+  20: ld_indexable(buffer)(float,float,float,float) r3.xyzw, r2.zzzz, t0.xyzw
+  21: mul r3.xyzw, r3.xyzw, v5.yyyy
+  22: ld_indexable(buffer)(float,float,float,float) r4.xyzw, r2.xxxx, t0.xyzw
+  23: mad r3.xyzw, v5.xxxx, r4.xyzw, r3.xyzw
+  24: imad r4.xyzw, v3.zzww, l(3, 3, 3, 3), l(1, 2, 1, 2)
+  25: ld_indexable(buffer)(float,float,float,float) r5.xyzw, r4.xxxx, t0.xyzw
+  26: mad r3.xyzw, v5.zzzz, r5.xyzw, r3.xyzw
+  27: ld_indexable(buffer)(float,float,float,float) r5.xyzw, r4.zzzz, t0.xyzw
+  28: mad r3.xyzw, v5.wwww, r5.xyzw, r3.xyzw
+  29: imad r5.xyzw, v4.xxyy, l(3, 3, 3, 3), l(1, 2, 1, 2)
+  30: ld_indexable(buffer)(float,float,float,float) r6.xyzw, r5.xxxx, t0.xyzw
+  31: mad r3.xyzw, v6.xxxx, r6.xyzw, r3.xyzw
+  32: ld_indexable(buffer)(float,float,float,float) r6.xyzw, r5.zzzz, t0.xyzw
+  33: mad r3.xyzw, v6.yyyy, r6.xyzw, r3.xyzw
+  34: imad r6.xyzw, v4.zzww, l(3, 3, 3, 3), l(1, 2, 1, 2)
+  35: ld_indexable(buffer)(float,float,float,float) r7.xyzw, r6.xxxx, t0.xyzw
+  36: mad r3.xyzw, v6.zzzz, r7.xyzw, r3.xyzw
+  37: ld_indexable(buffer)(float,float,float,float) r7.xyzw, r6.zzzz, t0.xyzw
+  38: mad r3.xyzw, v6.wwww, r7.xyzw, r3.xyzw
+  39: dp3 r1.y, r3.xyzx, v1.xyzx
+  40: mul r7.xyz, cb1[1].xyzx, cb1[4].yyyy
+  41: mul r1.yzw, r1.yyyy, r7.xxyz
+  42: mul r8.xyz, cb1[0].xyzx, cb1[4].xxxx
+  43: mad r1.xyz, r1.xxxx, r8.xyzx, r1.yzwy
+  44: ld_indexable(buffer)(float,float,float,float) r9.xyzw, r2.wwww, t0.xyzw
+  45: ld_indexable(buffer)(float,float,float,float) r2.xyzw, r2.yyyy, t0.xyzw
+  46: mul r9.xyzw, r9.xyzw, v5.yyyy
+  47: mad r2.xyzw, v5.xxxx, r2.xyzw, r9.xyzw
+  48: ld_indexable(buffer)(float,float,float,float) r9.xyzw, r4.yyyy, t0.xyzw
+  49: ld_indexable(buffer)(float,float,float,float) r4.xyzw, r4.wwww, t0.xyzw
+  50: mad r2.xyzw, v5.zzzz, r9.xyzw, r2.xyzw
+  51: mad r2.xyzw, v5.wwww, r4.xyzw, r2.xyzw
+  52: ld_indexable(buffer)(float,float,float,float) r4.xyzw, r5.yyyy, t0.xyzw
+  53: ld_indexable(buffer)(float,float,float,float) r5.xyzw, r5.wwww, t0.xyzw
+  54: mad r2.xyzw, v6.xxxx, r4.xyzw, r2.xyzw
+  55: mad r2.xyzw, v6.yyyy, r5.xyzw, r2.xyzw
+  56: ld_indexable(buffer)(float,float,float,float) r4.xyzw, r6.yyyy, t0.xyzw
+  57: ld_indexable(buffer)(float,float,float,float) r5.xyzw, r6.wwww, t0.xyzw
+  58: mad r2.xyzw, v6.zzzz, r4.xyzw, r2.xyzw
+  59: mad r2.xyzw, v6.wwww, r5.xyzw, r2.xyzw
+  60: dp3 r1.w, r2.xyzx, v1.xyzx
+  61: mul r4.xyz, cb1[2].xyzx, cb1[4].zzzz
+  62: mad o0.xyz, r1.wwww, r4.xyzx, r1.xyzx
+  63: mov o0.w, l(0)
+  64: dp3 r1.x, r3.xyzx, v2.xyzx
+  65: mul r1.xyz, r7.xyzx, r1.xxxx
+  66: dp3 r1.w, r0.xyzx, v2.xyzx
+  67: mad r1.xyz, r1.wwww, r8.xyzx, r1.xyzx
+  68: dp3 r1.w, r2.xyzx, v2.xyzx
+  69: mad o1.xyz, r1.wwww, r4.xyzx, r1.xyzx
+  70: mul o1.w, v2.w, cb1[4].w
+  71: mov o2.xyzw, v9.xyzw
+  72: mov o3.xy, v7.xyxx
+  73: mov o4.xy, v8.xyxx
+  74: mov r1.xyz, v0.xyzx
+  75: mov r1.w, l(1.0000)
+  76: dp4 r3.x, r3.xyzw, r1.xyzw
+  77: mul r3.xyz, r3.xxxx, cb1[1].xyzx
+  78: dp4 r0.x, r0.xyzw, r1.xyzw
+  79: dp4 r0.y, r2.xyzw, r1.xyzw
+  80: mad r0.xzw, cb1[0].xxyz, r0.xxxx, r3.xxyz
+  81: mad r0.xyz, cb1[2].xyzx, r0.yyyy, r0.xzwx
+  82: add r1.xyz, cb0[62].xyzx, cb1[3].xyzx
+  83: add r0.xyz, r0.xyzx, r1.xyzx
+  84: mov o5.xyz, r0.xyzx
+  85: mov r0.w, l(1.0000)
+  86: dp4 r0.w, cb0[178].xyzw, r0.xyzw
+  87: mul r1.xyzw, r0.yyyy, cb0[1].xyzw
+  88: mad r1.xyzw, r0.xxxx, cb0[0].xyzw, r1.xyzw
+  89: mad r1.xyzw, r0.zzzz, cb0[2].xyzw, r1.xyzw
+  90: add r1.xyzw, r1.xyzw, cb0[3].xyzw
+  91: mad r0.x, r0.w, r1.w, -r1.x
+  92: mul r0.y, cb0[180].x, cb2[38].y
+  93: mad o6.x, r0.y, r0.x, r1.x
+  94: add r0.x, -v9.y, l(1.0000)
+  95: mad r0.x, r0.x, l(0.5000), r1.w
+  96: sqrt r0.x, r0.x
+  97: sqrt r0.y, r1.w
+  98: add r0.x, -r0.y, r0.x
+  99: mad r0.x, r0.x, l(-20.0000), cb2[38].z
+ 100: mad o6.z, -r0.x, cb2[38].w, r1.z
+ 101: mov o6.yw, r1.yyyw
+ 102: ret

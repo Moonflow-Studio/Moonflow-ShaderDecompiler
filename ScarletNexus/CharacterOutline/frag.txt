@@ -208,4 +208,3 @@ ps_5_0
  186: max r0.xyz, r0.xyzx, l(0, 0, 0, 0)
  187: mul o0.xyz, r0.xyzx, cb1[135].yyyy
  188: mov o0.w, l(1.0000)
- 189: ret

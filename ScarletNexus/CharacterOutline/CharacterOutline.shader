@@ -220,7 +220,7 @@ Shader"ScarletNexus/CharacterOutline"
             };
             struct gbuffer
             {
-                float4 gbuffer_0 : TEXCOORD0;
+                float4 emissive : TEXCOORD0;
 
             };
             float4 _SSize;
@@ -459,11 +459,11 @@ Shader"ScarletNexus/CharacterOutline"
                 litMask = litMask & flag0;
                 
                 // r3.xy = r1.w == 12;
-                bool mask1 = litMask == flag1;
-                bool mask2 = litMask == flag2;
+                int mask1 = litMask == flag1;
+                int mask2 = litMask == flag2;
                 
                 // r2.w = r3.y | r3.x;
-                bool sketchMask = mask1 | mask2;
+                int sketchMask = mask1 | mask2;
                 
                 // r3.yz = (round(((mask.x/*r2.z*/) * 255))) & uint2(128,127);
                 uint litMask2 = (int)round(mask.x * 255);
@@ -476,7 +476,7 @@ Shader"ScarletNexus/CharacterOutline"
                 int open0 = sketchMask ? mask3 : true;
                 
                 // r1.w = r1.w != 12;
-                bool nFlag1 = litMask != flag1;
+                int nFlag1 = litMask != flag1;
                 
                 // r3.w = SAMPLE_TEXTURE2D(_CharaBitMask, sampler_CharaBitMask, r2.xy).w;
                 uint charaBitMask = SAMPLE_TEXTURE2D(_CharaBitMask, sampler_CharaBitMask, i.replaceUV).w;
@@ -485,93 +485,102 @@ Shader"ScarletNexus/CharacterOutline"
                 float threshold = ((float)mask4) / 127;
                 
                 // r2.z = r2.w ? r3.z : r2.z;
-                r2.z = sketchMask ? threshold : mask.x/*r2.z*/;
+                float strength = sketchMask ? threshold : mask.x/*r2.z*/;
                 
                 // r2.w = r3.w < 0.99;
-                r2.w = charaBitMask < 0.99;
+                int charaMask = charaBitMask < 0.99;
                 
-                // r2.z = ((r3.x && ((r2.z >= 0.01) & r2.w)) && 1) * r3.y;
-                r2.z = ((mask1 && ((r2.z >= 0.01) && r2.w)) && 1) * open0;
+                // r2.z = ((r3.x && ((r2.z >= 0.01) & r2.w)) & 1) * r3.y;
+                int strength1 = ((mask1 & ((strength >= 0.01) & charaMask)) & 1) * open0;
                 
                 // r1.xyz = r1.xyz * props_f_1_135.z;
                 color = color * props_f_1_135.z;
                 
-                r2.z = 0.5 < r2.z;
+                // r2.z = 0.5 < r2.z;
+                int open1 = 0.5 < strength1;
                 
                 // r1.w = r1.w ? 0 : r2.z;
-                r1.w = nFlag1 ? 0 : r2.z;
+                int open2 = nFlag1 ? 0 : open1;
                 
-                if(r1.w != 0){
+                // if(r1.w != 0){
+                if(open2){
                   // r1.w = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r2.xy);
-                  r1.w = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, i.replaceUV);
-                  r2.z = max(r1.w, 0);
-                        r3.xyzw = (r2.z * props_f_1_47.xyzw + (i.v2f_0_sv_position.x * props_f_1_45.xyzw + (i.v2f_0_sv_position.y * props_f_1_46.xyzw))) + props_f_1_48.xyzw;
+                    float originalDepth = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, i.replaceUV);
+                    
+                  // r2.z = max(r1.w, 0);
+                    r2.z = max(originalDepth, 0);
+
+                    r3.xyzw = (r2.z * props_f_1_47.xyzw + (i.v2f_0_sv_position.x * props_f_1_45.xyzw + (i.v2f_0_sv_position.y * props_f_1_46.xyzw))) + props_f_1_48.xyzw;
+
                     // r3.xyz = ((r3.xyz / r3.w)) - props_f_1_71.xyz;
                     r3.xyz = ((r3.xyz / charaBitMask)) - props_f_1_71.xyz;
-                  r2.zw = props_f_1_131.zw * props_f_4_2.x;
+                    
+                    r2.zw = props_f_1_131.zw * props_f_4_2.x;
                     r3.w = max((props_f_1_131.x * 0.0005), 1);
-                  r2.zw = r2.zw * r3.w;
-                  r4.xy = r0.xy * _perPixelSize.zw + -r2.zw;
-                  r5.xyzw = r2.zw * 0.0000,-1.0000,1.0000,-1 + r0.zw;
-                  r6.xyzw = r2.zw * -1.0000,0.0000,1.0000,0 + r0.zw;
-                  r7.xyzw = r2.zw * -1.0000,1.0000,0.0000,1 + r0.zw;
-                  r0.xy = r0.xy * _perPixelSize.zw + r2.zw;
-                  r8.xyz = props_f_1_68.xyz - props_f_2_4.xyz;
-                  r9.xyz = r3.xyz - props_f_2_4.xyz;
+                    r2.zw = r2.zw * r3.w;
+                    r4.xy = r0.xy * _perPixelSize.zw + -r2.zw;
+                    r5.xyzw = r2.zw * 0.0000,-1.0000,1.0000,-1 + r0.zw;
+                    r6.xyzw = r2.zw * -1.0000,0.0000,1.0000,0 + r0.zw;
+                    r7.xyzw = r2.zw * -1.0000,1.0000,0.0000,1 + r0.zw;
+                    r0.xy = r0.xy * _perPixelSize.zw + r2.zw;
+                    r8.xyz = props_f_1_68.xyz - props_f_2_4.xyz;
+                    r9.xyz = r3.xyz - props_f_2_4.xyz;
                     r0.w = 0 < (dot(r9.xyz, r8.xyz));
                     r2.w = r0.z >= (dot(r8.xyz, r8.xyz));
-                  r0.z = (r0.z / r2.z);
-                  r3.zw = r8.xy * r0.z + props_f_2_4.xy;
-                  r2.zw = r2.w ? props_f_1_68.xy : r3.zw;
+                    r0.z = (r0.z / r2.z);
+                    r3.zw = r8.xy * r0.z + props_f_2_4.xy;
+                    r2.zw = r2.w ? props_f_1_68.xy : r3.zw;
                     r0.zw = -(r0.w ? r2.zw : props_f_2_4.xy) + r3.xy;
-                              r0.z = (props_f_2_0.x * props_f_4_2.y) * -((((sqrt((dot(r0.zw, r0.zw)))) - props_f_2_0.z) / (-props_f_2_0.z + props_f_2_0.y))) + 1;
-                        r2.zw = clamp(((r4.xy * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
-                        r3.xyzw = clamp(((r5.xyzw * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
-                        r4.xyzw = clamp(((r6.xyzw * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
-                        r5.xyzw = clamp(((r7.xyzw * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
-                        r0.xy = clamp(((r0.xy * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
+                    r0.z = (props_f_2_0.x * props_f_4_2.y) * -((((sqrt((dot(r0.zw, r0.zw)))) - props_f_2_0.z) / (-props_f_2_0.z + props_f_2_0.y))) + 1;
+                    r2.zw = clamp(((r4.xy * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
+                    r3.xyzw = clamp(((r5.xyzw * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
+                    r4.xyzw = clamp(((r6.xyzw * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
+                    r5.xyzw = clamp(((r7.xyzw * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
+                    r0.xy = clamp(((r0.xy * props_f_1_131.xy + props_f_1_130.xy) * props_f_1_132.zw), props_f_1_133.zw, props_f_1_133.xy);
                     r2.xy =  (r2.xy * props_f_1_132.xy);
-                  r6.xy = round(r2.xy);
-                  r6.zw = 0;
-                  r0.w = t3[r6.xyzw];
-                  r2.x = r1.w * props_f_1_66.x + props_f_1_66.y;
-                      r1.w = ((1 / (r1.w * props_f_1_66.z + -props_f_1_66.w))) + r2.x;
-                          r2.x = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r2.zw)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r2.zw)) * props_f_1_66.x + props_f_1_66.y);
-                          r2.y = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r3.xy)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r3.xy)) * props_f_1_66.x + props_f_1_66.y);
-                          r2.z = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r3.zw)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r3.zw)) * props_f_1_66.x + props_f_1_66.y);
-                  r2.w = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r4.xy);
-                  r3.x = r2.w * props_f_1_66.x + props_f_1_66.y;
-                      r2.w = ((1 / (r2.w * props_f_1_66.z + -props_f_1_66.w))) + r3.x;
-                          r3.x = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r4.zw)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r4.zw)) * props_f_1_66.x + props_f_1_66.y);
-                          r3.y = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r5.xy)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r5.xy)) * props_f_1_66.x + props_f_1_66.y);
-                          r3.z = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r5.zw)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r5.zw)) * props_f_1_66.x + props_f_1_66.y);
-                          r0.x = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r0.xy)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r0.xy)) * props_f_1_66.x + props_f_1_66.y);
-                      r0.y = -props_f_3_0.x * ((r0.w == 1) && 1) + 1;
-                  r0.w = -r1.w + r2.x;
-                  r2.x = -r1.w + r2.y;
-                  r2.y = -r1.w + r2.z;
-                  r2.z = -r1.w + r2.w;
-                  r2.w = -r1.w + r3.x;
-                  r3.x = -r1.w + r3.y;
-                  r3.y = -r1.w + r3.z;
-                                    r0.x = max((max((max((max((max((max((max((max((max((-r1.w + r0.x), r3.y)), r3.x)), r2.w)), r2.z)), r2.y)), r2.x)), r2.x)), r0.w)), 0);
-                  r0.w = r1.w * 0.005;
-                  r2.x = r0.w * props_f_4_2.z;
-                  r0.w = r0.w * props_f_4_2.w + -r2.x;
-                  r0.x = r0.x * 2 + -r2.x;
-                  r0.w = (1 / r0.w);
-                          r0.x = r0.z * (smoothstep((r0.w * r0.x)));
+                    r6.xy = round(r2.xy);
+                    r6.zw = 0;
+                    r0.w = t3[r6.xyzw];
+                    
+                    // r2.x = r1.w * props_f_1_66.x + props_f_1_66.y;
+                    r2.x = originalDepth * props_f_1_66.x + props_f_1_66.y;
+                    r1.w = ((1 / (r1.w * props_f_1_66.z + -props_f_1_66.w))) + r2.x;
+                    r2.x = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r2.zw)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r2.zw)) * props_f_1_66.x + props_f_1_66.y);
+                    r2.y = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r3.xy)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r3.xy)) * props_f_1_66.x + props_f_1_66.y);
+                    r2.z = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r3.zw)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r3.zw)) * props_f_1_66.x + props_f_1_66.y);
+                    r2.w = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r4.xy);
+                    r3.x = r2.w * props_f_1_66.x + props_f_1_66.y;
+                    r2.w = ((1 / (r2.w * props_f_1_66.z + -props_f_1_66.w))) + r3.x;
+                    r3.x = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r4.zw)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r4.zw)) * props_f_1_66.x + props_f_1_66.y);
+                    r3.y = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r5.xy)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r5.xy)) * props_f_1_66.x + props_f_1_66.y);
+                    r3.z = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r5.zw)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r5.zw)) * props_f_1_66.x + props_f_1_66.y);
+                    r0.x = ((1 / ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r0.xy)) * props_f_1_66.z + -props_f_1_66.w))) + ((SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, r0.xy)) * props_f_1_66.x + props_f_1_66.y);
+                    r0.y = -props_f_3_0.x * ((r0.w == 1) && 1) + 1;
+                    r0.w = -r1.w + r2.x;
+                    r2.x = -r1.w + r2.y;
+                    r2.y = -r1.w + r2.z;
+                    r2.z = -r1.w + r2.w;
+                    r2.w = -r1.w + r3.x;
+                    r3.x = -r1.w + r3.y;
+                    r3.y = -r1.w + r3.z;
+                    r0.x = max((max((max((max((max((max((max((max((max((-r1.w + r0.x), r3.y)), r3.x)), r2.w)), r2.z)), r2.y)), r2.x)), r2.x)), r0.w)), 0);
+                    r0.w = r1.w * 0.005;
+                    r2.x = r0.w * props_f_4_2.z;
+                    r0.w = r0.w * props_f_4_2.w + -r2.x;
+                    r0.x = r0.x * 2 + -r2.x;
+                    r0.w = (1 / r0.w);
+                    r0.x = r0.z * (smoothstep((r0.w * r0.x)));
                     r0.w = -(props_f_2_0.w - props_f_2_1.x) + props_f_2_0.w;
-                  r0.z = -r0.z + r1.w;
-                  r0.w = (1 / r0.w);
-                          r0.z = (smoothstep((r0.w * r0.z))) * r0.x;
-                  r2.xyz = color * r0.x;
-                  r0.x = r0.y * r0.z;
-                  r0.yzw = r2.xyz * props_f_4_3.x + -color;
-                  color = r0.x * r0.yzw + color;
+                    r0.z = -r0.z + r1.w;
+                    r0.w = (1 / r0.w);
+                    r0.z = (smoothstep((r0.w * r0.z))) * r0.x;
+                    r2.xyz = color * r0.x;
+                    r0.x = r0.y * r0.z;
+                    r0.yzw = r2.xyz * props_f_4_3.x + -color;
+                    color = r0.x * r0.yzw + color;
                 }
-                o.gbuffer_0.xyz = (max((lerp(-color, props_f_4_1.xyz, props_f_4_3.y)), 0)) * props_f_1_135.y;
-                o.gbuffer_0.w = 1;
+                o.emissive.xyz = (max((lerp(-color, props_f_4_1.xyz, props_f_4_3.y)), 0)) * props_f_1_135.y;
+                o.emissive.w = 1;
                 return o;
             }
             ENDHLSL

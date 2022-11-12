@@ -14,4 +14,3 @@ vs_5_0
    4: mov o0.zw, v0.zzzw
    5: mov o1.xy, v0.xyxx
    6: mov o1.zw, l(0, 0, 0, 0)
-   7: ret

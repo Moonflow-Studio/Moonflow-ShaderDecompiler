@@ -1,0 +1,45 @@
+Shader hash 9f55e519-49235262-67e22c1f-1bde3828
+
+vs_4_0
+      dcl_constantbuffer cb0[93], immediateIndexed
+      dcl_constantbuffer cb1[16], immediateIndexed
+      dcl_constantbuffer cb2[4], immediateIndexed
+      dcl_input v0.xyz
+      dcl_input v1.xyz
+      dcl_input v2.xyzw
+      dcl_input v3.xy
+      dcl_input v4.xy
+      dcl_output o0.xy
+      dcl_output o0.zw
+      dcl_output o1.xyz
+      dcl_output o2.xyzw
+      dcl_output o3.xyz
+      dcl_output_siv o4.xyzw, position
+      dcl_temps 2
+   0: mad o0.xy, v3.xyxx, cb2[3].xyxx, cb2[3].zwzz
+   1: mad o0.zw, v4.xxxy, cb1[15].xxxy, cb1[15].zzzw
+   2: dp3 r0.x, v1.xyzx, cb1[4].xyzx
+   3: dp3 r0.y, v1.xyzx, cb1[5].xyzx
+   4: dp3 r0.z, v1.xyzx, cb1[6].xyzx
+   5: dp3 r0.w, r0.xyzx, r0.xyzx
+   6: max r0.w, r0.w, l(0.0000)
+   7: rsq r0.w, r0.w
+   8: mul o1.xyz, r0.wwww, r0.xyzx
+   9: mul r0.xyz, v2.yyyy, cb1[1].xyzx
+  10: mad r0.xyz, cb1[0].xyzx, v2.xxxx, r0.xyzx
+  11: mad r0.xyz, cb1[2].xyzx, v2.zzzz, r0.xyzx
+  12: dp3 r0.w, r0.xyzx, r0.xyzx
+  13: max r0.w, r0.w, l(0.0000)
+  14: rsq r0.w, r0.w
+  15: mul o2.xyz, r0.wwww, r0.xyzx
+  16: mul o2.w, v2.w, cb1[9].w
+  17: mul r0.xyz, v0.yyyy, cb1[1].xyzx
+  18: mad r0.xyz, cb1[0].xyzx, v0.xxxx, r0.xyzx
+  19: mad r0.xyz, cb1[2].xyzx, v0.zzzz, r0.xyzx
+  20: add r0.xyz, r0.xyzx, cb1[3].xyzx
+  21: mov o3.xyz, r0.xyzx
+  22: mul r1.xyzw, r0.yyyy, cb0[90].xyzw
+  23: mad r1.xyzw, cb0[89].xyzw, r0.xxxx, r1.xyzw
+  24: mad r0.xyzw, cb0[91].xyzw, r0.zzzz, r1.xyzw
+  25: add o4.xyzw, r0.xyzw, cb0[92].xyzw
+  26: ret
