@@ -68,6 +68,7 @@ namespace moonflow_system.Tools.MFUtilityTools
         public Object oriFragmentFile;
         public string vertResultText;
         public string fragResultText;
+        public string shaderName;
         private ShaderData _resultData;
         private string _original;
         private string[] _definitions;
@@ -122,6 +123,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         oriVertexFile = EditorGUILayout.ObjectField("Vertex Shader", oriVertexFile, typeof(Object), false) as UnityEngine.Object;
                         oriFragmentFile = EditorGUILayout.ObjectField("Fragment Shader", oriFragmentFile, typeof(Object), false) as UnityEngine.Object;
+                        shaderName = EditorGUILayout.TextField("ShaderName", shaderName);
                         using (new EditorGUILayout.HorizontalScope("box"))
                         {
                             if (GUILayout.Button("还原"))
@@ -139,53 +141,6 @@ namespace moonflow_system.Tools.MFUtilityTools
                                     DoRecover(ref _resultData.frag);
                                 }
                             }
-                            if (GUILayout.Button("刷新显示"))
-                            {
-                                if (_arranged)
-                                {
-                                    if (oriVertexFile != null)
-                                    {
-                                        ChangeOperationDisplay(ref _resultData.vert);
-                                        CombineDisplay(ref _resultData.vert);
-                                        PrintResultData(ref _resultData.vert, ref vertResultText, false);
-                                    }
-
-                                    if (oriFragmentFile != null)
-                                    {
-                                        ChangeOperationDisplay(ref _resultData.frag);
-                                        CombineDisplay(ref _resultData.frag);
-                                        PrintResultData(ref _resultData.frag, ref fragResultText, false);
-                                    }
-                                }
-                                else
-                                {
-                                    if (oriVertexFile != null)
-                                    {
-                                        PrintResultData(ref _resultData.vert, ref vertResultText);
-                                    }
-                                    if (oriFragmentFile != null)
-                                    {
-                                        PrintResultData(ref _resultData.frag, ref fragResultText);
-                                    }
-                                }
-                            }
-                            if (GUILayout.Button("清空"))
-                            {
-                                _arranged = false;
-                                InitResultData();
-                                if (oriVertexFile != null)
-                                {
-                                    PrintResultData(ref _resultData.vert, ref vertResultText);
-                                }
-                                if (oriFragmentFile != null)
-                                {
-                                    PrintResultData(ref _resultData.frag, ref fragResultText);
-                                }
-                            }
-                        }
-
-                        using (new EditorGUILayout.HorizontalScope("box"))
-                        {
                             if (GUILayout.Button("智能函数识别"))
                             {
                                 if (oriVertexFile != null)
@@ -249,6 +204,61 @@ namespace moonflow_system.Tools.MFUtilityTools
                                     PrintResultData(ref _resultData.frag, ref fragResultText, false);
                                 }
                             }
+                            
+                        }
+
+                        using (new EditorGUILayout.HorizontalScope("box"))
+                        {
+                            if (GUILayout.Button("刷新显示"))
+                            {
+                                if (_arranged)
+                                {
+                                    if (oriVertexFile != null)
+                                    {
+                                        ChangeOperationDisplay(ref _resultData.vert);
+                                        CombineDisplay(ref _resultData.vert);
+                                        PrintResultData(ref _resultData.vert, ref vertResultText, false);
+                                    }
+
+                                    if (oriFragmentFile != null)
+                                    {
+                                        ChangeOperationDisplay(ref _resultData.frag);
+                                        CombineDisplay(ref _resultData.frag);
+                                        PrintResultData(ref _resultData.frag, ref fragResultText, false);
+                                    }
+                                }
+                                else
+                                {
+                                    if (oriVertexFile != null)
+                                    {
+                                        PrintResultData(ref _resultData.vert, ref vertResultText);
+                                    }
+                                    if (oriFragmentFile != null)
+                                    {
+                                        PrintResultData(ref _resultData.frag, ref fragResultText);
+                                    }
+                                }
+                            }
+                            if (GUILayout.Button("清空"))
+                            {
+                                _arranged = false;
+                                InitResultData();
+                                if (oriVertexFile != null)
+                                {
+                                    PrintResultData(ref _resultData.vert, ref vertResultText);
+                                }
+                                if (oriFragmentFile != null)
+                                {
+                                    PrintResultData(ref _resultData.frag, ref fragResultText);
+                                }
+                            }
+
+                            if (GUILayout.Button("复制结果"))
+                            {
+                                GUIUtility.systemCopyBuffer =
+                                    MFShaderRecoverTextOutput.MakeURPText(_resultData, vertResultText, fragResultText, shaderName);
+                                MFDebug.Log("已复制到剪贴板");
+                            }
                             if (GUILayout.Button("生成临时变量"))
                             {
                                 if (oriVertexFile != null)
@@ -268,14 +278,14 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     using (new EditorGUILayout.VerticalScope("box"))
                     {
-                        if (GUILayout.Button(showBuffer ? "Constant Buffer" : "Temp Variable", new GUIStyle("FrameBox"){fixedHeight = 40, alignment = TextAnchor.UpperCenter}))
+                        if (GUILayout.Button(showBuffer ? "Constant Buffer(点击切换至临时变量列表)" : "Temp Variable(点击切换至CBuffer列表)", new GUIStyle("FrameBox"){fixedHeight = 40, alignment = TextAnchor.UpperCenter}))
                         {
                             showBuffer = !showBuffer;
                         }
 
                         if (showBuffer)
                         {
-                            if (GUILayout.Button(showFragmentBuffer ? "Fragment Buffer" : "Vertex Buffer", new GUIStyle("FrameBox"){fixedHeight = 40, alignment = TextAnchor.UpperCenter}))
+                            if (GUILayout.Button(showFragmentBuffer ? "Fragment Buffer(点击切换至Vertex CBuffer列表)" : "Vertex Buffer(点击切换至Fragment CBuffer列表)", new GUIStyle("FrameBox"){fixedHeight = 40, alignment = TextAnchor.UpperCenter}))
                             {
                                 showFragmentBuffer = !showFragmentBuffer;
                             }
@@ -567,7 +577,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                         break;
                     case 1://and 
-                        line.str = $"{line.localVar[0].GetDisplayVar()} && {line.localVar[1].GetDisplayVar()}";
+                        line.str = $"{line.localVar[0].GetDisplayVar()} & {line.localVar[1].GetDisplayVar()}";
                         break;
                     case 2://break
                     {
@@ -581,6 +591,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                         line.noEqualSign = true;
                     }
                         break;
+                    case 11: //deriv_rtx
+                    {
+                        line.str = $"ddx({line.localVar[0].GetDisplayVar()})";
+                        break;
+                    }
+                    case 12: //deriv_rty
+                    {
+                        line.str = $"ddy({line.localVar[0].GetDisplayVar()})";
+                        break;
+                    }
                     case 13://discard 
                         line.noEqualSign = true;
                         line.str = $"clip({line.result.GetDisplayVar()})";
@@ -606,7 +626,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     case 21: //endif
                     {
-                        line.str = "";
+                        line.str = "}";
                         line.result = null;
                         line.localVar = null;
                         break;
@@ -785,6 +805,8 @@ namespace moonflow_system.Tools.MFUtilityTools
                                    $")";
                         break;
                     case 106: //clamp
+                        line.str =
+                            $"clamp({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()}, {line.localVar[2].GetDisplayVar()})";
                         break;
                     case 200: //if_z
                         line.noEqualSign = true;
@@ -806,37 +828,71 @@ namespace moonflow_system.Tools.MFUtilityTools
             for (int i = lines.Count - 2; i >= 0; i--)
             {
                 var line = lines[i];
+                //上一行是空或者没有临时变量或者被优化了或者没有运算符直接重新建立堆栈
                 if (last.empty || last.localVar == null || last.elipsised || line.noEqualSign)
                 {
                     last = line;
                     continue;
                 }
+                //本条如果是被优化了或者空或者没结果或者没有进行运算符重显示则直接跳过
                 if (line.elipsised || line.empty || line.result == null || !line.opArranged) continue;
                 
                 bool push = true;
-                try
-                {
                     for (int j = 0; j < last.localVar.Length; j++)
                     {
-                        if (ReferenceEquals(last.localVar[j].linkedVar, line.result.linkedVar) 
-                            && last.localVar[j].channel == line.result.channel 
-                            && last.opArranged
-                            && line.opArranged 
-                            && (last.opIndex<71 || last.opIndex>78)/*&& last.combineState!=2*/)
+                        bool a = ReferenceEquals(last.localVar[j].linkedVar, line.result.linkedVar) && last.localVar[j].linkedVar!=null;
+                        bool b = last.localVar[j].channel == line.result.channel;
+                        bool c = last.opArranged && line.opArranged;
+                        bool d = last.opIndex < 71 || last.opIndex > 78;
+                        
+                        
+                        // bool e = last.combineState != 2;
+                        // bool f = line.combineState != 1;
+                        if (a && b && c && d/* && e && f*/)
                         {
-                            string replaced = line.result.GetDisplayVar();
-                            last.str = last.str.Replace(replaced, "("+line.str+")");
-                            line.combineState = 1;
-                            last.combineState = 2;
-                            push = false;
+                            try
+                            {
+                                bool reDefined = false;
+                                bool usedAgain = false;
+                                for (int k = last.lineIndex; k < lines.Count; k++)
+                                {
+                                    var current = lines[k];
+                                    if (current.result!=null && current.result.linkedVar != null)
+                                    {
+                                        if (ReferenceEquals(current.result.linkedVar,
+                                                line.result.linkedVar))
+                                        {
+                                            reDefined = true;
+                                            break;
+                                        }
+                                        for (int l = 0; l < current.localVar.Length; l++)
+                                        {
+                                            if (ReferenceEquals(current.localVar[l].linkedVar, line.result.linkedVar))
+                                            {
+                                                usedAgain = true;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (!reDefined ||!usedAgain)
+                                {
+                                    string replaced = line.result.GetDisplayVar();
+                                    last.str = last.str.Replace(replaced, "("+line.str+")");
+                                    line.combineState = 1;
+                                    last.combineState = 2;
+                                    push = false;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                throw;
+                            }
+
+                           
                         }
                     }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
                 
                 if(push)last = line;
             }
@@ -1013,6 +1069,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             }
         }
 
+        //TODO：对于多通道常量的识别仍然有问题
         private void ProcessSingleLine(ref SingleLine singleLine)
         {
             string[] split = singleLine.str.Split(' ', 2);
@@ -1076,6 +1133,12 @@ namespace moonflow_system.Tools.MFUtilityTools
                     target.negative = true;
                     text = text.Substring(1, text.Length - 1);
                 }
+
+                if (text.Contains("sample"))
+                {
+                    string[] ips = text.Split(" ");
+                    text = ips[1];
+                }
                 if (text.Contains("("))
                 {
                     string[] inPropSplit = text.Split(new[] { "(", ")" }, StringSplitOptions.RemoveEmptyEntries);
@@ -1127,8 +1190,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     else
                     {
-                        singleline.localVar[i - 1 - lastResultSerial] = target;
-                        if (singleline.result !=null && target.linkedVar.name == singleline.result.linkedVar.name)
+                        if (i == lastResultSerial)
+                        {
+                            singleline.result = target;
+                        }
+                        else if(i > lastResultSerial)
+                        {
+                            singleline.localVar[i - lastResultSerial - 1] = target;
+                        }
+                        // singleline.localVar[i - 1 - lastResultSerial] = target;
+                        if (singleline.result !=null && target.linkedVar!=null && singleline.result.linkedVar!=null && target.linkedVar.name == singleline.result.linkedVar.name)
                         {
                             // target.channel.Contains(singleline.result.channel)   
                             if (IncludedChannelDeliver(target.channel, singleline.result.channel))
@@ -1142,8 +1213,15 @@ namespace moonflow_system.Tools.MFUtilityTools
                 {
                     try
                     {
-
-                        singleline.localVar[i - 1 - lastResultSerial] = target;
+                        if (i == lastResultSerial)
+                        {
+                            singleline.result = target;
+                        }
+                        else if(i > lastResultSerial)
+                        {
+                            singleline.localVar[i - lastResultSerial - 1] = target;
+                        }
+                        // singleline.localVar[i - 1 - lastResultSerial] = target;
                     }
                     catch (Exception e)
                     {
@@ -1433,7 +1511,16 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         try
                         {
-                            target.linkedVar = _resultData.attribute[Convert.ToInt16(singlesplit[0].Split("v")[1])];
+                            string attrName = "attr_"+singlesplit[0].Split("v")[1];
+                            for (int i = 0; i < _resultData.attribute.Count; i++)
+                            {
+                                if (_resultData.attribute[i].name == attrName)
+                                {
+                                    target.linkedVar = _resultData.attribute[i];
+                                }
+                            }
+                            
+                            // target.linkedVar = _resultData.attribute[Convert.ToInt16(singlesplit[0].Split("v")[1])];
                         }
                         catch (Exception e)
                         {
@@ -1443,7 +1530,15 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     else if (_type == ShaderType.Pixel)
                     {
-                        target.linkedVar = _resultData.v2f[Convert.ToInt16(singlesplit[0].Split("v")[1])];
+                        string attrName = "v2f_"+singlesplit[0].Split("v")[1];
+                        for (int i = 0; i < _resultData.v2f.Count; i++)
+                        {
+                            if (_resultData.v2f[i].name == attrName)
+                            {
+                                target.linkedVar = _resultData.v2f[i];
+                            }
+                        }
+                        // target.linkedVar = _resultData.v2f[Convert.ToInt16(singlesplit[0].Split("v")[1])];
                     }
 
                     break;
@@ -1598,7 +1693,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     {
                         type = $"float{(temp.Split(new []{'.', '\r'}, StringSplitOptions.RemoveEmptyEntries)[1]).Length.ToString()}",
                         name = $"gbuffer_{index}",
-                        def = $"",
+                        def = $"TEXCOORD{index}",
                         
                     });
                     break;
@@ -1683,6 +1778,8 @@ namespace moonflow_system.Tools.MFUtilityTools
 
         private void MakeDef_Constant(string text)
         {
+            bool isVertex = _type == ShaderType.Vertex;
+            string tag = isVertex ? "v" : "f";
             string[] split1 = text.Split('[');
             split1 = split1[1].Split(']');
             // Regex r = new Regex("[()],");
@@ -1692,14 +1789,14 @@ namespace moonflow_system.Tools.MFUtilityTools
             {
                 var newDef = new shaderPropDefinition()
                 {
-                    type = "",
-                    name = $"props_{_cbufferCount.ToString()}_{i}",
+                    type = "float4",
+                    name = $"props_{tag}_{_cbufferCount.ToString()}_{i}",
                     def = ""
                 };
                 newPropertiesList.Add(newDef);
             }
 
-            var props = _type == ShaderType.Vertex ? _resultData.vertProps : _resultData.fragProps;
+            var props = isVertex ? _resultData.vertProps : _resultData.fragProps;
             if (props == null) props = new List<List<shaderPropDefinition>>();
             string[] index = text.Split('[');
             index = index[0].Split("cb");
@@ -1800,9 +1897,11 @@ namespace moonflow_system.Tools.MFUtilityTools
                             {
                                 if (singleLine.noEqualSign)
                                 {
-                                    if (singleLine.opIndex is 2 or 18 or 21)
+                                    if (singleLine.opIndex is 2 or 18)
                                     {
                                         text += Operation[singleLine.opIndex];
+                                    }else if (singleLine.opIndex is 21)
+                                    {
                                     }
                                 }
                             }
@@ -1904,19 +2003,28 @@ namespace moonflow_system.Tools.MFUtilityTools
             if (negative && needNegative) result += "-";
             if (inlineOp == -1)
             {
-                result += $"{linkedVar.name}.{channel}";
+                try
+                {
+                    result += $"{linkedVar.name}.{channel}";
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }else if (inlineOp == 0)
             {
                 if (linkedVar == null)
                 {
-                    if (channel.Contains('.'))
-                    {
-                        result += channel.TrimEnd('0').TrimEnd('.');
-                    }
-                    else
-                    {
-                        result += $"{channel}";
-                    }
+                    // if (channel.Contains('.'))
+                    // {
+                    //     result += channel.TrimEnd('0').TrimEnd('.');
+                    // }
+                    // else
+                    // {
+                        string[] split = channel.Split(",");
+                        result += (split.Length > 1) ? $"float{split.Length}({channel})":$"{channel}" ;
+                    // }
                 }
                 else
                 {
@@ -1932,11 +2040,11 @@ namespace moonflow_system.Tools.MFUtilityTools
                         }
                     }
                     // channel += ")";
-                    result += $"{linkedVar.name}({single})";
+                    result += $"{linkedVar.type}({single})";
                 }
             }else if (inlineOp == 1)
             {
-                result += $"abs({channel})";
+                result += $"abs({linkedVar.name}.{channel})";
             }
 
             return result;
