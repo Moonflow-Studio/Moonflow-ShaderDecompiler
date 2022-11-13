@@ -107,9 +107,11 @@ namespace moonflow_system.Tools.MFUtilityTools
             return property;
         }
 
-        public static string MakeURPText(ShaderData data, string vertText, string fragText)
+        public static string MakeURPText(ShaderData data, string vertText, string fragText, string shaderName)
         {
-            string text = " Properties\n";
+            string text = "Shader\"" + shaderName + "\"\n";
+            text += "{\n";
+            text += " Properties\n";
             text += " {\n";
             text += MakeProperty(data);
             text += MakeProperty(data, true);
@@ -153,7 +155,8 @@ namespace moonflow_system.Tools.MFUtilityTools
                     "           }\n" +
                     "           ENDHLSL\n" +
                     "       }\n" +
-                    "   }\n";
+                    "   }\n"+
+                    "}";
             return text;
         }
     }
