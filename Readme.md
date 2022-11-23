@@ -1,6 +1,6 @@
 # Readme
 
-DXBC -> Unity URP typed Shaderlab+HLSL only
+### DXBC -> Unity URP typed Shaderlab+HLSL only
 
 （更新中）
 
