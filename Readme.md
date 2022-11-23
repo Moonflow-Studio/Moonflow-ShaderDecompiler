@@ -1,5 +1,7 @@
 # Readme
 
+DXBC -> Unity URP typed Shaderlab+HLSL only
+
 （更新中）
 
 __需要安装Package  - Moonflow Core ： https://gitee.com/reguluz/moonflow-core.git__
