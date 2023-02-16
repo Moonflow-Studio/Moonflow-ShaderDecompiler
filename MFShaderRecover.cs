@@ -1514,7 +1514,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                             string attrName = "attr_"+singlesplit[0].Split("v")[1];
                             for (int i = 0; i < _resultData.attribute.Count; i++)
                             {
-                                if (_resultData.attribute[i].name == attrName)
+                                if (_resultData.attribute[i].name.Contains(attrName))
                                 {
                                     target.linkedVar = _resultData.attribute[i];
                                 }
@@ -1533,7 +1533,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                         string attrName = "v2f_"+singlesplit[0].Split("v")[1];
                         for (int i = 0; i < _resultData.v2f.Count; i++)
                         {
-                            if (_resultData.v2f[i].name == attrName)
+                            if (_resultData.v2f[i].name.Contains(attrName))
                             {
                                 target.linkedVar = _resultData.v2f[i];
                             }
