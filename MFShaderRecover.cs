@@ -606,7 +606,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                         line.str = $"clip({line.result.GetDisplayVar()})";
                         break;
                     case 14://div 
-                        line.str = $"({line.localVar[0].GetDisplayVar()} / {line.localVar[1].GetDisplayVar()})";
+                        line.str = $"({line.localVar[0].GetDisplayVar()} / {line.localVar[1].GetDisplayVar()}";
                         break;
                     case 15://dp2 
                         line.str = $"dot({line.localVar[0].GetDisplayVar()}, {line.localVar[1].GetDisplayVar()})";
@@ -1069,6 +1069,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             }
         }
 
+        //TODO：对于多通道常量的识别仍然有问题
         private void ProcessSingleLine(ref SingleLine singleLine)
         {
             string[] split = singleLine.str.Split(' ', 2);
