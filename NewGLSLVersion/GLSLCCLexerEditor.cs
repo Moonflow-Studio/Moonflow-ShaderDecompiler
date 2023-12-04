@@ -50,16 +50,16 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                             {
                                 _lexer = new GLSLLexer();
                                 _lexer.tokens = _lexer.MakeToken(originalText);
-                                _decompileCore.lines = _decompileCore.SplitToLines(ref _lexer.tokens);
+                                _decompileCore.originLines = _decompileCore.SplitToLines(ref _lexer.tokens);
                             }
 
                             if (GUILayout.Button("Analyze"))
                             {
-                                for (var index = 0; index < _decompileCore.lines.Count; index++)
+                                for (var index = 0; index < _decompileCore.originLines.Count; index++)
                                 {
-                                    var line = _decompileCore.lines[index];
+                                    var line = _decompileCore.originLines[index];
                                     _decompileCore.Analyze(ref line);
-                                    _decompileCore.lines[index] = line;
+                                    _decompileCore.originLines[index] = line;
                                 }
                             }
                         }
@@ -77,9 +77,11 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 {
                     rightScroll = rightView.scrollPosition;
                     int index = 0;
-                    foreach (var line in _decompileCore.lines)
+                    foreach (var line in _decompileCore.originLines)
                     {
-                        EditorGUILayout.BeginHorizontal();
+                        GUI.backgroundColor = GetLineTypeColor(line.lineType);
+                        EditorGUILayout.BeginHorizontal("box");
+                        GUILayout.Button(GetLineTypeString(line.lineType), GUILayout.Width(30));
                         if(line.isSelfCalculate)
                             EditorGUILayout.LabelField("[SelfCalculate]", GUILayout.Width(100));
                         foreach (var hTokens in line.hTokens)
@@ -88,6 +90,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                             if(GUILayout.Button(hTokens.token.tokenString, GUILayout.Width(GetTokenTypeWidth(hTokens.token.type)))){}
                         }
                         EditorGUILayout.EndHorizontal();
+                        GUI.backgroundColor = Color.white;
                     }
                 }
             }
@@ -105,6 +108,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 case GLSLLexer.TokenType.storageClass: return Color.grey;
                 case GLSLLexer.TokenType.precise: return Color.blue;
                 case GLSLLexer.TokenType.inputModifier: return new Color(0.8f, 0.5f, 0.2f);
+                case GLSLLexer.TokenType.logicalOperator: return new Color(0.2f, 0.5f, 0.58f);
                 case GLSLLexer.TokenType.semanticRegex: return new Color(0.7f, 0.7f, 0.5f);
                 case GLSLLexer.TokenType.instrFunc: return new Color(0.5f, 0.8f, 0.5f);
                 case GLSLLexer.TokenType.dataType: return new Color(0.8f, 0.5f, 0.6f);
@@ -135,5 +139,25 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             }
             return 100;
         }
+        private Color GetLineTypeColor(GLSLCCDecompileCore.LineType type)
+        {
+            if(type == GLSLCCDecompileCore.LineType.others) return Color.black;
+            return Color.white;
+        }
+        private string GetLineTypeString(GLSLCCDecompileCore.LineType type)
+        {
+            switch (type)
+            {
+                case GLSLCCDecompileCore.LineType.macro: return "[M]";
+                case GLSLCCDecompileCore.LineType.uniformDeclaration: return "[U]";
+                case GLSLCCDecompileCore.LineType.inoutDeclaration: return "[I]";
+                case GLSLCCDecompileCore.LineType.tempDeclaration: return "[T]";
+                case GLSLCCDecompileCore.LineType.logic: return "[L]";
+                case GLSLCCDecompileCore.LineType.calculate: return "[C]";
+                case GLSLCCDecompileCore.LineType.others: return "[O]";
+            }
+            return "Unknown";
+        }
+
     }
 }

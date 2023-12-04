@@ -17,6 +17,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             precise,
             inputModifier,
             semanticRegex,
+            logicalOperator,
             instrFunc,
             dataType,
             name,
@@ -27,7 +28,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         public static readonly char[] spaceStrings = new []{' ', '\t', '\n', '\r', '\f'};
         public static readonly string[] macroStrings = new []{"#define", "#undef", "#if", "#ifdef", "#ifndef", "#else", "#elif", "#endif", "#include", "#pragma", "#line", "#version", "#extension"};
         public static readonly char[] numberChars = new []{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        public static readonly string tempDeclarStrings = "u_xlat[0-9]";
+        public static readonly string tempDeclarStrings = "u_xlat";
         public static readonly string storageClassString = "inline";
         public static readonly string[] preciseStrings = new []{"lowp", "mediump", "highp"};
 
@@ -47,6 +48,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         };
         #endregion
 
+        public static readonly string[] logicalOperatorStrings = new[] {"if","else","discard","return","break","continue","for"};
         public static readonly string[] InstrinsicFunctionStrings = new[]
         {
             "abort", "abs", "acos", "all", "any", "asin", "asint", "asuint", "atan", "atan2", "ceil", "clamp", "clip",
@@ -172,6 +174,10 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 {
                     tokens.Add(new GLSLCCToken(TokenType.semanticRegex, tokenString));
                 }
+                else if (IsLogicalOperator(tokenString))
+                {
+                    tokens.Add(new GLSLCCToken(TokenType.logicalOperator, tokenString));
+                }
                 else if (IsInstrinsicFunction(tokenString))
                 {
                     tokens.Add(new GLSLCCToken(TokenType.instrFunc, tokenString));
@@ -194,6 +200,15 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 }
             }
             return tokens;
+        }
+
+        private bool IsLogicalOperator(string tokenString)
+        {
+            for (int i = 0; i < logicalOperatorStrings.Length; i++)
+            {
+                if (tokenString == logicalOperatorStrings[i]) return true;
+            }
+            return false;
         }
 
         private bool IsPartOfName(string tokenString)
@@ -284,7 +299,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 
         private bool IsTempDeclar(string tokenString)
         {
-            return System.Text.RegularExpressions.Regex.IsMatch(tokenString, tempDeclarStrings);
+            return tokenString.Contains(tempDeclarStrings);
         }
 
         private bool IsNumber(string tokenString)

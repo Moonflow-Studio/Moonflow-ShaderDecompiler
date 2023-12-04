@@ -5,7 +5,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
     public class GLSLCCDecompileCore
     {
-        public List<SingleLine> lines;
+        public List<SingleLine> originLines;
         public struct SingleLine
         {
             public string lineString;
@@ -24,6 +24,8 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         {
             inoutDeclaration,
             uniformDeclaration,
+            tempDeclaration,
+            logic,
             calculate,
             macro,
             others
@@ -108,6 +110,12 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 line.lineType = line.hTokens[0].token.tokenString == "uniform" ? LineType.uniformDeclaration : LineType.inoutDeclaration;
                 return;
             }
+            //first token is logic
+            if (line.hTokens[0].token.type == GLSLLexer.TokenType.logicalOperator)
+            {
+                line.lineType = LineType.logic;
+                return;
+            }
             //first token is calculate
             if (line.hTokens.Length > 1)
             {
@@ -116,6 +124,12 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     line.lineType = LineType.calculate;
                     return;
                 }
+            }
+            //the one before the last token is tempDeclarRegex
+            if (line.hTokens.Length > 3 && line.hTokens[^3].token.type == GLSLLexer.TokenType.tempDeclarRegex)
+            {
+                line.lineType = LineType.tempDeclaration;
+                return;
             }
             line.lineType = LineType.others;
         }
