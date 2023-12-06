@@ -4,9 +4,9 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
     public class GLSLLexer
     {
-        public List<GLSLCCToken> tokens;
+        public List<GLSLToken> tokens;
 
-        public enum TokenType
+        public enum GLSLTokenType
         {
             symbol,
             space,
@@ -94,10 +94,10 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             return text;
         }
         
-        public List<GLSLCCToken> MakeToken(string text)
+        public List<GLSLToken> MakeToken(string text)
         {
             string[] tokenStrings = SplitTextBySpace(text);
-            List<GLSLCCToken> tokens = Tokenize(tokenStrings);
+            List<GLSLToken> tokens = Tokenize(tokenStrings);
             // foreach (var token in tokens)
             // {
             //     UnityEngine.Debug.Log(token.symbol + " " + token.tokenString);
@@ -132,71 +132,71 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         }
 
 
-        public List<GLSLCCToken> Tokenize(string[] tokenstrings)
+        public List<GLSLToken> Tokenize(string[] tokenstrings)
         {
-            List<GLSLCCToken> tokens = new List<GLSLCCToken>();
+            List<GLSLToken> tokens = new List<GLSLToken>();
             for (int i = 0; i < tokenstrings.Length; i++)
             {
                 string tokenString = tokenstrings[i];
                 if (IsSymbol(tokenString[0]))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.symbol, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.symbol, tokenString));
                 }
                 else if (IsSpace(tokenString[0]))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.space, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.space, tokenString));
                 }
                 else if (IsMacro(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.macros, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.macros, tokenString));
                 }
                 else if (IsNumber(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.number, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.number, tokenString));
                 }
                 else if (IsTempDeclar(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.tempDeclarRegex, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.tempDeclarRegex, tokenString));
                 }
                 else if (IsStorageClass(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.storageClass, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.storageClass, tokenString));
                 }
                 else if (IsPrecise(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.precise, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.precise, tokenString));
                 }
                 else if (IsInputModifier(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.inputModifier, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.inputModifier, tokenString));
                 }
                 else if (IsSemanticRegex(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.semanticRegex, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.semanticRegex, tokenString));
                 }
                 else if (IsLogicalOperator(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.logicalOperator, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.logicalOperator, tokenString));
                 }
                 else if (IsInstrinsicFunction(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.instrFunc, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.instrFunc, tokenString));
                 }
                 else if (IsDataType(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.dataType, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.dataType, tokenString));
                 }
                 else if (IsName(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.name, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.name, tokenString));
                 }
                 else if (IsPartOfName(tokenString))
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.partOfName, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.partOfName, tokenString));
                 }
                 else
                 {
-                    tokens.Add(new GLSLCCToken(TokenType.unknown, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.unknown, tokenString));
                 }
             }
             return tokens;

@@ -1,10 +1,10 @@
 namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
-    public class GLSLCCToken
+    public class GLSLToken
     {
-        public GLSLLexer.TokenType type;
+        public GLSLLexer.GLSLTokenType type;
         public string tokenString;
-        public GLSLCCToken(GLSLLexer.TokenType type, string toString)
+        public GLSLToken(GLSLLexer.GLSLTokenType type, string toString)
         {
             this.type = type;
             this.tokenString = toString;

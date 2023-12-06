@@ -79,15 +79,15 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     int index = 0;
                     foreach (var line in _decompileCore.originLines)
                     {
-                        GUI.backgroundColor = GetLineTypeColor(line.lineType);
+                        GUI.backgroundColor = GetLineTypeColor(line.glslLineType);
                         EditorGUILayout.BeginHorizontal("box");
-                        GUILayout.Button(GetLineTypeString(line.lineType), GUILayout.Width(30));
+                        GUILayout.Button(GetLineTypeString(line.glslLineType), GUILayout.Width(30));
                         if(line.isSelfCalculate)
                             EditorGUILayout.LabelField("[SelfCalculate]", GUILayout.Width(100));
-                        foreach (var hTokens in line.hTokens)
+                        foreach (var token in line.tokens)
                         {
-                            GUI.color = GetTokenTypeColor(hTokens.token.type);
-                            if(GUILayout.Button(hTokens.token.tokenString, GUILayout.Width(GetTokenTypeWidth(hTokens.token.type)))){}
+                            GUI.color = GetTokenTypeColor(token.type);
+                            if(GUILayout.Button(token.tokenString, GUILayout.Width(GetTokenTypeWidth(token.type)))){}
                         }
                         EditorGUILayout.EndHorizontal();
                         GUI.backgroundColor = Color.white;
@@ -96,65 +96,65 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             }
         }
 
-        private Color GetTokenTypeColor(GLSLLexer.TokenType type)
+        private Color GetTokenTypeColor(GLSLLexer.GLSLTokenType type)
         {
             switch (type)
             {
-                case GLSLLexer.TokenType.symbol: return Color.white;
-                case GLSLLexer.TokenType.space: return Color.gray;
-                case GLSLLexer.TokenType.macros: return Color.magenta;
-                case GLSLLexer.TokenType.number: return Color.yellow;
-                case GLSLLexer.TokenType.tempDeclarRegex: return Color.cyan;
-                case GLSLLexer.TokenType.storageClass: return Color.grey;
-                case GLSLLexer.TokenType.precise: return Color.blue;
-                case GLSLLexer.TokenType.inputModifier: return new Color(0.8f, 0.5f, 0.2f);
-                case GLSLLexer.TokenType.logicalOperator: return new Color(0.2f, 0.5f, 0.58f);
-                case GLSLLexer.TokenType.semanticRegex: return new Color(0.7f, 0.7f, 0.5f);
-                case GLSLLexer.TokenType.instrFunc: return new Color(0.5f, 0.8f, 0.5f);
-                case GLSLLexer.TokenType.dataType: return new Color(0.8f, 0.5f, 0.6f);
-                case GLSLLexer.TokenType.name: return new Color(0.3f, 0.8f, 0.5f);
-                case GLSLLexer.TokenType.partOfName: return new Color(0.2f, 0.6f, 0.3f);
-                case GLSLLexer.TokenType.unknown: return Color.red;
+                case GLSLLexer.GLSLTokenType.symbol: return Color.white;
+                case GLSLLexer.GLSLTokenType.space: return Color.gray;
+                case GLSLLexer.GLSLTokenType.macros: return Color.magenta;
+                case GLSLLexer.GLSLTokenType.number: return Color.yellow;
+                case GLSLLexer.GLSLTokenType.tempDeclarRegex: return Color.cyan;
+                case GLSLLexer.GLSLTokenType.storageClass: return Color.grey;
+                case GLSLLexer.GLSLTokenType.precise: return Color.blue;
+                case GLSLLexer.GLSLTokenType.inputModifier: return new Color(0.8f, 0.5f, 0.2f);
+                case GLSLLexer.GLSLTokenType.logicalOperator: return new Color(0.2f, 0.5f, 0.58f);
+                case GLSLLexer.GLSLTokenType.semanticRegex: return new Color(0.7f, 0.7f, 0.5f);
+                case GLSLLexer.GLSLTokenType.instrFunc: return new Color(0.5f, 0.8f, 0.5f);
+                case GLSLLexer.GLSLTokenType.dataType: return new Color(0.8f, 0.5f, 0.6f);
+                case GLSLLexer.GLSLTokenType.name: return new Color(0.3f, 0.8f, 0.5f);
+                case GLSLLexer.GLSLTokenType.partOfName: return new Color(0.2f, 0.6f, 0.3f);
+                case GLSLLexer.GLSLTokenType.unknown: return Color.red;
             }
             return Color.black;
         }
-        private float GetTokenTypeWidth(GLSLLexer.TokenType type)
+        private float GetTokenTypeWidth(GLSLLexer.GLSLTokenType type)
         {
             switch (type)
             {
-                case GLSLLexer.TokenType.symbol: return 20;
-                case GLSLLexer.TokenType.space: return 0;
-                case GLSLLexer.TokenType.macros: return 75;
-                case GLSLLexer.TokenType.number: return 100;
-                case GLSLLexer.TokenType.tempDeclarRegex: return 100;
-                case GLSLLexer.TokenType.storageClass: return 50;
-                case GLSLLexer.TokenType.precise: return 50;
-                case GLSLLexer.TokenType.inputModifier: return 50;
-                case GLSLLexer.TokenType.semanticRegex: return 120;
-                case GLSLLexer.TokenType.instrFunc: return 100;
-                case GLSLLexer.TokenType.dataType: return 50;
-                case GLSLLexer.TokenType.name: return 150;
-                case GLSLLexer.TokenType.partOfName: return 100;
-                case GLSLLexer.TokenType.unknown: return 150;
+                case GLSLLexer.GLSLTokenType.symbol: return 20;
+                case GLSLLexer.GLSLTokenType.space: return 0;
+                case GLSLLexer.GLSLTokenType.macros: return 75;
+                case GLSLLexer.GLSLTokenType.number: return 100;
+                case GLSLLexer.GLSLTokenType.tempDeclarRegex: return 100;
+                case GLSLLexer.GLSLTokenType.storageClass: return 50;
+                case GLSLLexer.GLSLTokenType.precise: return 50;
+                case GLSLLexer.GLSLTokenType.inputModifier: return 50;
+                case GLSLLexer.GLSLTokenType.semanticRegex: return 120;
+                case GLSLLexer.GLSLTokenType.instrFunc: return 100;
+                case GLSLLexer.GLSLTokenType.dataType: return 50;
+                case GLSLLexer.GLSLTokenType.name: return 150;
+                case GLSLLexer.GLSLTokenType.partOfName: return 100;
+                case GLSLLexer.GLSLTokenType.unknown: return 150;
             }
             return 100;
         }
-        private Color GetLineTypeColor(GLSLCCDecompileCore.LineType type)
+        private Color GetLineTypeColor(GLSLCCDecompileCore.GLSLLineType type)
         {
-            if(type == GLSLCCDecompileCore.LineType.others) return Color.black;
+            if(type == GLSLCCDecompileCore.GLSLLineType.others) return Color.black;
             return Color.white;
         }
-        private string GetLineTypeString(GLSLCCDecompileCore.LineType type)
+        private string GetLineTypeString(GLSLCCDecompileCore.GLSLLineType type)
         {
             switch (type)
             {
-                case GLSLCCDecompileCore.LineType.macro: return "[M]";
-                case GLSLCCDecompileCore.LineType.uniformDeclaration: return "[U]";
-                case GLSLCCDecompileCore.LineType.inoutDeclaration: return "[I]";
-                case GLSLCCDecompileCore.LineType.tempDeclaration: return "[T]";
-                case GLSLCCDecompileCore.LineType.logic: return "[L]";
-                case GLSLCCDecompileCore.LineType.calculate: return "[C]";
-                case GLSLCCDecompileCore.LineType.others: return "[O]";
+                case GLSLCCDecompileCore.GLSLLineType.macro: return "[M]";
+                case GLSLCCDecompileCore.GLSLLineType.uniformDeclaration: return "[U]";
+                case GLSLCCDecompileCore.GLSLLineType.inoutDeclaration: return "[I]";
+                case GLSLCCDecompileCore.GLSLLineType.tempDeclaration: return "[T]";
+                case GLSLCCDecompileCore.GLSLLineType.logic: return "[L]";
+                case GLSLCCDecompileCore.GLSLLineType.calculate: return "[C]";
+                case GLSLCCDecompileCore.GLSLLineType.others: return "[O]";
             }
             return "Unknown";
         }

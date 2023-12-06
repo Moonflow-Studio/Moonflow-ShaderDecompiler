@@ -5,22 +5,23 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
     public class GLSLCCDecompileCore
     {
-        public List<SingleLine> originLines;
-        public struct SingleLine
+        public List<GLSLSingleLine> originLines;
+        
+        public struct GLSLSingleLine
         {
             public string lineString;
-            public HierarchicalToken[] hTokens;
-            public LineType lineType;
+            public GLSLToken[] tokens;
+            public GLSLLineType glslLineType;
             public bool isSelfCalculate;
         }
 
-        public struct HierarchicalToken
-        {
-            public GLSLCCToken token;
-            public int layer;
-        }
+        // public struct GLSLHierarchicalToken
+        // {
+        //     public GLSLToken token;
+        //     public int layer;
+        // }
 
-        public enum LineType
+        public enum GLSLLineType
         {
             inoutDeclaration,
             uniformDeclaration,
@@ -31,63 +32,55 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             others
         }
 
-        public List<SingleLine> SplitToLines(ref List<GLSLCCToken> tokens)
+        public List<GLSLSingleLine> SplitToLines(ref List<GLSLToken> tokens)
         {
             //split by ';'
-            var lines = new List<SingleLine>();
-            var line = new SingleLine();
-            var lineTokens = new List<HierarchicalToken>();
+            var lines = new List<GLSLSingleLine>();
+            var line = new GLSLSingleLine();
+            var lineTokens = new List<GLSLToken>();
             char[] wrapChars = {'\n', '\f'};
-            int currentLayer = 0;
+            // int currentLayer = 0;
             string lineString = "";
             for (int i = 0; i < tokens.Count; i++)
             {
                 var token = tokens[i];
-                if (token.type == GLSLLexer.TokenType.space && token.tokenString.IndexOfAny(wrapChars) != -1)
+                if (token.type == GLSLLexer.GLSLTokenType.space && token.tokenString.IndexOfAny(wrapChars) != -1)
                 {
-                    line.hTokens = lineTokens.ToArray();
+                    line.tokens = lineTokens.ToArray();
                     line.lineString = lineString;
                     lineTokens.Clear();
                     lines.Add(line);
-                    line = new SingleLine();
+                    line = new GLSLSingleLine();
                     lineString = "";
                 }
                 else
                 {
                     lineString += token.tokenString;
                     if(token.tokenString != " ")
-                        lineTokens.Add(new HierarchicalToken(){layer = currentLayer, token = token});
+                        lineTokens.Add(token);
                     
-                }
-                if(token.type == GLSLLexer.TokenType.symbol && token.tokenString == "(")
-                {
-                    currentLayer++;
-                }
-                if(token.type == GLSLLexer.TokenType.symbol && token.tokenString == ")")
-                {
-                    currentLayer--;
                 }
             }
             return lines;
         }
         
-        public void Analyze(ref SingleLine line)
+        public void Analyze(ref GLSLSingleLine line)
         {
             AnalyzeLineType(ref line);
-            if(line.lineType == LineType.calculate)
+            if(line.glslLineType == GLSLLineType.calculate)
                 AnalyzeSelfCalculate(ref line);
         }
 
-        private void AnalyzeSelfCalculate(ref SingleLine line)
+        private void AnalyzeSelfCalculate(ref GLSLSingleLine line)
         {
             //tokentype of first token is tempDeclarRegex and appears atleast twice in this line
             //then this line is self calculate
-            var firstToken = line.hTokens[0].token;
-            if (firstToken.type != GLSLLexer.TokenType.tempDeclarRegex) return;
+            var firstToken = line.tokens[0];
+            if (firstToken.type != GLSLLexer.GLSLTokenType.tempDeclarRegex) return;
             int count = 0;
-            foreach (var hToken in line.hTokens)
+            foreach (var hToken in line.tokens)
             {
-                if (hToken.token.type == GLSLLexer.TokenType.tempDeclarRegex && hToken.token.tokenString == firstToken.tokenString)
+                if (hToken.type == GLSLLexer.GLSLTokenType.tempDeclarRegex && hToken.tokenString == firstToken.tokenString)
                 {
                     count++;
                 }
@@ -95,43 +88,45 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             line.isSelfCalculate = count >= 2;
         }
 
-        private void AnalyzeLineType(ref SingleLine line)
+        private void AnalyzeLineType(ref GLSLSingleLine line)
         {
-            if(line.hTokens == null || line.hTokens.Length == 0) return;
+            if(line.tokens == null || line.tokens.Length == 0) return;
             //first token is macros
-            if (line.hTokens[0].token.type == GLSLLexer.TokenType.macros)
+            if (line.tokens[0].type == GLSLLexer.GLSLTokenType.macros)
             {
-                line.lineType = LineType.macro;
+                line.glslLineType = GLSLLineType.macro;
                 return;
             }
             //first token is uniform/in/out
-            if (line.hTokens[0].token.type == GLSLLexer.TokenType.inputModifier)
+            if (line.tokens[0].type == GLSLLexer.GLSLTokenType.inputModifier)
             {
-                line.lineType = line.hTokens[0].token.tokenString == "uniform" ? LineType.uniformDeclaration : LineType.inoutDeclaration;
+                line.glslLineType = line.tokens[0].tokenString == "uniform" ? GLSLLineType.uniformDeclaration : GLSLLineType.inoutDeclaration;
                 return;
             }
             //first token is logic
-            if (line.hTokens[0].token.type == GLSLLexer.TokenType.logicalOperator)
+            if (line.tokens[0].type == GLSLLexer.GLSLTokenType.logicalOperator)
             {
-                line.lineType = LineType.logic;
+                line.glslLineType = GLSLLineType.logic;
                 return;
             }
             //first token is calculate
-            if (line.hTokens.Length > 1)
+            if (line.tokens.Length > 1)
             {
-                if (line.hTokens[1].token.type == GLSLLexer.TokenType.symbol && line.hTokens[1].token.tokenString == "=")
+                if (line.tokens[1].type == GLSLLexer.GLSLTokenType.symbol && line.tokens[1].tokenString == "=")
                 {
-                    line.lineType = LineType.calculate;
+                    line.glslLineType = GLSLLineType.calculate;
                     return;
                 }
             }
             //the one before the last token is tempDeclarRegex
-            if (line.hTokens.Length > 3 && line.hTokens[^3].token.type == GLSLLexer.TokenType.tempDeclarRegex)
+            if (line.tokens.Length > 3 && line.tokens[^3].type == GLSLLexer.GLSLTokenType.tempDeclarRegex)
             {
-                line.lineType = LineType.tempDeclaration;
+                line.glslLineType = GLSLLineType.tempDeclaration;
                 return;
             }
-            line.lineType = LineType.others;
+            line.glslLineType = GLSLLineType.others;
         }
+        
+        
     }
 }
