@@ -1,7 +1,6 @@
 ﻿namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
-    public class SAILFunctionExceed
+    public class SAILNumberToken:SAILToken
     {
-        
     }
 }

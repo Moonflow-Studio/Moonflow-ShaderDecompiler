@@ -23,8 +23,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 
         public enum GLSLLineType
         {
-            inoutDeclaration,
-            uniformDeclaration,
+            declaration,
             tempDeclaration,
             logic,
             calculate,
@@ -100,7 +99,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             //first token is uniform/in/out
             if (line.tokens[0].type == GLSLLexer.GLSLTokenType.inputModifier)
             {
-                line.glslLineType = line.tokens[0].tokenString == "uniform" ? GLSLLineType.uniformDeclaration : GLSLLineType.inoutDeclaration;
+                line.glslLineType = GLSLLineType.declaration;
                 return;
             }
             //first token is logic

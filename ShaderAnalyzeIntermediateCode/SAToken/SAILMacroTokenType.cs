@@ -1,6 +1,6 @@
 ﻿namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
-    public enum SAILMacroType
+    public enum SAILMacroTokenType
     {
         IF,
         IFDEF,

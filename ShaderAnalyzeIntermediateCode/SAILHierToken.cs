@@ -1,6 +1,6 @@
 ﻿namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
-    public struct SAHToken
+    public struct SAILHierToken
     {
         public SAILToken token;
         public int layer;

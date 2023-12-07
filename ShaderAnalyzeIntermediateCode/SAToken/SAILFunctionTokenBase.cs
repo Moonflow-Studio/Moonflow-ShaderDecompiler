@@ -1,7 +1,8 @@
 ﻿namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
-    public class SAILFunctionBase
+    public class SAILFunctionTokenBase : SAILToken
     {
+        private int funcIndex;
         private static readonly string[] functionString = new[]
         {
             "abort", "abs", "acos", "all", "any", "asin", "asint", "asuint", "atan", "atan2", "ceil", "clamp", "clip",
@@ -17,5 +18,17 @@
             "trunc", /*"InterlockedAdd", "InterlockedAnd", "InterlockedCompareExchange", "InterlockedCompareStore",
             "InterlockedExchange", "InterlockedMax", "InterlockedMin", "InterlockedOr", "InterlockedXor",*/"ldexp", 
         };
+        //TODO: 匹配function的参数数量
+        public void Init(string str)
+        {
+            for (int i = 0; i < functionString.Length; i++)
+            {
+                if (str == functionString[i]) funcIndex = i;
+            }
+        }
+        public string GetName()
+        {
+            return functionString[funcIndex];
+        }
     }
 }

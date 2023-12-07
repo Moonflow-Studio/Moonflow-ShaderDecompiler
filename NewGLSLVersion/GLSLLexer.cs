@@ -80,8 +80,11 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             "vec2", "vec3", "vec4",
             "bvec2", "bvec3", "bvec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4", "dvec2", "dvec3", "dvec4",
             //matrix
-            "mat2", "mat3", "mat4"
-            
+            "mat2", "mat3", "mat4",
+            //sampler
+            "sampler1D", "sampler2D", "sampler3D", "samplerCube", "sampler1DShadow", "sampler2DShadow",
+            "samplerCubeShadow", "sampler1DArray", "sampler2DArray", "sampler1DArrayShadow", "sampler2DArrayShadow",
+            "sampler2DMS", "sampler2DMSArray", "samplerCubeArray", "samplerCubeArrayShadow",
         };
         
         public static string ReadText(string path)

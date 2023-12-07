@@ -1,0 +1,38 @@
+﻿namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
+{
+    public enum SAILDataTokenType
+    {
+        INT,
+        INT2,
+        INT3,
+        INT4,
+        UINT,
+        UINT2,
+        UINT3,
+        UINT4,
+        FLOAT,
+        FLOAT2,
+        FLOAT3,
+        FLOAT4,
+        BOOL,
+        BOOL2,
+        BOOL3,
+        BOOL4,
+        MATRIX2X2,
+        MATRIX2X3,
+        MATRIX2X4,
+        MATRIX3X2,
+        MATRIX3X3,
+        MATRIX3X4,
+        MATRIX4X2,
+        MATRIX4X3,
+        MATRIX4X4,
+        SAMPLER2D,
+        SAMPLER3D,
+        SAMPLERCUBE,
+        SAMPLER2DARRAY,
+        SAMPLER3DARRAY,
+        SAMPLERCUBEARRAY,
+        error,
+    }
+}
