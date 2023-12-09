@@ -10,11 +10,16 @@
     }
     public class SAILTextureToken : SAILVariableToken
     {
-        public SAILTextureTokenType type;
+        public SAILTextureType type;
+        public SAILSamplerType samplerType;
     }
     public class SAILPieceVariableToken : SAILToken
     {
         public string channel;
         public SAILVariableToken link;
+        public override string ShowString()
+        {
+            return link.tokenString + "." + channel;
+        }
     }
 }

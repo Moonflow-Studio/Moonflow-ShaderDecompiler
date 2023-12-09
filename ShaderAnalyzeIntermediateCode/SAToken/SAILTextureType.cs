@@ -1,6 +1,6 @@
 namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
-    public enum SAILTextureTokenType
+    public enum SAILTextureType
     {
         D2,
         D3,

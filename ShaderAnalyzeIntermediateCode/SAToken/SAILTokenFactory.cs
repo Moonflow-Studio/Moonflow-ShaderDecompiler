@@ -10,17 +10,17 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             switch (tokenType)
             {
                 case SAILDataTokenType.SAMPLER2D:
-                    return new SAILTextureToken() { tokenString = name, type = SAILTextureTokenType.D2 , tokenTypeName = "Texture2D"};
+                    return new SAILTextureToken() { tokenString = name, type = SAILTextureType.D2 , tokenTypeName = "Texture2D"};
                 case SAILDataTokenType.SAMPLER3D:
-                    return new SAILTextureToken() { tokenString = name, type = SAILTextureTokenType.D3 , tokenTypeName = "Texture3D"};
+                    return new SAILTextureToken() { tokenString = name, type = SAILTextureType.D3 , tokenTypeName = "Texture3D"};
                 case SAILDataTokenType.SAMPLERCUBE:
-                    return new SAILTextureToken() { tokenString = name, type = SAILTextureTokenType.CUBE , tokenTypeName = "TextureCube"};
+                    return new SAILTextureToken() { tokenString = name, type = SAILTextureType.CUBE , tokenTypeName = "TextureCube"};
                 case SAILDataTokenType.SAMPLER2DARRAY:
-                    return new SAILTextureToken() { tokenString = name, type = SAILTextureTokenType.D2ARRAY , tokenTypeName = "Texture2D<>"};
+                    return new SAILTextureToken() { tokenString = name, type = SAILTextureType.D2ARRAY , tokenTypeName = "Texture2D<>"};
                 case SAILDataTokenType.SAMPLER3DARRAY:
-                    return new SAILTextureToken() { tokenString = name, type = SAILTextureTokenType.D3ARRAY , tokenTypeName = "Texture3D<>"};
+                    return new SAILTextureToken() { tokenString = name, type = SAILTextureType.D3ARRAY , tokenTypeName = "Texture3D<>"};
                 case SAILDataTokenType.SAMPLERCUBEARRAY:
-                    return new SAILTextureToken() { tokenString = name, type = SAILTextureTokenType.CUBEARRAY , tokenTypeName = "TextureCube<>"};
+                    return new SAILTextureToken() { tokenString = name, type = SAILTextureType.CUBEARRAY , tokenTypeName = "TextureCube<>"};
             }
             Debug.Assert(false, "未知的纹理类型");
             return null;

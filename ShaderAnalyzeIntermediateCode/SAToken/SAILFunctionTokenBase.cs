@@ -2,7 +2,7 @@
 {
     public class SAILFunctionTokenBase : SAILToken
     {
-        private int funcIndex;
+        private int funcIndex = -1;
         private static readonly string[] functionString = new[]
         {
             "abort", "abs", "acos", "all", "any", "asin", "asint", "asuint", "atan", "atan2", "ceil", "clamp", "clip",
@@ -11,24 +11,29 @@
             "frexp", "fwidth", /*"isfinite", "isinf", "isnan", "ldexp",*/
             "length", "lerp", /*"lit",*/ "log", "log10", "log2", /*"mad",*/ "max", "min", "modf", "msad4", "mul", /*"normalize",*/
             "pow", /*"radians",*/ "rcp", "reflect", "refract", "reversebits", "round", "rsqrt", /*"saturate",*/ "sign", "sin",
-            "sincos", "sinh", /*"smoothstep",*/ "sqrt", "step", "tan", "tanh", "tex1D", "tex1Dbias", "tex1Dgrad",
-            "tex1Dlod",
-            "tex1Dproj", "tex2D", "tex2Dbias", "tex2Dgrad", "tex2Dlod", "tex2Dproj", "tex3D", "tex3Dbias", "tex3Dgrad",
-            "tex3Dlod", "tex3Dproj", "texCUBE", "texCUBEbias", "texCUBEgrad", "texCUBElod", "texCUBEproj",/* "transpose",*/
+            "sincos", "sinh", /*"smoothstep",*/ "sqrt", "step", "tan", "tanh", /* "transpose",*/"sampleTexture",
             "trunc", /*"InterlockedAdd", "InterlockedAnd", "InterlockedCompareExchange", "InterlockedCompareStore",
             "InterlockedExchange", "InterlockedMax", "InterlockedMin", "InterlockedOr", "InterlockedXor",*/"ldexp", 
         };
         //TODO: 匹配function的参数数量
-        public void Init(string str)
+        public bool Init(string str)
         {
             for (int i = 0; i < functionString.Length; i++)
             {
-                if (str == functionString[i]) funcIndex = i;
+                if (str == functionString[i])
+                {
+                    funcIndex = i;
+                    return true;
+                }
             }
+            return false;
         }
+        
         public string GetName()
         {
-            return functionString[funcIndex];
+            if(funcIndex != -1)
+                return functionString[funcIndex];
+            return "NULL Function";
         }
     }
 }

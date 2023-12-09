@@ -16,6 +16,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         private string originalText;
         private Vector2 leftScroll;
         private Vector2 rightScroll;
+        private Vector2 rightScroll1;
         
         private GLSLLexer _lexer;
         private GLSLCCDecompileCore _decompileCore;
@@ -84,34 +85,41 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 using (new EditorGUILayout.VerticalScope())
                 {
                     _rightViewIndex = GUILayout.Toolbar(_rightViewIndex, rightViewTabStrings);
-                    
-                    switch (_rightViewIndex)
+                    using (new EditorGUILayout.HorizontalScope())
                     {
-                        case 0:
+                        // switch (_rightViewIndex)
+                        // {
+                        //     case 0:
+                        //     {
+                        using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll))
                         {
-                            using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll))
-                            {
-                                rightScroll = rightView.scrollPosition;
-                                ShowGLSLTokenResult();
-                            }
-                            break;
+                            rightScroll = rightView.scrollPosition;
+                            ShowGLSLTokenResult();
                         }
-                        case 1:
+                        //     break;
+                        // }
+                        // case 1:
+                        // {
+                        using (new EditorGUILayout.VerticalScope())
                         {
+                            
                             if (_sailData != null)
                             {
                                 using (new EditorGUILayout.HorizontalScope())
                                 {
+                                    GUI.color = Color.white;
                                     ShowSAILDefinitionResult();
                                 }
-                                using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll))
+                                using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll1))
                                 {
-                                    rightScroll = rightView.scrollPosition;
+                                    rightScroll1 = rightView.scrollPosition;
                                     ShowSAILCalculateLineResult();
                                 }
                             }
-                            break;
                         }
+                        //         break;
+                        //     }
+                        // }
                     }
                 }
             }
@@ -186,7 +194,12 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         GUI.color = SAILEditorUtility.GetTokenTypeColor(hToken.token);
                         if (hToken.token != null)
                         {
-                            if (GUILayout.Button(hToken.token.tokenString, GUILayout.Width(SAILEditorUtility.GetTokenTypeWidth(hToken.token))))
+                            string showString = hToken.token.ShowString();
+                            // if (hToken.token is SAILPieceVariableToken pieceToken)
+                            // {
+                            //     showString = pieceToken.tokenString + "." + pieceToken.channel;
+                            // }
+                            if (GUILayout.Button(showString, GUILayout.Width(SAILEditorUtility.GetTokenTypeWidth(hToken.token))))
                             {
                             }
                         }
@@ -250,7 +263,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 case GLSLLexer.GLSLTokenType.macros: return 75;
                 case GLSLLexer.GLSLTokenType.number: return 100;
                 case GLSLLexer.GLSLTokenType.tempDeclarRegex: return 100;
-                case GLSLLexer.GLSLTokenType.storageClass: return 50;
+                case GLSLLexer.GLSLTokenType.storageClass: return 150;
                 case GLSLLexer.GLSLTokenType.precise: return 70;
                 case GLSLLexer.GLSLTokenType.inputModifier: return 50;
                 case GLSLLexer.GLSLTokenType.semanticRegex: return 120;

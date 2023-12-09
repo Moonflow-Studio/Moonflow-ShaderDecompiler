@@ -46,7 +46,6 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                                 try
                                 {
                                     singleline.lineString += token.token?.tokenString;
-
                                 }
                                 catch (Exception e)
                                 {
@@ -54,7 +53,6 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                                     throw;
                                 }
                             }
-                            
                             sailData.calculationLines.Add(singleline);
                         }
                         break;
@@ -73,6 +71,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                                 singleline.hTokens[j] = token;
                                 singleline.lineString += token.token?.tokenString;
                             }
+                            sailData.calculationLines.Add(singleline);
                         }
                         break;
                     case GLSLCCDecompileCore.GLSLLineType.macro:
@@ -87,19 +86,23 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                                     token = new SAILMacroToken()
                                     {
                                         macroTokenType = MatchMacroType(line.tokens[0].tokenString),
+                                        tokenString = line.tokens[0].tokenString,
+                                        macroName = line.lineString.Replace(line.tokens[0].tokenString, "")
                                         // value = line.tokens[0].tokenString
                                     }
                                 },
                                 new SAILHierToken()
                                 {
                                     layer = 0,
-                                    token = new SAILSymbolToken()
+                                    token = new SAILVariableToken()
                                     {
-                                        tokenString = line.lineString.Replace(line.tokens[0].tokenString, "")
+                                        tokenString = line.lineString.Replace(line.tokens[0].tokenString, ""),
+                                        tokenTypeName = "MacroDetail"
                                     }
                                 }
                             }
                         };
+                        sailData.calculationLines.Add(macroLine);
                         break;
                     case GLSLCCDecompileCore.GLSLLineType.others:
                         if(line.tokens[0].tokenString == "void")
@@ -121,8 +124,20 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 case GLSLLexer.GLSLTokenType.instrFunc:
                 {
                     SAILFunctionTokenBase functionToken = new SAILFunctionTokenBase();
-                    functionToken.Init(lineToken.tokenString);
+                    bool matched = functionToken.Init(lineToken.tokenString);
+                    if (!matched)
+                    {
+                        if(lineToken.tokenString == "texture")
+                        {
+                            functionToken.Init("sampleTexture");
+                        }
+                        else
+                        {
+                            Debug.Assert(false, "未知的函数");
+                        }
+                    }
                     hToken.token = functionToken;
+                    hToken.token.tokenString = functionToken.GetName();
                     //TODO: 需要读取后面layer+1的内容
                     return hToken;
                 }
@@ -151,11 +166,32 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         {
                             channel = tmpTokens[1],
                             link = variable,
-                            tokenString = variable.tokenString
+                            tokenString = lineToken.tokenString
                         };
                     }
                     return hToken;
                 }
+                case GLSLLexer.GLSLTokenType.name:
+                    //analyze lineToken by '.'
+                    var nameTokens = lineToken.tokenString.Split('.');
+                    //left of '.' is variable name, right of '.' is variable member
+                    if (nameTokens.Length == 1)
+                    {
+                        //variable name
+                        hToken.token = data.FindVariable(nameTokens[0]);
+                    }
+                    else
+                    {
+                        //variable member
+                        var variable = data.FindVariable(nameTokens[0]);
+                        hToken.token = new SAILPieceVariableToken()
+                        {
+                            channel = nameTokens[1],
+                            link = variable,
+                            tokenString = lineToken.tokenString
+                        };
+                    }
+                    return hToken;
                 case GLSLLexer.GLSLTokenType.semanticRegex:
                     //analyze lineToken by '.'
                     var semTokens = lineToken.tokenString.Split('.');
@@ -173,7 +209,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         {
                             channel = semTokens[1],
                             link = variable,
-                            tokenString = variable.tokenString
+                            tokenString = lineToken.tokenString
                         };
                     }
                     return hToken;
@@ -192,18 +228,21 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     if(lineToken.tokenString == ")")layer--;
                     return hToken;
                 case GLSLLexer.GLSLTokenType.macros:
-                    hToken.token = new SAILMacroToken()
+                    var macroToken = new SAILMacroToken()
                     {
                         macroTokenType = MatchMacroType(lineToken.tokenString),
                         // value = lineToken.tokenString
                     };
+                    macroToken.tokenString = macroToken.GetName();
+                    hToken.token = macroToken;
                     return hToken;
-                // case GLSLLexer.GLSLTokenType.logicalOperator:
-                //     SAILLogicalToken logicalToken = new SAILLogicalToken();
-                //     logicalToken.Init(lineToken.tokenString);
-                //     hToken.token = logicalToken;
-                //     //TODO: 需要读取后面layer+1的内容
-                //     return hToken;
+                case GLSLLexer.GLSLTokenType.logicalOperator:
+                    SAILLogicalToken logicalToken = new SAILLogicalToken();
+                    logicalToken.Init(lineToken.tokenString);
+                    logicalToken.tokenString = logicalToken.GetName();
+                    hToken.token = logicalToken;
+                    //TODO: 需要读取后面layer+1的内容
+                    return hToken;
             }
             return new SAILHierToken();
         }
@@ -248,7 +287,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                                 sailData.outVar.Add(SAILTokenFactory.CreateVariable(line.tokens[j].tokenString, dataTokenType));
                                 return;
                             case -1:
-                                sailData.glbVar.Add(SAILTokenFactory.CreateVariable(line.tokens[j].tokenString, dataTokenType));
+                                sailData.tempVar.Add(SAILTokenFactory.CreateVariable(line.tokens[j].tokenString, dataTokenType));
                                 return;
                         }
                     }
@@ -300,7 +339,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             if (str == "out") return 2;
             if (str == "inout") return 3;
             Debug.Assert(false, "未知的输入修饰符");
-            return 0;
+            return -1;
         }
     }
 }

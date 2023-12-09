@@ -57,10 +57,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             "firstbitlow", "floor", "fma", "fmod", "frac", "frexp", "fwidth", "isfinite", "isinf", "isnan", "ldexp",
             "length", "lerp", "lit", "log", "log10", "log2", "mad", "max", "min", "modf", "msad4", "mul", "normalize",
             "pow", "radians", "rcp", "reflect", "refract", "reversebits", "round", "rsqrt", "saturate", "sign", "sin",
-            "sincos", "sinh", "smoothstep", "sqrt", "step", "tan", "tanh", "tex1D", "tex1Dbias", "tex1Dgrad",
-            "tex1Dlod",
-            "tex1Dproj", "tex2D", "tex2Dbias", "tex2Dgrad", "tex2Dlod", "tex2Dproj", "tex3D", "tex3Dbias", "tex3Dgrad",
-            "tex3Dlod", "tex3Dproj", "texCUBE", "texCUBEbias", "texCUBEgrad", "texCUBElod", "texCUBEproj", "transpose",
+            "sincos", "sinh", "smoothstep", "sqrt", "step", "tan", "tanh", "texture", "transpose",
             "trunc", "InterlockedAdd", "InterlockedAnd", "InterlockedCompareExchange", "InterlockedCompareStore",
             "InterlockedExchange", "InterlockedMax", "InterlockedMin", "InterlockedOr", "InterlockedXor", "frac",
             "fwidth", "ldexp", "lit", "log10", "log2", "max", "min", "modf", "msad4", "mul", "noise", "normalize",
@@ -138,12 +135,24 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         public List<GLSLToken> Tokenize(string[] tokenstrings)
         {
             List<GLSLToken> tokens = new List<GLSLToken>();
+            bool isNegativeSymbolToNextNumber = false;
             for (int i = 0; i < tokenstrings.Length; i++)
             {
                 string tokenString = tokenstrings[i];
                 if (IsSymbol(tokenString[0]))
                 {
-                    tokens.Add(new GLSLToken(GLSLTokenType.symbol, tokenString));
+                    //check if next token is number (like -0.0001)
+                    // if (tokenString[0] == '-')
+                    // {
+                        if (tokenString[0] == '-' && (i + 1) < tokenstrings.Length && IsNumber(tokenstrings[i + 1]))
+                        {
+                            isNegativeSymbolToNextNumber = true;
+                        }
+                        else
+                        {
+                            tokens.Add(new GLSLToken(GLSLTokenType.symbol, tokenString));
+                        }
+                    // }
                 }
                 else if (IsSpace(tokenString[0]))
                 {
@@ -155,7 +164,8 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 }
                 else if (IsNumber(tokenString))
                 {
-                    tokens.Add(new GLSLToken(GLSLTokenType.number, tokenString));
+                    tokens.Add(new GLSLToken(GLSLTokenType.number, (isNegativeSymbolToNextNumber?"-":"")+tokenString));
+                    isNegativeSymbolToNextNumber = false;
                 }
                 else if (IsTempDeclar(tokenString))
                 {
