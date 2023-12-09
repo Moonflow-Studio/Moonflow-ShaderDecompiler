@@ -1,6 +1,6 @@
 # Readme
 
-### (OLD VERSION : DXBC -> UNITY HLSL)
+### DXBC -> Unity URP typed Shaderlab+HLSL only
 
 （更新中）
 
