@@ -144,7 +144,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 case GLSLLexer.GLSLTokenType.dataType:
                 {
                     var type = MatchDataType(lineToken.tokenString);
-                    hToken.token = SAILTokenFactory.CreateVariable(lineToken.tokenString, type);
+                    hToken.token = SAILTokenFactory.CreateVariable(type.ToString().ToLower(), type);
                     //TODO: 需要读取后面layer+1的常量
                     return hToken;
                 }
@@ -243,6 +243,12 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     hToken.token = logicalToken;
                     //TODO: 需要读取后面layer+1的内容
                     return hToken;
+                case GLSLLexer.GLSLTokenType.unknown:
+                    hToken.token = new SAILToken()
+                    {
+                        tokenString = lineToken.tokenString
+                    };
+                    return hToken;
             }
             return new SAILHierToken();
         }
@@ -324,6 +330,12 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             if (str == "uvec2") return SAILDataTokenType.UINT2;
             if (str == "uvec3") return SAILDataTokenType.UINT3;
             if (str == "uvec4") return SAILDataTokenType.UINT4;
+            if (str == "bvec2") return SAILDataTokenType.BOOL2;
+            if (str == "bvec3") return SAILDataTokenType.BOOL3;
+            if (str == "bvec4") return SAILDataTokenType.BOOL4;
+            if (str == "mat2") return SAILDataTokenType.MATRIX2X2;
+            if (str == "mat3") return SAILDataTokenType.MATRIX3X3;
+            if (str == "mat4") return SAILDataTokenType.MATRIX4X4;
             if (str == "sampler2D") return SAILDataTokenType.SAMPLER2D;
             if (str == "sampler3D") return SAILDataTokenType.SAMPLER3D;
             if (str == "samplerCube") return SAILDataTokenType.SAMPLERCUBE;

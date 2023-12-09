@@ -12,11 +12,11 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             if(token is SAILNumberToken) return Color.yellow;
             if(token is SAILVariableToken) return Color.cyan;
             if(token is SAILPieceVariableToken) return new Color(0.5f, 0.8f, 0.8f);
-            if(token is SAILSpecialToken) return Color.red;
+            if(token is SAILSpecialToken) return new Color(.8f, .5f, .5f);
             if(token is SAILLogicalToken) return new Color(0.2f, 0.5f, 0.58f);
             if(token is SAILFunctionTokenBase) return new Color(0.5f, 0.8f, 0.5f);
             if(token is SAILFunctionTokenExceed) return new Color(0.7f, 1f, 0.7f);
-            return Color.black;
+            return Color.red;
         }
         
         public static float GetTokenTypeWidth(SAILToken token)

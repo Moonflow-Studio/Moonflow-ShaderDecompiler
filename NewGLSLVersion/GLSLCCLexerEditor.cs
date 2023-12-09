@@ -55,10 +55,6 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                                 _lexer = new GLSLLexer();
                                 _lexer.tokens = _lexer.MakeToken(originalText);
                                 _decompileCore.originLines = _decompileCore.SplitToLines(ref _lexer.tokens);
-                            }
-
-                            if (GUILayout.Button("Analyze"))
-                            {
                                 for (var index = 0; index < _decompileCore.originLines.Count; index++)
                                 {
                                     var line = _decompileCore.originLines[index];
@@ -87,39 +83,46 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     _rightViewIndex = GUILayout.Toolbar(_rightViewIndex, rightViewTabStrings);
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        // switch (_rightViewIndex)
-                        // {
-                        //     case 0:
-                        //     {
-                        using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll))
+                        switch (_rightViewIndex)
                         {
-                            rightScroll = rightView.scrollPosition;
-                            ShowGLSLTokenResult();
-                        }
-                        //     break;
-                        // }
-                        // case 1:
-                        // {
-                        using (new EditorGUILayout.VerticalScope())
-                        {
-                            
-                            if (_sailData != null)
+                            case 0:
                             {
-                                using (new EditorGUILayout.HorizontalScope())
+                                using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll))
                                 {
-                                    GUI.color = Color.white;
-                                    ShowSAILDefinitionResult();
+                                    rightScroll = rightView.scrollPosition;
+                                    ShowGLSLTokenResult();
                                 }
-                                using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll1))
+                                break;
+                            }
+                            case 1:
+                            {
+                                using (new EditorGUILayout.VerticalScope())
                                 {
-                                    rightScroll1 = rightView.scrollPosition;
-                                    ShowSAILCalculateLineResult();
+                                    
+                                    if (_sailData != null)
+                                    {
+                                        using (new EditorGUILayout.HorizontalScope())
+                                        {
+                                            if (GUILayout.Button("Analyze"))
+                                            {
+                                                SAILAnalyze.Analyze(ref _sailData);
+                                            }
+                                        }
+                                        using (new EditorGUILayout.HorizontalScope())
+                                        {
+                                            GUI.color = Color.white;
+                                            ShowSAILDefinitionResult();
+                                        }
+                                        using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll1))
+                                        {
+                                            rightScroll1 = rightView.scrollPosition;
+                                            ShowSAILCalculateLineResult();
+                                        }
+                                    }
                                 }
+                                break;
                             }
                         }
-                        //         break;
-                        //     }
-                        // }
                     }
                 }
             }
@@ -217,8 +220,6 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 GUI.backgroundColor = GetGLSLLineTypeColor(line.glslLineType);
                 EditorGUILayout.BeginHorizontal("box");
                 GUILayout.Button(GetGLSLLineTypeString(line.glslLineType), GUILayout.Width(30));
-                if (line.isSelfCalculate)
-                    EditorGUILayout.LabelField("[SelfCalculate]", GUILayout.Width(100));
                 foreach (var token in line.tokens)
                 {
                     GUI.color = GetGLSLTokenTypeColor(token.type);

@@ -51,5 +51,101 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             }
             return null;
         }
+        
+        public bool MatchInputVariable(string token)
+        {
+            foreach (var variable in inVar)
+            {
+                if (variable.tokenString == token)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public bool MatchOutputVariable(string token)
+        {
+            foreach (var variable in outVar)
+            {
+                if (variable.tokenString == token)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public bool MatchGlobalVariable(string token)
+        {
+            foreach (var variable in glbVar)
+            {
+                if (variable.tokenString == token)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public bool MatchTemporaryVariable(string token)
+        {
+            foreach (var variable in tempVar)
+            {
+                if (variable.tokenString == token)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public bool MatchInputVariable(SAILVariableToken token)
+        {
+            foreach (var variable in inVar)
+            {
+                if (variable.tokenString == token.tokenString)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public bool MatchOutputVariable(SAILVariableToken token)
+        {
+            foreach (var variable in outVar)
+            {
+                if (variable.tokenString == token.tokenString)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public bool MatchGlobalVariable(SAILVariableToken token)
+        {
+            foreach (var variable in glbVar)
+            {
+                if (variable.tokenString == token.tokenString)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public bool MatchTemporaryVariable(SAILVariableToken token)
+        {
+            foreach (var variable in tempVar)
+            {
+                if (variable.tokenString == token.tokenString)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

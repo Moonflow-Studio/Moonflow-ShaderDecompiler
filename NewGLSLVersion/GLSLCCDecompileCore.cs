@@ -12,7 +12,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             public string lineString;
             public GLSLToken[] tokens;
             public GLSLLineType glslLineType;
-            public bool isSelfCalculate;
+            // public bool isSelfCalculate;
         }
 
         // public struct GLSLHierarchicalToken
@@ -66,25 +66,8 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         public void Analyze(ref GLSLSingleLine line)
         {
             AnalyzeLineType(ref line);
-            if(line.glslLineType == GLSLLineType.calculate)
-                AnalyzeSelfCalculate(ref line);
-        }
-
-        private void AnalyzeSelfCalculate(ref GLSLSingleLine line)
-        {
-            //tokentype of first token is tempDeclarRegex and appears atleast twice in this line
-            //then this line is self calculate
-            var firstToken = line.tokens[0];
-            if (firstToken.type != GLSLLexer.GLSLTokenType.tempDeclarRegex) return;
-            int count = 0;
-            foreach (var hToken in line.tokens)
-            {
-                if (hToken.type == GLSLLexer.GLSLTokenType.tempDeclarRegex && hToken.tokenString == firstToken.tokenString)
-                {
-                    count++;
-                }
-            }
-            line.isSelfCalculate = count >= 2;
+            // if(line.glslLineType == GLSLLineType.calculate)
+                // AnalyzeSelfCalculate(ref line);
         }
 
         private void AnalyzeLineType(ref GLSLSingleLine line)
