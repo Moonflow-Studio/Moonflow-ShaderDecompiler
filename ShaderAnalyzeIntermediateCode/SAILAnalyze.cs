@@ -8,6 +8,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         {
             SelfCalculation(ref data);
             SplitTemporaryVariable(data);
+            SelfCalculation(ref data);
         }
 
         private static void SelfCalculation(ref SAILData data)
