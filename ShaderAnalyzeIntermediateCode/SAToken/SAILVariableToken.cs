@@ -3,10 +3,26 @@
     public class SAILVariableToken : SAILToken
     {
         public string tokenTypeName;
+
+        public virtual SAILVariableToken Copy()
+        {
+            var copy = new SAILVariableToken();
+            copy.tokenString = tokenString;
+            copy.tokenTypeName = tokenTypeName;
+            return copy;
+        }
     }
-    public class SailVariableToken<T> : SAILVariableToken
+    public class SAILVariableToken<T> : SAILVariableToken
     {
         public T data;
+        public override SAILVariableToken Copy()
+        {
+            var copy = new SAILVariableToken<T>();
+            copy.tokenString = tokenString;
+            copy.tokenTypeName = tokenTypeName;
+            copy.data = data;
+            return copy;
+        }
     }
     public class SAILTextureToken : SAILVariableToken
     {
