@@ -5,5 +5,6 @@
         public string lineString;
         public SAILHierToken[] hTokens;
         public bool isSelfCalculate;
+        public string identifier;
     }
 }

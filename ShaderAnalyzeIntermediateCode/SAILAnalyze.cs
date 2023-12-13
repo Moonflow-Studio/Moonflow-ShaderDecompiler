@@ -8,6 +8,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         {
             SelfCalculation(ref data);
             SplitTemporaryVariable(data);
+            //TODO: 把带有括号的表达式拆分成多行
             SelfCalculation(ref data);
         }
 
