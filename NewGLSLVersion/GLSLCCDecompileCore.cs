@@ -72,6 +72,22 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 
         private void AnalyzeLineType(ref GLSLSingleLine line)
         {
+            //TODO:重做识别行类型
+            //由于不同编译器会产生不同布局，所以这里只能通过识别关键字来判断行类型
+            //目前确认通用的逻辑有：
+            //1.第一个token是 macroStrings中的字符串，则该行一定是宏定义
+                //1.1 如果宏定义为#define，则有可能下文中会出现无法识别的函数，来自于宏定义的函数，需要先把宏定义的函数识别出来
+            //2.第一个token是InputModifierStrings中的字符串，则该行一定是非临时变量的声明
+            //3.第一个token是logicalOperatorStrings中的字符串，则该行一定是逻辑语句
+            //4.第二个token是"="，则该行一定是计算语句
+            //5.倒数第三个token是dataTypes中的字符串，则该行一定是临时变量的声明
+            
+            //目前发现编译器有差异的内容有：
+            //有的编译器会按照输入的分行策略进行编译，有的编译器会把输入时单行多项操作拆成多行
+            //有的编译器会把临时变量声明放在计算语句前面，有的编译器会把临时变量声明放在计算语句后面
+            //有的编译器不会把函数解开，可能存在函数调用
+            
+            
             if(line.tokens == null || line.tokens.Length == 0) return;
             //first token is macros
             if (line.tokens[0].type == GLSLLexer.GLSLTokenType.macros)
