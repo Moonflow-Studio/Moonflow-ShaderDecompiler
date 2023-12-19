@@ -54,19 +54,13 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             "abort", "abs", "acos", "all", "any", "asin", "asint", "asuint", "atan", "atan2", "ceil", "clamp", "clip",
             "cos", "cosh", "countbits", "cross", "ddx", "ddx_coarse", "ddx_fine", "ddy", "ddy_coarse", "ddy_fine",
             "degrees", "determinant", "distance", "dot", "dst", "errorf", "exp", "exp2", "faceforward", "firstbithigh",
-            "firstbitlow", "floor", "fma", "fmod", "frac", "frexp", "fwidth", "isfinite", "isinf", "isnan", "ldexp",
+            "firstbitlow", "floor", "fma", "fmod", "fract", "frexp", "fwidth", "inversesqrt","isfinite", "isinf", "isnan", "ldexp",
             "length", "lerp", "lit", "log", "log10", "log2", "mad", "max", "min", "modf", "msad4", "mul", "normalize",
             "pow", "radians", "rcp", "reflect", "refract", "reversebits", "round", "rsqrt", "saturate", "sign", "sin",
             "sincos", "sinh", "smoothstep", "sqrt", "step", "tan", "tanh", "texture", "transpose",
             "trunc", "InterlockedAdd", "InterlockedAnd", "InterlockedCompareExchange", "InterlockedCompareStore",
             "InterlockedExchange", "InterlockedMax", "InterlockedMin", "InterlockedOr", "InterlockedXor", "frac",
-            "fwidth", "ldexp", "lit", "log10", "log2", "max", "min", "modf", "msad4", "mul", "noise", "normalize",
-            "pow", "radians", "rcp", "reflect", "refract", "reversebits", "round", "rsqrt", "saturate", "sign", "sin",
-            "sincos", "sinh", "smoothstep", "sqrt", "step", "tan", "tanh", "tex1D", "tex1Dbias", "tex1Dgrad",
-            "tex1Dlod",
-            "tex1Dproj", "tex2D", "tex2Dbias", "tex2Dgrad", "tex2Dlod", "tex2Dproj", "tex3D", "tex3Dbias", "tex3Dgrad",
-            "tex3Dlod", "tex3Dproj", "texCUBE", "texCUBEbias", "texCUBEgrad", "texCUBElod", "texCUBEproj", "transpose",
-            "trunc", "InterlockedAdd", "InterlockedAnd", "InterlockedCompareExchange", "InterlockedCompareStore",
+            "noise", "textureLod" 
         };
 
         public static readonly string[] dataTypes = new[]
@@ -227,19 +221,24 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         private bool IsPartOfName(string tokenString)
         {
             //tokenString seems like .xyz
-            if (tokenString[0] == '.')
-            {
+            // if (tokenString[0] == '.')
+            // {
                 for (int i = 1; i < tokenString.Length; i++)
                 {
-                    if (tokenString[i] == '_' || (tokenString[i] >= 'a' && tokenString[i] <= 'z') || (tokenString[i] >= 'A' && tokenString[i] <= 'Z') || (tokenString[i] >= '0' && tokenString[i] <= '9')) continue;
+                    if (tokenString[i] == '_' 
+                        || (tokenString[i] >= 'a' && tokenString[i] <= 'z') 
+                        || (tokenString[i] >= 'A' && tokenString[i] <= 'Z') 
+                        || (tokenString[i] >= '0' && tokenString[i] <= '9')
+                        || tokenString[i] == '['|| tokenString[i] == ']'
+                        || tokenString[i] == '.') continue;
                     else return false;
                 }
                 return true;
-            }
-            else
-            {
-                return false;
-            }
+            // }
+            // else
+            // {
+            //     return false;
+            // }
         }
 
         private bool IsName(string tokenString)
@@ -248,7 +247,11 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             {
                 for (int i = 1; i < tokenString.Length; i++)
                 {
-                    if (tokenString[i] == '_' || (tokenString[i] >= 'a' && tokenString[i] <= 'z') || (tokenString[i] >= 'A' && tokenString[i] <= 'Z') || (tokenString[i] >= '0' && tokenString[i] <= '9')) continue;
+                    if (tokenString[i] == '_' 
+                        || (tokenString[i] >= 'a' && tokenString[i] <= 'z') 
+                        || (tokenString[i] >= 'A' && tokenString[i] <= 'Z') 
+                        || (tokenString[i] >= '0' && tokenString[i] <= '9')
+                        || tokenString[i] == '['|| tokenString[i] == ']') continue;
                     else return false;
                 }
                 return true;

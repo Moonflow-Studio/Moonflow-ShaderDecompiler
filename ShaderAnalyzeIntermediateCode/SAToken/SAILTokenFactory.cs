@@ -53,24 +53,24 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     return new SAILVariableToken<float3>() { tokenString = name , tokenTypeName = "float3"};
                 case SAILDataTokenType.FLOAT4:
                     return new SAILVariableToken<float4>() { tokenString = name , tokenTypeName = "float4"};
-                case SAILDataTokenType.MATRIX2X2:
-                    return new SAILVariableToken<float2x2>() { tokenString = name , tokenTypeName = "float2x2"};
-                case SAILDataTokenType.MATRIX2X3:
-                    return new SAILVariableToken<float2x3>() { tokenString = name , tokenTypeName = "float2x3"};
-                case SAILDataTokenType.MATRIX2X4:
-                    return new SAILVariableToken<float2x4>() { tokenString = name , tokenTypeName = "float2x4"};
-                case SAILDataTokenType.MATRIX3X2:
-                    return new SAILVariableToken<float3x2>() { tokenString = name , tokenTypeName = "float3x2"};
-                case SAILDataTokenType.MATRIX3X3:
-                    return new SAILVariableToken<float3x3>() { tokenString = name , tokenTypeName = "float3x3"};
-                case SAILDataTokenType.MATRIX3X4:
-                    return new SAILVariableToken<float3x4>() { tokenString = name , tokenTypeName = "float3x4"};
-                case SAILDataTokenType.MATRIX4X2:
-                    return new SAILVariableToken<float4x2>() { tokenString = name , tokenTypeName = "float4x2"};
-                case SAILDataTokenType.MATRIX4X3:
-                    return new SAILVariableToken<float4x3>() { tokenString = name , tokenTypeName = "float4x3"};
-                case SAILDataTokenType.MATRIX4X4:
-                    return new SAILVariableToken<float4x4>() { tokenString = name , tokenTypeName = "float4x4"};
+                // case SAILDataTokenType.MATRIX2X2:
+                //     return new SAILVariableToken<float2x2>() { tokenString = name , tokenTypeName = "float2x2"};
+                // case SAILDataTokenType.MATRIX2X3:
+                //     return new SAILVariableToken<float2x3>() { tokenString = name , tokenTypeName = "float2x3"};
+                // case SAILDataTokenType.MATRIX2X4:
+                //     return new SAILVariableToken<float2x4>() { tokenString = name , tokenTypeName = "float2x4"};
+                // case SAILDataTokenType.MATRIX3X2:
+                //     return new SAILVariableToken<float3x2>() { tokenString = name , tokenTypeName = "float3x2"};
+                // case SAILDataTokenType.MATRIX3X3:
+                //     return new SAILVariableToken<float3x3>() { tokenString = name , tokenTypeName = "float3x3"};
+                // case SAILDataTokenType.MATRIX3X4:
+                //     return new SAILVariableToken<float3x4>() { tokenString = name , tokenTypeName = "float3x4"};
+                // case SAILDataTokenType.MATRIX4X2:
+                //     return new SAILVariableToken<float4x2>() { tokenString = name , tokenTypeName = "float4x2"};
+                // case SAILDataTokenType.MATRIX4X3:
+                //     return new SAILVariableToken<float4x3>() { tokenString = name , tokenTypeName = "float4x3"};
+                // case SAILDataTokenType.MATRIX4X4:
+                //     return new SAILVariableToken<float4x4>() { tokenString = name , tokenTypeName = "float4x4"};
                 case SAILDataTokenType.BOOL:
                     return new SAILVariableToken<bool>() { tokenString = name , tokenTypeName = "bool"};
                 case SAILDataTokenType.BOOL2:

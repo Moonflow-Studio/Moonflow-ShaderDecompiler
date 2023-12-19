@@ -24,11 +24,12 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         }
                         break;
                     case GLSLCCDecompileCore.GLSLLineType.tempDeclaration:
-                        if (finishDeclaration) Debug.Assert(false, "计算开始后不应该再有临时变量定义");
-                        else
-                        {
+                        //TODO:有编译器会在函数开始执行后再生成临时变量，可能需要调整逻辑
+                        // if (finishDeclaration) Debug.Assert(false, "计算开始后不应该再有临时变量定义");
+                        // else
+                        // {
                             CreateDeclaration(ref line, ref sailData);
-                        }
+                        // }
                         break;
                     case GLSLCCDecompileCore.GLSLLineType.calculate:
                         if (!finishDeclaration) Debug.Assert(false, "计算开始前不应有计算语句");
@@ -133,7 +134,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         }
                         else
                         {
-                            Debug.Assert(false, "未知的函数");
+                            Debug.LogError( $"未知的函数 {lineToken.tokenString}");
                         }
                     }
                     hToken.token = functionToken;
@@ -172,6 +173,18 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     return hToken;
                 }
                 case GLSLLexer.GLSLTokenType.name:
+                    var variableToken = data.FindVariable(lineToken.tokenString);
+                    if (variableToken != null)
+                    {
+                        hToken.token = variableToken;
+                        return hToken;
+                    }
+                    else
+                    {
+                        Debug.LogError($"name token '{lineToken.tokenString}' doesn't match any variable");
+                        return hToken;
+                    }
+                case GLSLLexer.GLSLTokenType.partOfName:
                     //analyze lineToken by '.'
                     var nameTokens = lineToken.tokenString.Split('.');
                     //left of '.' is variable name, right of '.' is variable member
@@ -269,7 +282,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 {
                     dataTokenType = MatchDataType(line.tokens[j].tokenString);
                 }
-
+                //TODO: 矩阵定义需要通过变量名识别然后创建多个变量
                 if (line.tokens[j].type == GLSLLexer.GLSLTokenType.name || line.tokens[j].type == GLSLLexer.GLSLTokenType.semanticRegex || line.tokens[j].type == GLSLLexer.GLSLTokenType.tempDeclarRegex)
                 {
                     if (dataTokenType != SAILDataTokenType.error)
@@ -333,9 +346,6 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             if (str == "bvec2") return SAILDataTokenType.BOOL2;
             if (str == "bvec3") return SAILDataTokenType.BOOL3;
             if (str == "bvec4") return SAILDataTokenType.BOOL4;
-            if (str == "mat2") return SAILDataTokenType.MATRIX2X2;
-            if (str == "mat3") return SAILDataTokenType.MATRIX3X3;
-            if (str == "mat4") return SAILDataTokenType.MATRIX4X4;
             if (str == "sampler2D") return SAILDataTokenType.SAMPLER2D;
             if (str == "sampler3D") return SAILDataTokenType.SAMPLER3D;
             if (str == "samplerCube") return SAILDataTokenType.SAMPLERCUBE;

@@ -108,10 +108,14 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                                                 SAILAnalyze.Analyze(ref _sailData);
                                             }
                                         }
-                                        using (new EditorGUILayout.HorizontalScope())
+                                        using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll, GUILayout.Height(300)))
                                         {
+                                            rightScroll = rightView.scrollPosition;
                                             GUI.color = Color.white;
-                                            ShowSAILDefinitionResult();
+                                            using (new EditorGUILayout.HorizontalScope())
+                                            {
+                                                ShowSAILDefinitionResult();
+                                            }
                                         }
                                         using (var rightView = new EditorGUILayout.ScrollViewScope(rightScroll1))
                                         {

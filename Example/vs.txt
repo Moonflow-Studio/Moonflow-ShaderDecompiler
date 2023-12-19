@@ -1,0 +1,325 @@
+#version 300 es
+
+uniform 	vec4 _ProjectionParams;
+uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
+uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
+uniform 	vec3 _ES_SkyCenterWorldPos;
+uniform 	mediump vec3 _ES_SkyWorldUpDir;
+uniform 	mediump vec3 _ES_TopFrontColor;
+uniform 	mediump vec3 _ES_TopBackColor;
+uniform 	mediump vec3 _ES_BottomFrontColor;
+uniform 	mediump vec3 _ES_BottomBackColor;
+uniform 	mediump float _ES_SkyFrontAndBackBlendFactor;
+uniform 	mediump float _ES_BottomColorHeight;
+uniform 	mediump vec3 _ES_HorizonHaloColor;
+uniform 	mediump float _ES_HorizonHaloIntensity;
+uniform 	mediump float _ES_HorizonHaloHeight;
+uniform 	mediump vec3 _ES_SunDirection;
+uniform 	mediump vec3 _ES_SunColor;
+uniform 	mediump float _ES_SunBrightness;
+uniform 	mediump float _ES_SunRimLightRadius;
+uniform 	mediump float _ES_SunHaloSize;
+uniform 	mediump vec3 _ES_SunHaloColor;
+uniform 	mediump float _ES_SunHaloIntensity;
+uniform 	mediump vec3 _ES_MoonDirection;
+uniform 	mediump vec3 _ES_MoonColor;
+uniform 	mediump float _ES_MoonBrightness;
+uniform 	mediump float _ES_MoonGlowIntensity;
+uniform 	mediump float _ES_MoonLunarPhase;
+uniform 	float _ES_CloudElapsedTime;
+uniform 	mediump vec3 _ES_CloudLightFrontColor;
+uniform 	mediump vec3 _ES_CloudLightBackColor;
+uniform 	mediump vec3 _ES_CloudDarkFrontColor;
+uniform 	mediump vec3 _ES_CloudDarkBackColor;
+uniform 	mediump float _ES_CloudFrontAndBackBlendFactor;
+uniform 	mediump float _ES_CloudCoverage;
+uniform 	float _ES_CloudAgePercent;
+uniform 	mediump float _ES_CloudSunBrightenIntensity;
+uniform 	vec2 _AtlasTiles;
+uniform 	float _CloudCurlTiling;
+uniform 	float _CloudCurlSpeed;
+uniform 	float _TransientAgePercent;
+uniform lowp sampler2D _SkyGradientTex;
+in highp vec4 in_POSITION0;
+in highp vec4 in_TEXCOORD0;
+in highp vec4 in_TEXCOORD1;
+in mediump vec4 in_COLOR0;
+out highp vec4 vs_TEXCOORD0;
+out highp vec4 vs_TEXCOORD1;
+out mediump vec4 vs_TEXCOORD2;
+out mediump vec4 vs_TEXCOORD3;
+out mediump vec3 vs_TEXCOORD4;
+out mediump vec3 vs_TEXCOORD5;
+out mediump vec3 vs_TEXCOORD6;
+out mediump vec3 vs_TEXCOORD7;
+out mediump vec3 vs_TEXCOORD8;
+vec4 u_xlat0;
+vec4 u_xlat1;
+mediump vec2 u_xlat16_1;
+bool u_xlatb1;
+vec4 u_xlat2;
+mediump vec3 u_xlat16_3;
+mediump vec3 u_xlat16_4;
+mediump vec3 u_xlat16_5;
+float u_xlat7;
+vec3 u_xlat8;
+mediump vec3 u_xlat16_9;
+float u_xlat13;
+mediump vec2 u_xlat16_13;
+float u_xlat14;
+mediump float u_xlat16_15;
+float u_xlat18;
+mediump float u_xlat16_18;
+bool u_xlatb18;
+float u_xlat20;
+mediump float u_xlat16_21;
+mediump float u_xlat16_22;
+mediump float u_xlat16_23;
+void main()
+{
+    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
+    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
+    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
+    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
+    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1].xyww;
+    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0].xyww * u_xlat0.xxxx + u_xlat1;
+    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2].xyww * u_xlat0.zzzz + u_xlat1;
+    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3].xyww * u_xlat0.wwww + u_xlat1;
+    u_xlat0.xyz = u_xlat0.xyz + (-_ES_SkyCenterWorldPos.xyz);
+    gl_Position = u_xlat1;
+    u_xlat18 = u_xlat1.y * _ProjectionParams.x;
+    u_xlat2.w = u_xlat18 * 0.5;
+    u_xlat2.xz = u_xlat1.xw * vec2(0.5, 0.5);
+    vs_TEXCOORD0.zw = u_xlat1.ww;
+    vs_TEXCOORD0.xy = u_xlat2.zz + u_xlat2.xw;
+    u_xlat18 = _AtlasTiles.xxxy.z * _AtlasTiles.xxxy.w + -1.0;
+    u_xlat18 = in_COLOR0.y * u_xlat18 + 0.5;
+    u_xlat18 = floor(u_xlat18);
+    u_xlat1.x = u_xlat18 * _AtlasTiles.xxxy.z;
+#ifdef UNITY_ADRENO_ES3
+    u_xlatb1 = !!(u_xlat1.x>=(-u_xlat1.x));
+#else
+    u_xlatb1 = u_xlat1.x>=(-u_xlat1.x);
+#endif
+    u_xlat1.x = (u_xlatb1) ? _AtlasTiles.xxxy.z : (-_AtlasTiles.xxxy.z);
+    u_xlat7 = float(1.0) / u_xlat1.x;
+    u_xlat7 = u_xlat18 * u_xlat7;
+    u_xlat18 = u_xlat18 / _AtlasTiles.xxxy.z;
+    u_xlat2.y = floor(u_xlat18);
+    u_xlat18 = fract(u_xlat7);
+    u_xlat2.x = u_xlat18 * u_xlat1.x;
+    u_xlat1.xy = u_xlat2.xy + in_TEXCOORD0.xy;
+    vs_TEXCOORD1.xy = vec2(u_xlat1.x / float(_AtlasTiles.x), u_xlat1.y / float(_AtlasTiles.y));
+    u_xlat18 = _ES_CloudElapsedTime * _CloudCurlSpeed;
+    u_xlat1.xy = vec2(u_xlat18) * vec2(1.20000005, 0.800000012);
+    vs_TEXCOORD1.zw = in_TEXCOORD0.xy * vec2(_CloudCurlTiling) + u_xlat1.xy;
+    u_xlat18 = dot(u_xlat0.xyz, u_xlat0.xyz);
+    u_xlat18 = inversesqrt(u_xlat18);
+    u_xlat0.xyz = vec3(u_xlat18) * u_xlat0.xyz;
+    u_xlat16_3.x = dot(_ES_SkyWorldUpDir.xyz, u_xlat0.xyz);
+    u_xlat18 = max(u_xlat16_3.x, -1.0);
+    u_xlat16_18 = min(u_xlat18, 1.0);
+    u_xlat1.x = abs(u_xlat16_18) * -0.0187292993 + 0.0742610022;
+    u_xlat1.x = u_xlat1.x * abs(u_xlat16_18) + -0.212114394;
+    u_xlat1.x = u_xlat1.x * abs(u_xlat16_18) + 1.57072878;
+    u_xlat7 = -abs(u_xlat16_18) + 1.0;
+#ifdef UNITY_ADRENO_ES3
+    u_xlatb18 = !!(u_xlat16_18<(-u_xlat16_18));
+#else
+    u_xlatb18 = u_xlat16_18<(-u_xlat16_18);
+#endif
+    u_xlat7 = sqrt(u_xlat7);
+    u_xlat13 = u_xlat7 * u_xlat1.x;
+    u_xlat13 = u_xlat13 * -2.0 + 3.14159274;
+    u_xlat18 = u_xlatb18 ? u_xlat13 : float(0.0);
+    u_xlat18 = u_xlat1.x * u_xlat7 + u_xlat18;
+    u_xlat18 = (-u_xlat18) + 1.57079637;
+    u_xlat16_3.x = u_xlat18 * 0.636619806;
+    vs_TEXCOORD2.w = u_xlat16_3.x;
+    vs_TEXCOORD2.xyz = u_xlat0.xyz;
+    u_xlat18 = (-in_TEXCOORD1.w) + 1.0;
+    u_xlat18 = float(1.0) / u_xlat18;
+    u_xlat1.x = max(in_TEXCOORD1.x, 9.99999975e-06);
+    u_xlat1.x = in_TEXCOORD1.y / u_xlat1.x;
+    u_xlat1.x = u_xlat1.x * _ES_CloudAgePercent;
+    u_xlat7 = u_xlat1.x * _TransientAgePercent + (-in_TEXCOORD1.w);
+    u_xlat1.x = u_xlat1.x * _TransientAgePercent;
+    u_xlat18 = u_xlat18 * u_xlat7;
+#ifdef UNITY_ADRENO_ES3
+    u_xlat18 = min(max(u_xlat18, 0.0), 1.0);
+#else
+    u_xlat18 = clamp(u_xlat18, 0.0, 1.0);
+#endif
+    u_xlat7 = u_xlat18 * -2.0 + 3.0;
+    u_xlat18 = u_xlat18 * u_xlat18;
+    u_xlat18 = (-u_xlat7) * u_xlat18 + 1.0;
+    u_xlat7 = float(1.0) / in_TEXCOORD1.z;
+    u_xlat1.x = u_xlat7 * u_xlat1.x;
+#ifdef UNITY_ADRENO_ES3
+    u_xlat1.x = min(max(u_xlat1.x, 0.0), 1.0);
+#else
+    u_xlat1.x = clamp(u_xlat1.x, 0.0, 1.0);
+#endif
+    u_xlat7 = u_xlat1.x * -2.0 + 3.0;
+    u_xlat1.x = u_xlat1.x * u_xlat1.x;
+    u_xlat1.x = u_xlat1.x * u_xlat7;
+    u_xlat18 = (-u_xlat1.x) * u_xlat18 + 1.0;
+    vs_TEXCOORD3.w = u_xlat18;
+    vs_TEXCOORD3.yz = in_COLOR0.zw;
+    u_xlat16_9.x = dot(u_xlat0.xyz, vec3(_ES_SunDirection.x, _ES_SunDirection.y, _ES_SunDirection.z));
+    u_xlat16_3.z = u_xlat16_9.x * 0.5 + 0.5;
+    vs_TEXCOORD3.x = u_xlat16_3.z * _ES_CloudSunBrightenIntensity;
+    u_xlat16_21 = max(_ES_BottomColorHeight, 9.99999975e-05);
+    u_xlat16_1.x = abs(u_xlat16_3.x) / u_xlat16_21;
+    u_xlat16_1.y = float(0.5);
+    u_xlat16_13.y = float(0.5);
+    u_xlat18 = textureLod(_SkyGradientTex, u_xlat16_1.xy, 0.0).x;
+    u_xlat16_9.z = u_xlat16_9.x * _ES_SkyFrontAndBackBlendFactor + (-_ES_SkyFrontAndBackBlendFactor);
+    u_xlat16_9.x = u_xlat16_9.x * _ES_CloudFrontAndBackBlendFactor + (-_ES_CloudFrontAndBackBlendFactor);
+    u_xlat16_9.xz = u_xlat16_9.xz + vec2(1.0, 1.0);
+    u_xlat16_9.xz = max(u_xlat16_9.xz, vec2(0.0, 0.0));
+    u_xlat16_4.x = u_xlat16_9.z * u_xlat16_9.z;
+    u_xlat16_21 = u_xlat16_9.z * u_xlat16_4.x;
+    u_xlat16_4.xyz = _ES_BottomFrontColor.xyz + (-_ES_BottomBackColor.xyz);
+    u_xlat16_4.xyz = vec3(u_xlat16_21) * u_xlat16_4.xyz + _ES_BottomBackColor.xyz;
+    u_xlat16_5.xyz = _ES_TopFrontColor.xyz + (-_ES_TopBackColor.xyz);
+    u_xlat16_5.xyz = vec3(u_xlat16_21) * u_xlat16_5.xyz + _ES_TopBackColor.xyz;
+    u_xlat16_4.xyz = u_xlat16_4.xyz + (-u_xlat16_5.xyz);
+    u_xlat16_4.xyz = vec3(u_xlat18) * u_xlat16_4.xyz + u_xlat16_5.xyz;
+    u_xlat16_21 = max(_ES_HorizonHaloHeight, 9.99999975e-05);
+    u_xlat16_13.x = abs(u_xlat16_3.x) / u_xlat16_21;
+    u_xlat18 = textureLod(_SkyGradientTex, u_xlat16_13.xy, 0.0).y;
+    u_xlat16_5.xyz = vec3(_ES_HorizonHaloColor.xxyz.y * _ES_HorizonHaloIntensity, _ES_HorizonHaloColor.xxyz.z * _ES_HorizonHaloIntensity, float(_ES_HorizonHaloColor.z) * _ES_HorizonHaloIntensity);
+    u_xlat16_5.xyz = vec3(u_xlat18) * u_xlat16_5.xyz;
+    u_xlat16_3.x = abs(_ES_SunDirection.xxyz.z) + -0.200000003;
+    u_xlat16_3.x = u_xlat16_3.x * 3.33333325;
+#ifdef UNITY_ADRENO_ES3
+    u_xlat16_3.x = min(max(u_xlat16_3.x, 0.0), 1.0);
+#else
+    u_xlat16_3.x = clamp(u_xlat16_3.x, 0.0, 1.0);
+#endif
+    u_xlat16_21 = u_xlat16_3.x * -2.0 + 3.0;
+    u_xlat16_3.x = u_xlat16_3.x * u_xlat16_3.x;
+    u_xlat16_3.x = u_xlat16_3.x * u_xlat16_21;
+    u_xlat16_21 = max(u_xlat16_3.z, 0.0);
+    u_xlat16_21 = u_xlat16_21 + -0.300000012;
+    u_xlat16_21 = u_xlat16_21 * 1.42857146;
+#ifdef UNITY_ADRENO_ES3
+    u_xlat16_21 = min(max(u_xlat16_21, 0.0), 1.0);
+#else
+    u_xlat16_21 = clamp(u_xlat16_21, 0.0, 1.0);
+#endif
+    u_xlat16_22 = u_xlat16_21 * -2.0 + 3.0;
+    u_xlat16_21 = u_xlat16_21 * u_xlat16_21;
+    u_xlat16_23 = u_xlat16_21 * u_xlat16_22;
+    u_xlat16_21 = (-u_xlat16_22) * u_xlat16_21 + 1.0;
+    u_xlat16_3.x = u_xlat16_3.x * u_xlat16_21 + u_xlat16_23;
+    u_xlat16_4.xyz = u_xlat16_5.xyz * u_xlat16_3.xxx + u_xlat16_4.xyz;
+    u_xlat18 = dot(vec3(_ES_SunDirection.x, _ES_SunDirection.y, _ES_SunDirection.z), u_xlat0.xyz);
+    u_xlat18 = u_xlat18 * 0.5 + 0.5;
+    u_xlat18 = max(u_xlat18, 0.0);
+    u_xlat2.x = min(u_xlat18, 1.0);
+    u_xlat18 = u_xlat18 + -0.5;
+    u_xlat18 = u_xlat18 + u_xlat18;
+#ifdef UNITY_ADRENO_ES3
+    u_xlat18 = min(max(u_xlat18, 0.0), 1.0);
+#else
+    u_xlat18 = clamp(u_xlat18, 0.0, 1.0);
+#endif
+    u_xlat8.x = log2(u_xlat2.x);
+    u_xlat16_3.x = log2(u_xlat2.x);
+    u_xlat2.x = dot(u_xlat0.xyz, _ES_SkyWorldUpDir.xyz);
+    u_xlat16_21 = abs(u_xlat2.x) * _ES_SunHaloSize;
+    u_xlat14 = u_xlat8.x * u_xlat16_21;
+    u_xlat16_5.xyz = vec3(u_xlat16_21) * vec3(0.100000001, 0.00999999978, 0.5);
+    u_xlat2.z = exp2(u_xlat14);
+    u_xlat8.xz = u_xlat8.xx * u_xlat16_5.xy;
+    u_xlat16_3.x = u_xlat16_3.x * u_xlat16_5.z;
+    u_xlat16_3.x = exp2(u_xlat16_3.x);
+    u_xlat16_3.x = u_xlat2.x * u_xlat16_3.x;
+#ifdef UNITY_ADRENO_ES3
+    u_xlat16_3.x = min(max(u_xlat16_3.x, 0.0), 1.0);
+#else
+    u_xlat16_3.x = clamp(u_xlat16_3.x, 0.0, 1.0);
+#endif
+    u_xlat16_3.x = u_xlat16_3.x * _ES_SunHaloIntensity;
+    u_xlat16_5.xyz = u_xlat16_3.xxx * _ES_SunColor.xyz;
+    u_xlat2.xy = exp2(u_xlat8.xz);
+    u_xlat2.xyz = min(u_xlat2.xyz, vec3(1.0, 1.0, 1.0));
+    u_xlat2.x = u_xlat2.x * 0.119999997 + u_xlat2.z;
+    u_xlat2.x = u_xlat2.y * 0.0299999993 + u_xlat2.x;
+    u_xlat2.x = u_xlat2.x * _ES_SunHaloIntensity;
+    u_xlat2.xyz = u_xlat2.xxx * _ES_SunHaloColor.xyz;
+    u_xlat20 = u_xlat18 * -2.0 + 3.0;
+    u_xlat18 = u_xlat18 * u_xlat18;
+    u_xlat18 = u_xlat18 * u_xlat20;
+    u_xlat2.xyz = u_xlat2.xyz * vec3(u_xlat18) + u_xlat16_4.xyz;
+    vs_TEXCOORD4.xyz = u_xlat2.xyz;
+    u_xlat18 = dot(_ES_MoonDirection.xyz, u_xlat0.xyz);
+#ifdef UNITY_ADRENO_ES3
+    u_xlat18 = min(max(u_xlat18, 0.0), 1.0);
+#else
+    u_xlat18 = clamp(u_xlat18, 0.0, 1.0);
+#endif
+    u_xlat16_3.x = dot(u_xlat0.xyz, _ES_MoonDirection.xyz);
+    u_xlat16_3.x = u_xlat16_3.x * 0.5 + 0.5;
+    u_xlat16_3.xz = u_xlat16_3.xz + (-vec2(vec2(_ES_SunRimLightRadius, _ES_SunRimLightRadius)));
+    u_xlat16_21 = u_xlat18 * u_xlat18;
+    u_xlat16_21 = u_xlat18 * u_xlat16_21;
+    u_xlat16_21 = u_xlat18 * u_xlat16_21;
+    u_xlat16_21 = u_xlat16_21 * u_xlat18 + -0.5;
+    u_xlat16_21 = u_xlat16_21 + u_xlat16_21;
+    u_xlat16_21 = max(u_xlat16_21, 0.0);
+    u_xlat16_4.x = u_xlat16_21 * -2.0 + 3.0;
+    u_xlat16_21 = u_xlat16_21 * u_xlat16_21;
+    u_xlat16_21 = u_xlat16_21 * u_xlat16_4.x;
+    u_xlat16_21 = u_xlat16_21 * _ES_MoonGlowIntensity;
+    u_xlat16_4.x = _ES_MoonLunarPhase + -0.5;
+    u_xlat16_4.x = -abs(u_xlat16_4.x) * 2.0 + 1.0;
+    u_xlat16_21 = u_xlat16_21 * u_xlat16_4.x;
+    u_xlat16_4.xyz = vec3(u_xlat16_21) * _ES_MoonColor.xyz;
+    u_xlat16_21 = max(_ES_MoonBrightness, 0.0);
+    u_xlat16_21 = min(u_xlat16_21, 0.800000012);
+    u_xlat16_4.xyz = u_xlat16_4.xyz * vec3(u_xlat16_21) + u_xlat16_5.xyz;
+    u_xlat16_21 = (-_ES_CloudCoverage) + 0.699999988;
+    u_xlat16_21 = u_xlat16_21 * 2.50000024;
+#ifdef UNITY_ADRENO_ES3
+    u_xlat16_21 = min(max(u_xlat16_21, 0.0), 1.0);
+#else
+    u_xlat16_21 = clamp(u_xlat16_21, 0.0, 1.0);
+#endif
+    u_xlat16_22 = u_xlat16_21 * -2.0 + 3.0;
+    u_xlat16_21 = u_xlat16_21 * u_xlat16_21;
+    u_xlat16_21 = u_xlat16_21 * u_xlat16_22;
+    vs_TEXCOORD5.xyz = vec3(u_xlat16_21) * u_xlat16_4.xyz;
+    u_xlat16_4.x = (-_ES_SunRimLightRadius) + 1.0;
+    u_xlat16_4.x = float(1.0) / u_xlat16_4.x;
+    u_xlat16_3.xz = u_xlat16_3.xz * u_xlat16_4.xx;
+#ifdef UNITY_ADRENO_ES3
+    u_xlat16_3.xz = min(max(u_xlat16_3.xz, 0.0), 1.0);
+#else
+    u_xlat16_3.xz = clamp(u_xlat16_3.xz, 0.0, 1.0);
+#endif
+    u_xlat16_4.x = u_xlat16_3.x * -2.0 + 3.0;
+    u_xlat16_3.x = u_xlat16_3.x * u_xlat16_3.x;
+    u_xlat16_3.x = u_xlat16_3.x * u_xlat16_4.x;
+    u_xlat16_3.x = u_xlat16_3.x * _ES_MoonBrightness;
+    u_xlat16_3.x = u_xlat16_3.x * 0.100000001;
+    u_xlat16_3.x = u_xlat16_3.x * u_xlat16_3.x;
+    u_xlat16_4.xyz = u_xlat16_3.xxx * _ES_MoonColor.xyz;
+    u_xlat16_3.x = u_xlat16_3.z * -2.0 + 3.0;
+    u_xlat16_15 = u_xlat16_3.z * u_xlat16_3.z;
+    u_xlat16_3.x = u_xlat16_15 * u_xlat16_3.x;
+    u_xlat16_3.x = u_xlat16_3.x * _ES_SunBrightness;
+    u_xlat16_3.x = u_xlat16_3.x * 0.125;
+    u_xlat16_3.x = u_xlat16_3.x * u_xlat16_3.x;
+    u_xlat16_4.xyz = _ES_SunHaloColor.xyz * u_xlat16_3.xxx + u_xlat16_4.xyz;
+    vs_TEXCOORD6.xyz = vec3(u_xlat16_21) * u_xlat16_4.xyz;
+    u_xlat16_3.x = u_xlat16_9.x * u_xlat16_9.x;
+    u_xlat16_3.x = u_xlat16_9.x * u_xlat16_3.x;
+    u_xlat16_9.xyz = _ES_CloudLightFrontColor.xyz + (-_ES_CloudLightBackColor.xyz);
+    vs_TEXCOORD7.xyz = u_xlat16_3.xxx * u_xlat16_9.xyz + _ES_CloudLightBackColor.xyz;
+    u_xlat16_9.xyz = _ES_CloudDarkFrontColor.xyz + (-_ES_CloudDarkBackColor.xyz);
+    vs_TEXCOORD8.xyz = u_xlat16_3.xxx * u_xlat16_9.xyz + _ES_CloudDarkBackColor.xyz;
+    return;
+}
