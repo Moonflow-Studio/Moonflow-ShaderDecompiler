@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
@@ -285,34 +286,125 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 //TODO: 矩阵定义需要通过变量名识别然后创建多个变量
                 if (line.tokens[j].type == GLSLLexer.GLSLTokenType.name || line.tokens[j].type == GLSLLexer.GLSLTokenType.semanticRegex || line.tokens[j].type == GLSLLexer.GLSLTokenType.tempDeclarRegex)
                 {
+                    int multiDeclareCount = 1;
+                    string realTokenName = line.tokens[j].tokenString;
+                    if (line.tokens[j].type == GLSLLexer.GLSLTokenType.name ||
+                        line.tokens[j].type == GLSLLexer.GLSLTokenType.tempDeclarRegex)
+                    {
+                        multiDeclareCount = GetMultiDelcareCount(line.tokens[j].tokenString, out realTokenName);
+                    }
                     if (dataTokenType != SAILDataTokenType.error)
                     {
                         switch (modifierType)
                         {
                             case 0:
-                                if(dataTokenType == SAILDataTokenType.SAMPLER2D || dataTokenType == SAILDataTokenType.SAMPLER3D || dataTokenType == SAILDataTokenType.SAMPLERCUBE)
-                                    sailData.glbVar.Add(SAILTokenFactory.CreateTexture(line.tokens[j].tokenString, dataTokenType));
+                                if (dataTokenType == SAILDataTokenType.SAMPLER2D ||
+                                    dataTokenType == SAILDataTokenType.SAMPLER3D ||
+                                    dataTokenType == SAILDataTokenType.SAMPLERCUBE)
+                                {
+                                    if (multiDeclareCount > 1)
+                                    {
+                                        for (int i = 0; i < multiDeclareCount; i++)
+                                        {
+                                            sailData.glbVar.Add(SAILTokenFactory.CreateTexture($"{realTokenName}[{i}]", dataTokenType));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        sailData.glbVar.Add(SAILTokenFactory.CreateTexture(realTokenName, dataTokenType));
+                                    }
+                                }
                                 else
-                                    sailData.glbVar.Add(SAILTokenFactory.CreateVariable(line.tokens[j].tokenString, dataTokenType));
+                                {
+                                    if (multiDeclareCount > 1)
+                                    {
+                                        for (int i = 0; i < multiDeclareCount; i++)
+                                        {
+                                            sailData.glbVar.Add(SAILTokenFactory.CreateVariable($"{realTokenName}[{i}]", dataTokenType));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        sailData.glbVar.Add(SAILTokenFactory.CreateVariable(realTokenName, dataTokenType));
+                                    }
+                                }
                                 return;
                             case 1:
-                                sailData.inVar.Add(SAILTokenFactory.CreateVariable(line.tokens[j].tokenString, dataTokenType));
+                                if (multiDeclareCount > 1)
+                                {
+                                    for (int i = 0; i < multiDeclareCount; i++)
+                                    {
+                                        sailData.inVar.Add(SAILTokenFactory.CreateVariable($"{realTokenName}[{i}]", dataTokenType));
+                                    }
+                                }
+                                else
+                                {
+                                    sailData.inVar.Add(SAILTokenFactory.CreateVariable(realTokenName, dataTokenType));
+                                }
                                 return;
                             case 2:
-                                sailData.outVar.Add(SAILTokenFactory.CreateVariable(line.tokens[j].tokenString, dataTokenType));
+                                if (multiDeclareCount > 1)
+                                {
+                                    for (int i = 0; i < multiDeclareCount; i++)
+                                    {
+                                        sailData.outVar.Add(SAILTokenFactory.CreateVariable($"{realTokenName}[{i}]", dataTokenType));
+                                    }
+                                }
+                                else
+                                {
+                                    sailData.outVar.Add(SAILTokenFactory.CreateVariable(realTokenName, dataTokenType));
+                                }
                                 return;
                             case 3:
-                                sailData.inVar.Add(SAILTokenFactory.CreateVariable(line.tokens[j].tokenString, dataTokenType));
-                                sailData.outVar.Add(SAILTokenFactory.CreateVariable(line.tokens[j].tokenString, dataTokenType));
+                                if (multiDeclareCount > 1)
+                                {
+                                    for (int i = 0; i < multiDeclareCount; i++)
+                                    {
+                                        sailData.inVar.Add(SAILTokenFactory.CreateVariable($"{realTokenName}[{i}]", dataTokenType));
+                                        sailData.outVar.Add(SAILTokenFactory.CreateVariable($"{realTokenName}[{i}]", dataTokenType));
+                                    }
+                                }
+                                else
+                                {
+                                    sailData.inVar.Add(SAILTokenFactory.CreateVariable(realTokenName, dataTokenType));
+                                    sailData.outVar.Add(SAILTokenFactory.CreateVariable(realTokenName, dataTokenType));
+                                }
                                 return;
                             case -1:
-                                sailData.tempVar.Add(SAILTokenFactory.CreateVariable(line.tokens[j].tokenString, dataTokenType));
+                                if (multiDeclareCount > 1)
+                                {
+                                    for (int i = 0; i < multiDeclareCount; i++)
+                                    {
+                                        sailData.tempVar.Add(SAILTokenFactory.CreateVariable($"{realTokenName}[{i}]", dataTokenType));
+                                    }
+                                }
+                                else
+                                {
+                                    sailData.tempVar.Add(SAILTokenFactory.CreateVariable(realTokenName, dataTokenType));
+                                }
                                 return;
                         }
                     }
                 }
             }
             Debug.LogError($"未知的声明: {line.lineString} - modifierType:{modifierType} dataType:{dataTokenType}");
+        }
+
+        private static int GetMultiDelcareCount(string tokenString, out string newTokenString)
+        {
+            newTokenString = tokenString;
+            if (!tokenString.Contains('['))
+            {
+                return 1;
+            }
+            else
+            {
+                Regex regex = new Regex("./[0-9/]");
+                Match matches = regex.Match(tokenString);
+                int channel = Convert.ToInt16(matches.Groups[0].Value);
+                newTokenString = newTokenString.Replace($"[{matches.Groups[0].Value}]", "");
+                return channel;
+            }
         }
 
         private static SAILMacroTokenType MatchMacroType(string str)
