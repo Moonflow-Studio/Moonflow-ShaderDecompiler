@@ -1,4 +1,6 @@
-﻿namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
+﻿using System;
+
+namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
     public class SAILVariableToken : SAILToken
     {
@@ -35,7 +37,15 @@
         public SAILVariableToken link;
         public override string ShowString()
         {
-            return link.tokenString + "." + channel;
+            try
+            {
+                return (link?.ShowString()) + "." + channel;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 }

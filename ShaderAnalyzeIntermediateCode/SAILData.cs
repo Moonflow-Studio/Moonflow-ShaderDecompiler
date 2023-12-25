@@ -9,6 +9,8 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         public List<SAILVariableToken> glbVar;
         public List<SAILVariableToken> tempVar;
         public List<SAILSingleline> calculationLines;
+
+        public SAILVariableToken outputPosition;
         
         public SAILData()
         {
@@ -17,6 +19,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             glbVar = new List<SAILVariableToken>();
             tempVar = new List<SAILVariableToken>();
             calculationLines = new List<SAILSingleline>();
+            outputPosition = new SAILVariableToken() { tokenString = "sv_position", tokenTypeName = "float4" };
         }
 
         public SAILVariableToken FindVariable(string token)

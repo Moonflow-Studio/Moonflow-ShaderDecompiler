@@ -27,7 +27,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         public static readonly char[] symbolStrings = new []{/*'#',*/ '(', ')', ',', ';', '{', '}', '=', '+', '-', '*', '/', '%', '&', '|', '^', '!', '~', '<', '>', '?', ':',/* '[', ']', '.'*/};
         public static readonly char[] spaceStrings = new []{' ', '\t', '\n', '\r', '\f'};
         public static readonly string[] macroStrings = new []{"#define", "#undef", "#if", "#ifdef", "#ifndef", "#else", "#elif", "#endif", "#include", "#pragma", "#line", "#version", "#extension"};
-        public static readonly char[] numberChars = new []{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        public static readonly char[] numberChars = new []{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'e', '-'};
         public static readonly string tempDeclarStrings = "u_xlat";
         public static readonly string storageClassString = "inline";
         public static readonly string[] preciseStrings = new []{"lowp", "mediump", "highp"};
@@ -129,81 +129,118 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         public List<GLSLToken> Tokenize(string[] tokenstrings)
         {
             List<GLSLToken> tokens = new List<GLSLToken>();
-            bool isNegativeSymbolToNextNumber = false;
+            bool isNegativeSymbol = false;
+            bool lastIsNumber = false;
             for (int i = 0; i < tokenstrings.Length; i++)
             {
                 string tokenString = tokenstrings[i];
-                if (IsSymbol(tokenString[0]))
+                if (tokenString[0] == '-')
                 {
-                    //check if next token is number (like -0.0001)
-                    // if (tokenString[0] == '-')
-                    // {
-                        if (tokenString[0] == '-' && (i + 1) < tokenstrings.Length && IsNumber(tokenstrings[i + 1]))
+                    if ((i + 1) < tokenstrings.Length && !IsSpace(tokenstrings[i + 1][0]))
+                    {
+                        if (i > 0 && lastIsNumber)
                         {
-                            isNegativeSymbolToNextNumber = true;
+                            // tokens[^1].tokenString += "-";
+                            lastIsNumber = true;
                         }
                         else
                         {
-                            tokens.Add(new GLSLToken(GLSLTokenType.symbol, tokenString));
+                            isNegativeSymbol = true;
                         }
+                    }
+                    // else
+                    // {
+                    //     tokens.Add(new GLSLToken(GLSLTokenType.symbol, tokenString));
+                    //     lastIsNumber = false;
                     // }
-                }
-                else if (IsSpace(tokenString[0]))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.space, tokenString));
-                }
-                else if (IsMacro(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.macros, tokenString));
-                }
-                else if (IsNumber(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.number, (isNegativeSymbolToNextNumber?"-":"")+tokenString));
-                    isNegativeSymbolToNextNumber = false;
-                }
-                else if (IsTempDeclar(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.tempDeclarRegex, tokenString));
-                }
-                else if (IsStorageClass(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.storageClass, tokenString));
-                }
-                else if (IsPrecise(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.precise, tokenString));
-                }
-                else if (IsInputModifier(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.inputModifier, tokenString));
-                }
-                else if (IsSemanticRegex(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.semanticRegex, tokenString));
-                }
-                else if (IsLogicalOperator(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.logicalOperator, tokenString));
-                }
-                else if (IsInstrinsicFunction(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.instrFunc, tokenString));
-                }
-                else if (IsDataType(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.dataType, tokenString));
-                }
-                else if (IsName(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.name, tokenString));
-                }
-                else if (IsPartOfName(tokenString))
-                {
-                    tokens.Add(new GLSLToken(GLSLTokenType.partOfName, tokenString));
                 }
                 else
                 {
-                    tokens.Add(new GLSLToken(GLSLTokenType.unknown, tokenString));
+                    if (IsSymbol(tokenString[0]))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.symbol, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsSpace(tokenString[0]))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.space, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsMacro(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.macros, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsNumber(tokenString))
+                    {
+                        if (lastIsNumber)
+                        {
+                            tokens[^1].tokenString += tokenString;
+                        }
+                        else
+                        {
+                            tokens.Add(new GLSLToken(GLSLTokenType.number,
+                                (isNegativeSymbol ? "-" : "") + tokenString));
+                            isNegativeSymbol = false;
+                            lastIsNumber = true;
+                        }
+                    }
+                    else if (IsTempDeclar(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.tempDeclarRegex, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsStorageClass(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.storageClass, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsPrecise(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.precise, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsInputModifier(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.inputModifier, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsSemanticRegex(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.semanticRegex, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsLogicalOperator(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.logicalOperator, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsInstrinsicFunction(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.instrFunc, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsDataType(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.dataType, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsName(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.name, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else if (IsPartOfName(tokenString))
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.partOfName, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    else
+                    {
+                        tokens.Add(new GLSLToken(GLSLTokenType.unknown, tokenString, isNegativeSymbol));
+                        lastIsNumber = false;
+                    }
+                    isNegativeSymbol = false;
                 }
             }
             return tokens;

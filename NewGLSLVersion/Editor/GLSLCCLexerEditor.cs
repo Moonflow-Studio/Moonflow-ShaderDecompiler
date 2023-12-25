@@ -191,28 +191,30 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             {
                 foreach (var line in _sailData.calculationLines)
                 {
-                    EditorGUILayout.BeginHorizontal("box");
-                    if (line.isSelfCalculate)
-                        EditorGUILayout.LabelField("[SelfCalculate]", GUILayout.Width(100));
-                    foreach (var hToken in line.hTokens)
-                    {
-                        float grey = 1 - 0.2f * hToken.layer;
-                        GUI.backgroundColor = new Color(grey, grey, grey);
-                        GUI.color = SAILEditorUtility.GetTokenTypeColor(hToken.token);
-                        if (hToken.token != null)
+                    using (new EditorGUILayout.HorizontalScope("box"))
+                    {                    
+                        if (line.isSelfCalculate)
+                            EditorGUILayout.LabelField("[SelfCalculate]", GUILayout.Width(100));
+                        foreach (var hToken in line.hTokens)
                         {
-                            string showString = hToken.token.ShowString();
-                            // if (hToken.token is SAILPieceVariableToken pieceToken)
-                            // {
-                            //     showString = pieceToken.tokenString + "." + pieceToken.channel;
-                            // }
-                            if (GUILayout.Button(showString, GUILayout.Width(SAILEditorUtility.GetTokenTypeWidth(hToken.token))))
+                            float grey = 1 - 0.2f * hToken.layer;
+                            GUI.backgroundColor = new Color(grey, grey, grey);
+                            GUI.color = SAILEditorUtility.GetTokenTypeColor(hToken.token);
+                            if (hToken.token != null)
                             {
+                                string showString = (hToken.isNegative ? "-":"") + hToken.token.ShowString();
+                                // if (hToken.token is SAILPieceVariableToken pieceToken)
+                                // {
+                                //     showString = pieceToken.tokenString + "." + pieceToken.channel;
+                                // }
+                                if (GUILayout.Button(showString, GUILayout.Width(hToken.token.GetDisplaySize())))
+                                {
+                                }
                             }
+                            GUI.backgroundColor = Color.white;
                         }
-                        GUI.backgroundColor = Color.white;
+
                     }
-                    EditorGUILayout.EndHorizontal();
                 }
             }
         }
@@ -222,17 +224,17 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             foreach (var line in _decompileCore.originLines)
             {
                 GUI.backgroundColor = GetGLSLLineTypeColor(line.glslLineType);
-                EditorGUILayout.BeginHorizontal("box");
-                GUILayout.Button(GetGLSLLineTypeString(line.glslLineType), GUILayout.Width(30));
-                foreach (var token in line.tokens)
+                using (new EditorGUILayout.HorizontalScope("box"))
                 {
-                    GUI.color = GetGLSLTokenTypeColor(token.type);
-                    if (GUILayout.Button(token.tokenString, GUILayout.Width(GetGLSLTokenTypeWidth(token.type))))
+                    GUILayout.Button(GetGLSLLineTypeString(line.glslLineType), GUILayout.Width(30));
+                    foreach (var token in line.tokens)
                     {
+                        GUI.color = GetGLSLTokenTypeColor(token.type);
+                        if (GUILayout.Button(token.ShowString(), GUILayout.Width(token.GetDisplaySize())))
+                        {
+                        }
                     }
                 }
-
-                EditorGUILayout.EndHorizontal();
                 GUI.backgroundColor = Color.white;
             }
         }
@@ -258,27 +260,6 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 case GLSLLexer.GLSLTokenType.unknown: return Color.red;
             }
             return Color.black;
-        }
-        private float GetGLSLTokenTypeWidth(GLSLLexer.GLSLTokenType type)
-        {
-            switch (type)
-            {
-                case GLSLLexer.GLSLTokenType.symbol: return 20;
-                case GLSLLexer.GLSLTokenType.space: return 0;
-                case GLSLLexer.GLSLTokenType.macros: return 75;
-                case GLSLLexer.GLSLTokenType.number: return 100;
-                case GLSLLexer.GLSLTokenType.tempDeclarRegex: return 100;
-                case GLSLLexer.GLSLTokenType.storageClass: return 150;
-                case GLSLLexer.GLSLTokenType.precise: return 70;
-                case GLSLLexer.GLSLTokenType.inputModifier: return 50;
-                case GLSLLexer.GLSLTokenType.semanticRegex: return 120;
-                case GLSLLexer.GLSLTokenType.instrFunc: return 100;
-                case GLSLLexer.GLSLTokenType.dataType: return 50;
-                case GLSLLexer.GLSLTokenType.name: return 150;
-                case GLSLLexer.GLSLTokenType.partOfName: return 100;
-                case GLSLLexer.GLSLTokenType.unknown: return 150;
-            }
-            return 100;
         }
         private Color GetGLSLLineTypeColor(GLSLCCDecompileCore.GLSLLineType type)
         {

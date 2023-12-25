@@ -116,24 +116,24 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             for (int j = i; j < data.calculationLines.Count; j++)
             {
                 var line = data.calculationLines[j];
-                for (var index = 0; index < line.hTokens.Length; index++)
+                for (var index = 0; index < line.hTokens.Count; index++)
                 {
                     // SAILVariableToken hToken;
-                    if(line.hTokens[index].token is SAILPieceVariableToken pieceVariableToken)
+                    var sailHierToken = line.hTokens[index];
+                    if(sailHierToken.token is SAILPieceVariableToken pieceVariableToken)
                     {
                         if (ReferenceEquals(pieceVariableToken.link, from))
                         {
-                            line.hTokens[index].token = to;
+                            sailHierToken.token = to;
                         }
                     }
-                    else if (line.hTokens[index].token is SAILVariableToken)
+                    else if (sailHierToken.token is SAILVariableToken)
                     {
-                        if (ReferenceEquals(line.hTokens[index].token, from))
+                        if (ReferenceEquals(sailHierToken.token, from))
                         {
-                            line.hTokens[index].token = to;
+                            sailHierToken.token = to;
                         }
                     }
-                    
                 }
             }
         }

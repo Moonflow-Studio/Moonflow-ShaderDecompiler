@@ -9,5 +9,9 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         {
             return tokenString;
         }
+        public virtual float GetDisplaySize()
+        {
+            return 20 + tokenString.Length * 8;
+        }
     }
 }

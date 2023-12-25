@@ -16,7 +16,7 @@
             "InterlockedExchange", "InterlockedMax", "InterlockedMin", "InterlockedOr", "InterlockedXor",*/"ldexp", 
         };
         //TODO: 匹配function的参数数量
-        public bool Init(string str)
+        public bool MatchCommonFunctionIndex(string str)
         {
             for (int i = 0; i < functionString.Length; i++)
             {

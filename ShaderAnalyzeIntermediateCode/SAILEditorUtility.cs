@@ -19,18 +19,5 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             return Color.red;
         }
         
-        public static float GetTokenTypeWidth(SAILToken token)
-        {
-            if(token is SAILSymbolToken) return 20;
-            if(token is SAILMacroToken) return 75;
-            if(token is SAILNumberToken) return 100;
-            if(token is SAILVariableToken) return 100;
-            if(token is SAILLogicalToken) return 50;
-            if(token is SAILPieceVariableToken) return 120;
-            if(token is SAILFunctionTokenBase) return 100;
-            if(token is SAILFunctionTokenExceed) return 100;
-            if(token is SAILSpecialToken) return 150;
-            return 100;
-        }
     }
 }
