@@ -124,14 +124,16 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     {
                         if (ReferenceEquals(pieceVariableToken.link, from))
                         {
-                            sailHierToken.token = to;
+                            pieceVariableToken.link = to;
+                            pieceVariableToken.tokenString = to.tokenString + '.' + pieceVariableToken.channel;
                         }
                     }
-                    else if (sailHierToken.token is SAILVariableToken)
+                    else if (sailHierToken.token is SAILVariableToken variableToken)
                     {
                         if (ReferenceEquals(sailHierToken.token, from))
                         {
-                            sailHierToken.token = to;
+                            variableToken = to;
+                            variableToken.tokenString = to.tokenString;
                         }
                     }
                 }

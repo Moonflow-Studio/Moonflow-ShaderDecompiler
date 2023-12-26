@@ -131,7 +131,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             }
         }
 
-        private void OnInspectorUpdate()
+        private void Update()
         {
             _sailData.UpdateIntensity(Time.deltaTime);
         }

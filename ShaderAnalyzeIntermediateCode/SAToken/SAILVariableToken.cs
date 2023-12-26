@@ -5,7 +5,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
     public class SAILVariableToken : SAILToken
     {
         public string tokenTypeName;
-        private float _intensity;
+        private float _intensity = 1f;
 
         public virtual SAILVariableToken Copy()
         {
