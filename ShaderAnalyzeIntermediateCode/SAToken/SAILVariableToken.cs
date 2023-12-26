@@ -96,6 +96,11 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             }
         }
 
+        public override float GetDisplaySize()
+        {
+            return 10 + (tokenString.Length + channel.Length + 1) * 8;
+        }
+
         public bool MatchChannel(string otherChannel, out bool totalMatch)
         {
             if (otherChannel == channel)

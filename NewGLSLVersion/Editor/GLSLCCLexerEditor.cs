@@ -212,9 +212,8 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 foreach (var line in _sailData.calculationLines)
                 {
                     using (new EditorGUILayout.HorizontalScope("box"))
-                    {                    
-                        if (line.isSelfCalculate)
-                            EditorGUILayout.LabelField("[SelfCalculate]", GUILayout.Width(100));
+                    {   
+                        EditorGUILayout.LabelField(line.isSelfCalculate ? "[○]" : "    ", GUILayout.Width(20));
                         foreach (var hToken in line.hTokens)
                         {
                             float grey = 1 - 0.2f * hToken.layer;
