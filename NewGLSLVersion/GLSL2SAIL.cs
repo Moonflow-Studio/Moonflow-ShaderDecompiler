@@ -203,7 +203,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         var variable = data.FindVariable(nameTokens[0]);
                         hToken.token = new SAILPieceVariableToken()
                         {
-                            channel = lineToken.tokenString.Replace(nameTokens[0]+'.',""),
+                            channel = lineToken.tokenString.Replace( nameTokens[0]+'.',""),
                             link = variable,
                             tokenString = lineToken.tokenString
                         };

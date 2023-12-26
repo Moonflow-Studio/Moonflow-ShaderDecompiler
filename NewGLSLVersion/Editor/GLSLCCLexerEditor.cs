@@ -98,7 +98,6 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                             {
                                 using (new EditorGUILayout.VerticalScope())
                                 {
-                                    
                                     if (_sailData != null)
                                     {
                                         using (new EditorGUILayout.HorizontalScope())
@@ -132,6 +131,11 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             }
         }
 
+        private void OnInspectorUpdate()
+        {
+            _sailData.UpdateIntensity(Time.deltaTime);
+        }
+
         private void ShowSAILDefinitionResult()
         {
             using (new EditorGUILayout.VerticalScope())
@@ -144,6 +148,10 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     {
                         EditorGUILayout.LabelField(inVar.tokenTypeName, GUILayout.Width(100));
                         inVar.tokenString = EditorGUILayout.TextField(inVar.tokenString);
+                        if (GUILayout.Button("High Light"))
+                        {
+                            inVar.Chosen();
+                        }
                     }
                 }
             }
@@ -156,6 +164,10 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     {
                         EditorGUILayout.LabelField(outVar.tokenTypeName, GUILayout.Width(100));
                         outVar.tokenString = EditorGUILayout.TextField(outVar.tokenString);
+                        if (GUILayout.Button("High Light"))
+                        {
+                            outVar.Chosen();
+                        }
                     }
                 }
             }
@@ -168,6 +180,10 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     {
                         EditorGUILayout.LabelField(glbVar.tokenTypeName, GUILayout.Width(100));
                         glbVar.tokenString = EditorGUILayout.TextField(glbVar.tokenString);
+                        if (GUILayout.Button("High Light"))
+                        {
+                            glbVar.Chosen();
+                        }
                     }
                 }
             }
@@ -180,6 +196,10 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     {
                         EditorGUILayout.LabelField(tempVar.tokenTypeName, GUILayout.Width(100));
                         tempVar.tokenString = EditorGUILayout.TextField(tempVar.tokenString);
+                        if (GUILayout.Button("High Light"))
+                        {
+                            tempVar.Chosen();
+                        }
                     }
                 }
             }

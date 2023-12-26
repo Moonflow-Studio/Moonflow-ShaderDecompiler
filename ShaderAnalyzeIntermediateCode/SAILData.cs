@@ -150,5 +150,28 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             }
             return false;
         }
+
+        public void UpdateIntensity(float decrease)
+        {
+            foreach (var invar in inVar)
+            {
+                invar.DecreaseIntensity(decrease);
+            }
+
+            foreach (var outvar in outVar)
+            {
+                outvar.DecreaseIntensity(decrease);
+            }
+
+            foreach (var glbvar in glbVar)
+            {
+                glbvar.DecreaseIntensity(decrease);
+            }
+
+            foreach (var tempvar in tempVar)
+            {
+                tempvar.DecreaseIntensity(decrease);
+            }
+        }
     }
 }

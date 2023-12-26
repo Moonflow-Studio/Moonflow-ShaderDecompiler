@@ -13,5 +13,10 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         {
             return 20 + tokenString.Length * 8;
         }
+
+        public virtual float GetUIIntensity()
+        {
+            return 1;
+        }
     }
 }
