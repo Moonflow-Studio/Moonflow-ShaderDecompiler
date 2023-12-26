@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
     public class SAILVariableToken : SAILToken
     {
-        public string tokenTypeName;
+        public SAILDataTokenType tokenType;
         private float _intensity = 1f;
 
         public virtual SAILVariableToken Copy()
         {
             var copy = new SAILVariableToken();
             copy.tokenString = tokenString;
-            copy.tokenTypeName = tokenTypeName;
+            copy.tokenType = tokenType;
             return copy;
         }
 
@@ -30,6 +31,36 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             _intensity -= decrease;
             if (_intensity < 1) _intensity = 1;
         }
+        
+        public string GetDefaultChannel()
+        {
+            switch (tokenType)
+            {
+                case SAILDataTokenType.INT:
+                case SAILDataTokenType.UINT:
+                case SAILDataTokenType.FLOAT:
+                case SAILDataTokenType.BOOL: return "x";
+                case SAILDataTokenType.INT2:
+                case SAILDataTokenType.UINT2:
+                case SAILDataTokenType.FLOAT2:
+                case SAILDataTokenType.BOOL2: return "xy";
+                case SAILDataTokenType.INT3:
+                case SAILDataTokenType.UINT3:
+                case SAILDataTokenType.FLOAT3:
+                case SAILDataTokenType.BOOL3: return "xyz";
+                case SAILDataTokenType.INT4:
+                case SAILDataTokenType.UINT4:
+                case SAILDataTokenType.FLOAT4:
+                case SAILDataTokenType.BOOL4:
+                case SAILDataTokenType.TEXTURE2D:
+                case SAILDataTokenType.TEXTURE3D:
+                case SAILDataTokenType.TEXTURECUBE:
+                case SAILDataTokenType.TEXTURE2DARRAY:
+                case SAILDataTokenType.TEXTURE3DARRAY: return "xyzw";
+            }
+
+            return "";
+        }
     }
     public class SAILVariableToken<T> : SAILVariableToken
     {
@@ -38,7 +69,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         {
             var copy = new SAILVariableToken<T>();
             copy.tokenString = tokenString;
-            copy.tokenTypeName = tokenTypeName;
+            copy.tokenType = tokenType;
             copy.data = data;
             return copy;
         }
@@ -64,5 +95,28 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 throw;
             }
         }
+
+        public bool MatchChannel(string otherChannel, out bool totalMatch)
+        {
+            if (otherChannel == channel)
+            {
+                totalMatch = true;
+                return true;
+            }
+            
+            HashSet<char> channels = new HashSet<char>();
+            for (int i = 0; i < channel.Length; i++)
+            {
+                channels.Add(channel[i]);
+            }
+
+            totalMatch = false;
+            foreach (var channelChar in otherChannel)
+            {
+                if (channels.Contains(channelChar)) return true;
+            }
+            return false;
+        }
+        
     }
 }

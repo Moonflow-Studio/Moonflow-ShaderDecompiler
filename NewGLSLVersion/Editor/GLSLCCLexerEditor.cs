@@ -146,7 +146,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     var inVar = _sailData.inVar[index];
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField(inVar.tokenTypeName, GUILayout.Width(100));
+                        EditorGUILayout.LabelField(inVar.tokenType.ToString().ToLower(), GUILayout.Width(100));
                         inVar.tokenString = EditorGUILayout.TextField(inVar.tokenString);
                         if (GUILayout.Button("High Light"))
                         {
@@ -162,7 +162,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField(outVar.tokenTypeName, GUILayout.Width(100));
+                        EditorGUILayout.LabelField(outVar.tokenType.ToString().ToLower(), GUILayout.Width(100));
                         outVar.tokenString = EditorGUILayout.TextField(outVar.tokenString);
                         if (GUILayout.Button("High Light"))
                         {
@@ -178,7 +178,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField(glbVar.tokenTypeName, GUILayout.Width(100));
+                        EditorGUILayout.LabelField(glbVar.tokenType.ToString().ToLower(), GUILayout.Width(100));
                         glbVar.tokenString = EditorGUILayout.TextField(glbVar.tokenString);
                         if (GUILayout.Button("High Light"))
                         {
@@ -194,7 +194,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField(tempVar.tokenTypeName, GUILayout.Width(100));
+                        EditorGUILayout.LabelField(tempVar.tokenType.ToString().ToLower(), GUILayout.Width(100));
                         tempVar.tokenString = EditorGUILayout.TextField(tempVar.tokenString);
                         if (GUILayout.Button("High Light"))
                         {

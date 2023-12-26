@@ -19,7 +19,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             glbVar = new List<SAILVariableToken>();
             tempVar = new List<SAILVariableToken>();
             calculationLines = new List<SAILSingleline>();
-            outputPosition = new SAILVariableToken() { tokenString = "sv_position", tokenTypeName = "float4" };
+            outputPosition = new SAILVariableToken() { tokenString = "sv_position", tokenType = SAILDataTokenType.FLOAT4 };
         }
 
         public SAILVariableToken FindVariable(string token)

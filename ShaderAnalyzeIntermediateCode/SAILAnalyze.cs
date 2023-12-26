@@ -65,7 +65,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         
         public static void SplitTemporaryVariable(SAILData data)
         {
-            HashSet<SAILVariableToken> equalsLeft = new HashSet<SAILVariableToken>();
+            HashSet<SAILPieceVariableToken> equalsLeft = new HashSet<SAILPieceVariableToken>();
             int count = 0;
             for (int i = 0; i < data.calculationLines.Count; i++)
             {
@@ -74,7 +74,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 {
                     if(!data.MatchTemporaryVariable(pieceVariableToken.link))
                         continue;
-                    if (equalsLeft.Contains(pieceVariableToken.link) && !data.calculationLines[i].isSelfCalculate)
+                    if (MatchPieceVariable(equalsLeft, pieceVariableToken) && !data.calculationLines[i].isSelfCalculate)
                     {
                         SAILPieceVariableToken newPieceVariableToken = new SAILPieceVariableToken();
                         newPieceVariableToken.channel = pieceVariableToken.channel;
@@ -82,35 +82,60 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         newPieceVariableToken.link.tokenString = pieceVariableToken.link.tokenString+$"_{count}";
                         newPieceVariableToken.tokenString = newPieceVariableToken.link.tokenString + "." + newPieceVariableToken.channel;
                         count++;
-                        ReplaceLinkStartFromLine(data, pieceVariableToken.link, newPieceVariableToken.link, i);
+                        ReplaceLinkStartFromLine(data, pieceVariableToken, newPieceVariableToken, i, newPieceVariableToken.channel);
                         data.tempVar.Add(newPieceVariableToken.link);
                     }
                     else
                     {
-                        equalsLeft.Add(pieceVariableToken.link);
+                        equalsLeft.Add(pieceVariableToken);
                     }
                 }
-                else if(firstToken is SAILVariableToken variableToken)
-                {
-                    if(!data.MatchTemporaryVariable(variableToken))
-                        continue;
-                    if (equalsLeft.Contains(variableToken) && !data.calculationLines[i].isSelfCalculate)
-                    {
-                        SAILVariableToken newVariableToken = variableToken.Copy();
-                        newVariableToken.tokenString += $"_{count}";
-                        count++;
-                        ReplaceLinkStartFromLine(data, variableToken, newVariableToken, i);
-                        data.tempVar.Add(newVariableToken);
-                    }
-                    else
-                    {
-                        equalsLeft.Add(variableToken);
-                    }
-                }
+                // else if(firstToken is SAILVariableToken variableToken)
+                // {
+                //     if(!data.MatchTemporaryVariable(variableToken))
+                //         continue;
+                //     if (MatchFullVariable(equalsLeft, variableToken) && !data.calculationLines[i].isSelfCalculate)
+                //     {
+                //         SAILVariableToken newVariableToken = variableToken.Copy();
+                //         newVariableToken.tokenString += $"_{count}";
+                //         count++;
+                //         ReplaceLinkStartFromLine(data, variableToken, newVariableToken, i);
+                //         data.tempVar.Add(newVariableToken);
+                //     }
+                //     else
+                //     {
+                //         equalsLeft.Add(new SAILPieceVariableToken()
+                //         {
+                //             channel = "",
+                //             link = variableToken,
+                //             tokenString = variableToken.ShowString()
+                //         });
+                //     }
+                // }
             }
         }
 
-        private static void ReplaceLinkStartFromLine(SAILData data, SAILVariableToken from, SAILVariableToken to, int i)
+        private static bool MatchPieceVariable(HashSet<SAILPieceVariableToken> pieces, SAILPieceVariableToken waitForMatch)
+        {
+            foreach (var piece in pieces)
+            {
+                if (piece.channel == waitForMatch.channel && ReferenceEquals(piece.link, waitForMatch.link))
+                    return true;
+            }
+            return false;
+        }
+
+        private static bool MatchFullVariable(HashSet<SAILPieceVariableToken> pieces, SAILVariableToken waitForMatch)
+        {
+            foreach (var piece in pieces)
+            {
+                if (piece.channel == "" && ReferenceEquals(piece.link, waitForMatch))
+                    return true;
+            }
+            return false;
+        }
+
+        private static void ReplaceLinkStartFromLine(SAILData data, SAILPieceVariableToken from, SAILPieceVariableToken to, int i, string channel = "")
         {
             //replace all lint to sailVariableToken from calculationLines[i]
             for (int j = i; j < data.calculationLines.Count; j++)
@@ -122,20 +147,27 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     var sailHierToken = line.hTokens[index];
                     if(sailHierToken.token is SAILPieceVariableToken pieceVariableToken)
                     {
-                        if (ReferenceEquals(pieceVariableToken.link, from))
+                        if (ReferenceEquals(pieceVariableToken.link, from.link) && pieceVariableToken.MatchChannel(from.channel, out bool totalMatch))
                         {
-                            pieceVariableToken.link = to;
-                            pieceVariableToken.tokenString = to.tokenString + '.' + pieceVariableToken.channel;
+                            if (totalMatch)
+                            {
+                                pieceVariableToken.link = to.link;
+                                pieceVariableToken.tokenString = to.tokenString + '.' + pieceVariableToken.channel;
+                            }
+                            else
+                            {
+                                //TODO:与上文替换的片段参数有重合通道但不是所有通道都重合度需要重新拆分成多个片段
+                            }
                         }
                     }
-                    else if (sailHierToken.token is SAILVariableToken variableToken)
-                    {
-                        if (ReferenceEquals(sailHierToken.token, from))
-                        {
-                            variableToken = to;
-                            variableToken.tokenString = to.tokenString;
-                        }
-                    }
+                    // else if (sailHierToken.token is SAILVariableToken variableToken)
+                    // {
+                    //     if (ReferenceEquals(variableToken, from.link))
+                    //     {
+                    //         variableToken = to;
+                    //         variableToken.tokenString = to.tokenString;
+                    //     }
+                    // }
                 }
             }
         }

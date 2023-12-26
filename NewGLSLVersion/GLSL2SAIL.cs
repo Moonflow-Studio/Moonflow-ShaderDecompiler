@@ -96,10 +96,9 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         macroLine.hTokens.Add(new SAILHierToken()
                         {
                             layer = 0,
-                            token = new SAILVariableToken()
+                            token = new SAILToken()
                             {
                                 tokenString = line.lineString.Replace(line.tokens[0].tokenString, ""),
-                                tokenTypeName = "MacroDetail"
                             }
                         });
                         sailData.calculationLines.Add(macroLine);
@@ -155,7 +154,14 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     if (tmpTokens.Length == 1)
                     {
                         //variable name
-                        hToken.token = data.FindVariable(tmpTokens[0]);
+                        var variable = data.FindVariable(tmpTokens[0]);
+                        hToken.token = new SAILPieceVariableToken()
+                        {
+                            channel = variable.GetDefaultChannel(),
+                            link = variable,
+                            tokenString = lineToken.tokenString,
+                        };
+                        hToken.isNegative = lineToken.isNegative;
                     }
                     else
                     {
@@ -163,7 +169,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         var variable = data.FindVariable(tmpTokens[0]);
                         hToken.token = new SAILPieceVariableToken()
                         {
-                            channel = tmpTokens[1],
+                            channel = ReduceChannel(lineToken.tokenString.Replace( tmpTokens[0]+'.',"")),
                             link = variable,
                             tokenString = lineToken.tokenString,
                         };
@@ -203,7 +209,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         var variable = data.FindVariable(nameTokens[0]);
                         hToken.token = new SAILPieceVariableToken()
                         {
-                            channel = lineToken.tokenString.Replace( nameTokens[0]+'.',""),
+                            channel = ReduceChannel(lineToken.tokenString.Replace( nameTokens[0]+'.',"")),
                             link = variable,
                             tokenString = lineToken.tokenString
                         };
@@ -225,7 +231,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         var variable = data.FindVariable(semTokens[0]);
                         hToken.token = new SAILPieceVariableToken()
                         {
-                            channel = semTokens[1],
+                            channel = ReduceChannel(lineToken.tokenString.Replace(semTokens[0]+'.',"")),
                             link = variable,
                             tokenString = lineToken.tokenString
                         };
@@ -303,9 +309,9 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         switch (modifierType)
                         {
                             case 0:
-                                if (dataTokenType == SAILDataTokenType.SAMPLER2D ||
-                                    dataTokenType == SAILDataTokenType.SAMPLER3D ||
-                                    dataTokenType == SAILDataTokenType.SAMPLERCUBE)
+                                if (dataTokenType == SAILDataTokenType.TEXTURE2D ||
+                                    dataTokenType == SAILDataTokenType.TEXTURE3D ||
+                                    dataTokenType == SAILDataTokenType.TEXTURECUBE)
                                 {
                                     if (multiDeclareCount > 1)
                                     {
@@ -445,9 +451,9 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             if (str == "bvec2") return SAILDataTokenType.BOOL2;
             if (str == "bvec3") return SAILDataTokenType.BOOL3;
             if (str == "bvec4") return SAILDataTokenType.BOOL4;
-            if (str == "sampler2D") return SAILDataTokenType.SAMPLER2D;
-            if (str == "sampler3D") return SAILDataTokenType.SAMPLER3D;
-            if (str == "samplerCube") return SAILDataTokenType.SAMPLERCUBE;
+            if (str == "sampler2D") return SAILDataTokenType.TEXTURE2D;
+            if (str == "sampler3D") return SAILDataTokenType.TEXTURE3D;
+            if (str == "samplerCube") return SAILDataTokenType.TEXTURECUBE;
             //TODO: samplerArray
             Debug.Assert(false, "未知的数据类型");
             return SAILDataTokenType.error;
@@ -474,6 +480,35 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 case "textureLod" : return sail.MatchCommonFunctionIndex("sampleTexture");
             }
             return false;
+        }
+
+        private static string ReduceChannel(string channel)
+        {
+            string[] split = channel.Split('.');
+            if (split.Length == 1) return channel;
+            char[] mapper = new[] { 'x', 'y', 'z', 'w' };
+            string newChannel = "";
+            for (int i = 0; i < split[1].Length; i++)
+            {
+                int realNum = -1;
+                for (int j = 0; j < mapper.Length; j++)
+                {
+                    if (split[1][i] == mapper[j])
+                    {
+                        realNum = j;
+                        break;
+                    }
+                }
+
+                if (realNum == -1 || realNum >= split[0].Length)
+                {
+                    Debug.LogError($"channel name {split[1][i].ToString()} could not be recognized");
+                    return channel;
+                }
+                newChannel += split[0][realNum];
+            }
+
+            return newChannel;
         }
     }
 }

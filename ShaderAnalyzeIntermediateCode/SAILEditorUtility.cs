@@ -21,7 +21,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             if(token is SAILLogicalToken) return new Color(0.2f, 0.5f, 0.58f) * token.GetUIIntensity();
             if(token is SAILFunctionTokenBase) return new Color(0.5f, 0.8f, 0.5f) * token.GetUIIntensity();
             if(token is SAILFunctionTokenExceed) return new Color(0.7f, 1f, 0.7f) * token.GetUIIntensity();
-            return Color.red;
+            return new Color(1f, 0.5f, 0.3f);
         }
         
     }
