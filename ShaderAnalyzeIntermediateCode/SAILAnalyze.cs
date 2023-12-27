@@ -171,7 +171,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     {
                         if (ReferenceEquals(pieceVariableToken.link, from.link) && pieceVariableToken.MatchChannel(from.channel, out bool totalMatch))
                         {
-                            if (totalMatch)
+                            if (totalMatch/* || pieceVariableToken.channel.Length == 1*/)
                             {
                                 sailHierToken.token = new SAILPieceVariableToken()
                                 {
@@ -184,8 +184,70 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                             else
                             {
                                 //TODO:与上文替换的片段参数有重合通道但不是所有通道都重合度需要重新拆分成多个片段
-                                char[] channels = pieceVariableToken.channel.ToCharArray();
-                                int replacedHTokenSize = channels.Length * 2 + 2;// n通道Token + (n-1)个逗号Token + 数据类型Token + 左右括号Token
+                                if (index > 0)
+                                {
+                                    int startIndex = index;
+                                    char[] channels = pieceVariableToken.channel.ToCharArray();
+                                    // int replacedHTokenSize = channels.Length * 2 + 2;// n通道Token + (n-1)个逗号Token + 数据类型Token + 左右括号Token
+                                    SAILHierToken dataTypeHT = new SAILHierToken()
+                                    {
+                                        isNegative = line.hTokens[startIndex].isNegative,
+                                        layer = line.hTokens[startIndex].layer,
+                                        token = SAILTokenFactory.CreateVariable(
+                                            pieceVariableToken.link.tokenType.ToString().ToLower(),
+                                            pieceVariableToken.link.tokenType)
+                                    };
+                                    line.hTokens.RemoveAt(startIndex);
+                                    line.hTokens.Insert(startIndex, dataTypeHT);
+                                    startIndex++;
+                                    SAILHierToken leftBracket = new SAILHierToken()
+                                        { token = new SAILSymbolToken() { tokenString = "(" } };
+                                    line.hTokens.Insert(startIndex, leftBracket);
+                                    startIndex++;
+                                    for (int k = 0; k < channels.Length; k++)
+                                    {
+                                        //from里有的通道赋值为to，from里没有的通道赋值为from
+                                        bool matched = from.MatchChannel(channels[k].ToString(), out bool trash);
+                                        SAILHierToken channelK = new SAILHierToken()
+                                        {
+                                            isNegative = false,
+                                            layer = line.hTokens[startIndex].layer + 1,
+                                            token = new SAILPieceVariableToken()
+                                            {
+                                                channel = channels[k].ToString(),
+                                                link = matched ? to.link : from.link,
+                                                tokenString = to.link.tokenString + '.' + channels[k]
+                                            }
+                                        };
+                                        line.hTokens.Insert(startIndex, channelK);
+                                        startIndex++;
+
+                                        if (k < channels.Length - 1)
+                                        {
+                                            SAILHierToken Comma = new SAILHierToken()
+                                                { token = new SAILSymbolToken() { tokenString = "," } };
+                                            line.hTokens.Insert(startIndex, Comma);
+                                            startIndex++;
+                                        }
+                                    }
+                                    SAILHierToken rightBracket = new SAILHierToken()
+                                        { token = new SAILSymbolToken() { tokenString = ")" } };
+                                    line.hTokens.Insert(startIndex, rightBracket);
+                                }
+                                else
+                                {
+                                    line.hTokens[index] = new SAILHierToken()
+                                    {
+                                        isNegative = false,
+                                        layer = 0,
+                                        token = new SAILPieceVariableToken()
+                                        {
+                                            channel = pieceVariableToken.channel,
+                                            link = to.link,
+                                            tokenString = to.tokenString + "." + pieceVariableToken.channel
+                                        }
+                                    };
+                                }
                                 
                             }
                         }

@@ -209,11 +209,12 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         {
             using (new EditorGUILayout.VerticalScope())
             {
-                foreach (var line in _sailData.calculationLines)
+                for (var index = 0; index < _sailData.calculationLines.Count; index++)
                 {
+                    var line = _sailData.calculationLines[index];
                     using (new EditorGUILayout.HorizontalScope("box"))
-                    {   
-                        EditorGUILayout.LabelField(line.isSelfCalculate ? "[○]" : "    ", GUILayout.Width(20));
+                    {
+                        EditorGUILayout.LabelField(index.ToString() + (line.isSelfCalculate ? "[○]" : "    "), GUILayout.Width(50));
                         foreach (var hToken in line.hTokens)
                         {
                             float grey = 1 - 0.2f * hToken.layer;
@@ -221,7 +222,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                             GUI.color = SAILEditorUtility.GetTokenTypeColor(hToken.token);
                             if (hToken.token != null)
                             {
-                                string showString = (hToken.isNegative ? "-":"") + hToken.token.ShowString();
+                                string showString = (hToken.isNegative ? "-" : "") + hToken.token.ShowString();
                                 // if (hToken.token is SAILPieceVariableToken pieceToken)
                                 // {
                                 //     showString = pieceToken.tokenString + "." + pieceToken.channel;
@@ -230,10 +231,10 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                                 {
                                 }
                             }
+
                             GUI.color = Color.white;
                             GUI.backgroundColor = Color.white;
                         }
-
                     }
                 }
             }
