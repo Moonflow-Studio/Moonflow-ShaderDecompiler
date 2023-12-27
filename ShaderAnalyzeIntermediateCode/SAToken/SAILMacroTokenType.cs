@@ -1,4 +1,6 @@
-﻿namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
+﻿using System;
+
+namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 {
     public enum SAILMacroTokenType
     {

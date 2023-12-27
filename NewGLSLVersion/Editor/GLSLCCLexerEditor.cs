@@ -133,7 +133,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
 
         private void Update()
         {
-            _sailData.UpdateIntensity(Time.deltaTime);
+            _sailData?.UpdateIntensity(Time.deltaTime);
         }
 
         private void ShowSAILDefinitionResult()
@@ -230,6 +230,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                                 {
                                 }
                             }
+                            GUI.color = Color.white;
                             GUI.backgroundColor = Color.white;
                         }
 

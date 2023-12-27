@@ -65,15 +65,18 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         
         public static void SplitTemporaryVariable(SAILData data)
         {
-            HashSet<SAILPieceVariableToken> equalsLeft = new HashSet<SAILPieceVariableToken>();
+            // HashSet<SAILPieceVariableToken> equalsLeft = new HashSet<SAILPieceVariableToken>();
+            Dictionary<SAILPieceVariableToken, int> equalsLeft = new Dictionary<SAILPieceVariableToken, int>();
             int count = 0;
+            int branchLayer = 0;
             for (int i = 0; i < data.calculationLines.Count; i++)
             {
                 var firstToken = data.calculationLines[i].hTokens[0].token;
                 if (firstToken is SAILPieceVariableToken pieceVariableToken)
                 {
-                    if(!data.MatchTemporaryVariable(pieceVariableToken.link))
+                    if(!data.MatchTemporaryVariable(pieceVariableToken.link) || branchLayer > 0)
                         continue;
+                    //当左侧变量最后一次出现不在分支内才进行后续替换，否则可能造成问题
                     if (MatchPieceVariable(equalsLeft, pieceVariableToken) && !data.calculationLines[i].isSelfCalculate)
                     {
                         SAILPieceVariableToken newPieceVariableToken = new SAILPieceVariableToken();
@@ -87,7 +90,25 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                     }
                     else
                     {
-                        equalsLeft.Add(pieceVariableToken);
+                        //强制更新等号左侧变量的分支状态
+                        if (equalsLeft.ContainsKey(pieceVariableToken))
+                        {
+                            equalsLeft[pieceVariableToken] = branchLayer;
+                        }
+                        else
+                        {
+                            equalsLeft.Add(pieceVariableToken, branchLayer);
+                        }
+                    }
+                }
+                else if (firstToken is SAILMacroToken macroToken)
+                {
+                    if (macroToken.macroTokenType is SAILMacroTokenType.IF or SAILMacroTokenType.IFDEF or SAILMacroTokenType.IFNDEF)
+                    {
+                        branchLayer += 1;
+                    }else if (macroToken.macroTokenType == SAILMacroTokenType.ENDIF)
+                    {
+                        branchLayer -= 1;
                     }
                 }
                 // else if(firstToken is SAILVariableToken variableToken)
@@ -115,11 +136,12 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             }
         }
 
-        private static bool MatchPieceVariable(HashSet<SAILPieceVariableToken> pieces, SAILPieceVariableToken waitForMatch)
+        private static bool MatchPieceVariable(Dictionary<SAILPieceVariableToken, int> pieces, SAILPieceVariableToken waitForMatch)
         {
             foreach (var piece in pieces)
             {
-                if (piece.channel == waitForMatch.channel && ReferenceEquals(piece.link, waitForMatch.link))
+                //参数上次出现不能在分支内，否则替换会有问题
+                if (piece.Key.channel == waitForMatch.channel && ReferenceEquals(piece.Key.link, waitForMatch.link) && piece.Value == 0)
                     return true;
             }
             return false;
@@ -151,12 +173,20 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         {
                             if (totalMatch)
                             {
-                                pieceVariableToken.link = to.link;
-                                pieceVariableToken.tokenString = to.tokenString + '.' + pieceVariableToken.channel;
+                                sailHierToken.token = new SAILPieceVariableToken()
+                                {
+                                    channel = from.channel,
+                                    link = to.link,
+                                    tokenString = to.tokenString + '.' + to.channel
+                                };
+                                line.hTokens[index] = sailHierToken;
                             }
                             else
                             {
                                 //TODO:与上文替换的片段参数有重合通道但不是所有通道都重合度需要重新拆分成多个片段
+                                char[] channels = pieceVariableToken.channel.ToCharArray();
+                                int replacedHTokenSize = channels.Length * 2 + 2;// n通道Token + (n-1)个逗号Token + 数据类型Token + 左右括号Token
+                                
                             }
                         }
                     }
