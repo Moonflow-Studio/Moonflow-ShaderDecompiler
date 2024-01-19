@@ -76,8 +76,8 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                 {
                     if(!data.MatchTemporaryVariable(pieceVariableToken.link) || branchLayer > 0)
                         continue;
-                    //当左侧变量最后一次出现不在分支内才进行后续替换，否则可能造成问题
-                    if (MatchPieceVariable(equalsLeft, pieceVariableToken) && !data.calculationLines[i].isSelfCalculate)
+                    //TODO: 替换条件：1.行不在分支里（branchLayer==0) 2.等号左侧变量所有通道都被更新
+                    if (!data.calculationLines[i].isSelfCalculate && branchLayer == 0 && MatchPieceVariable(equalsLeft, pieceVariableToken) && pieceVariableToken.channel == pieceVariableToken.link.GetDefaultChannel())
                     {
                         SAILPieceVariableToken newPieceVariableToken = new SAILPieceVariableToken();
                         newPieceVariableToken.channel = pieceVariableToken.channel;
@@ -160,6 +160,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         private static void ReplaceLinkStartFromLine(SAILData data, SAILPieceVariableToken from, SAILPieceVariableToken to, int i, string channel = "")
         {
             //replace all lint to sailVariableToken from calculationLines[i]
+            //替换是完全替换的（不论channel数量、branch）
             for (int j = i; j < data.calculationLines.Count; j++)
             {
                 var line = data.calculationLines[j];
@@ -252,14 +253,14 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                             }
                         }
                     }
-                    // else if (sailHierToken.token is SAILVariableToken variableToken)
-                    // {
-                    //     if (ReferenceEquals(variableToken, from.link))
-                    //     {
-                    //         variableToken = to;
-                    //         variableToken.tokenString = to.tokenString;
-                    //     }
-                    // }
+                    else if (sailHierToken.token is SAILVariableToken variableToken)
+                    {
+                        if (ReferenceEquals(variableToken, from.link))
+                        {
+                            variableToken = to.link;
+                            variableToken.tokenString = to.tokenString;
+                        }
+                    }
                 }
             }
         }
