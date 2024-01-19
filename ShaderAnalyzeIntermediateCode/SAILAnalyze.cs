@@ -7,7 +7,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         public static void Analyze(ref SAILData data)
         {
             SelfCalculation(ref data);
-            SplitTemporaryVariable(data);
+            // SplitTemporaryVariable(data);
             //TODO: 把带有括号的表达式拆分成多行
             SelfCalculation(ref data);
         }
@@ -69,15 +69,19 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             Dictionary<SAILPieceVariableToken, int> equalsLeft = new Dictionary<SAILPieceVariableToken, int>();
             int count = 0;
             int branchLayer = 0;
-            for (int i = 0; i < data.calculationLines.Count; i++)
+            int lastNeedReplacedLineIndex = data.calculationLines.Count - 1;
+            for (int i = data.calculationLines.Count - 1; i >= 0; i--)
             {
                 var firstToken = data.calculationLines[i].hTokens[0].token;
                 if (firstToken is SAILPieceVariableToken pieceVariableToken)
                 {
                     if(!data.MatchTemporaryVariable(pieceVariableToken.link) || branchLayer > 0)
                         continue;
-                    //TODO: 替换条件：1.行不在分支里（branchLayer==0) 2.等号左侧变量所有通道都被更新
-                    if (!data.calculationLines[i].isSelfCalculate && branchLayer == 0 && MatchPieceVariable(equalsLeft, pieceVariableToken) && pieceVariableToken.channel == pieceVariableToken.link.GetDefaultChannel())
+                    //TODO: ###优先度最高### 替换条件：1.行不在分支里（branchLayer==0) 2.等号左侧是临时变量 3.不是自计算行
+                    //TODO: ###优先度最高### 从下向上遍历，产生完全赋值 或者 某通道赋值 时，向下到最后一次替换行的上一行找等号左侧引用变量与通道都一样的进行替换
+                    if (!data.calculationLines[i].isSelfCalculate 
+                        && branchLayer == 0
+                        && data.MatchTemporaryVariable(pieceVariableToken.link))
                     {
                         SAILPieceVariableToken newPieceVariableToken = new SAILPieceVariableToken();
                         newPieceVariableToken.channel = pieceVariableToken.channel;
@@ -85,8 +89,9 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
                         newPieceVariableToken.link.tokenString = pieceVariableToken.link.tokenString+$"_{count}";
                         newPieceVariableToken.tokenString = newPieceVariableToken.link.tokenString + "." + newPieceVariableToken.channel;
                         count++;
-                        ReplaceLinkStartFromLine(data, pieceVariableToken, newPieceVariableToken, i, newPieceVariableToken.channel);
+                        ReplaceLinkBetweenLine(data, pieceVariableToken, newPieceVariableToken, i, lastNeedReplacedLineIndex, newPieceVariableToken.channel);
                         data.tempVar.Add(newPieceVariableToken.link);
+                        lastNeedReplacedLineIndex = i - 1;
                     }
                     else
                     {
@@ -157,11 +162,11 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
             return false;
         }
 
-        private static void ReplaceLinkStartFromLine(SAILData data, SAILPieceVariableToken from, SAILPieceVariableToken to, int i, string channel = "")
+        private static void ReplaceLinkBetweenLine(SAILData data, SAILPieceVariableToken from, SAILPieceVariableToken to, int startReplaceLineIndex, int endReplaceLineIndex, string channel = "")
         {
             //replace all lint to sailVariableToken from calculationLines[i]
             //替换是完全替换的（不论channel数量、branch）
-            for (int j = i; j < data.calculationLines.Count; j++)
+            for (int j = startReplaceLineIndex; j < data.calculationLines.Count; j++)
             {
                 var line = data.calculationLines[j];
                 for (var index = 0; index < line.hTokens.Count; index++)
