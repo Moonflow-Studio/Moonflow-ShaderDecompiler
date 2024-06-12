@@ -125,7 +125,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     "            HLSLPROGRAM\n" +
                     "            #pragma vertex vert\n" +
                     "            #pragma fragment frag\n" +
-                    "            #include \"Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl\"\n\n" +
+                    "            #include \"Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl\"\n\n" +
                     "            struct appdata\n" +
                     "            {\n" +
                     MakeStruct(data, 0) +
