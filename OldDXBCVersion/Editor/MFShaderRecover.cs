@@ -39,8 +39,10 @@ namespace moonflow_system.Tools.MFUtilityTools
             /*62*/"rcp", "resinfo", "ret", "retc",  "round", "round_ne", "round_ni", "round_pi", "round_z", "rsq",
             /*72*/"sample", "sample_b", "sample_c", "sample_c_lz", "sample_d", "sample_l", "sampleinfo", "samplepos", "sincos", "sqrt", "switch", 
             /*83*/"udiv", "uge", "ult", "umad", "umax", "umin", "umul", "ushr", "utof", 
-            /*92*/"xor"
+            /*92*/"xor","bfi"
         };
+        
+        public static HashSet<string> OperationSet = new HashSet<string>(Operation);
 
         public static string[] OperationAddition = new[]
         {
@@ -781,6 +783,12 @@ namespace moonflow_system.Tools.MFUtilityTools
                     case 91: //utof
                     {
                         line.str = $"(float){line.localVar[0].GetDisplayVar()}";
+                        break;
+                    }
+                    case 93: //bfi
+                    {
+                        string bitMask = $"(((1 << {line.localVar[0].GetDisplayVar()}) - 1) << {line.localVar[1].GetDisplayVar()}) & 0xffffffff";
+                        line.str = $"(({line.localVar[2].GetDisplayVar()} << {line.localVar[1]}) & {bitMask} | ({line.localVar[3].GetDisplayVar()} & ~{bitMask})";
                         break;
                     }
                     case 100://lerp
