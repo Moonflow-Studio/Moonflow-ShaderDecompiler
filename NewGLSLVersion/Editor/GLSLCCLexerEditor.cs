@@ -23,7 +23,7 @@ namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
         private SAILData _sailData;
         private int _rightViewIndex;
         private static readonly string[] rightViewTabStrings = new[] {"GLSL","SAIL"};
-        [MenuItem("Moonflow/Tools/Editor/HLSLCCLexer #&L")]
+        [MenuItem("Tools/Moonflow/Tools/Editor/HLSLCCLexer #&L")]
         public static void ShowWindow()
         {
             if(!window)window = GetWindow<GLSLCCLexerEditor>("HLSLCCLexer");
