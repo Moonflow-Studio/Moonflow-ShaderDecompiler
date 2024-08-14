@@ -1,12 +1,8 @@
-
-#define MFDebug
-
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Moonflow.Core;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -259,7 +255,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                             {
                                 GUIUtility.systemCopyBuffer =
                                     MFShaderRecoverTextOutput.MakeURPText(_resultData, vertResultText, fragResultText, shaderName);
-                                MFDebug.Log("已复制到剪贴板");
+                                Debug.Log("已复制到剪贴板");
                             }
                             if (GUILayout.Button("生成临时变量"))
                             {
@@ -499,15 +495,15 @@ namespace moonflow_system.Tools.MFUtilityTools
             {
                 if (_type == ShaderType.Vertex)
                 {
-                    MFDebug.DialogError("无法读取Vertex Shader原文件");
+                    Debug.LogError("无法读取Vertex Shader原文件");
                 }
                 else if (_type == ShaderType.Pixel)
                 {
-                    MFDebug.DialogError("无法读取Pixel Shader原文件");
+                    Debug.LogError("无法读取Pixel Shader原文件");
                 }
                 else
                 {
-                    MFDebug.DialogError("无法读取原文件");
+                    Debug.LogError("无法读取原文件");
                 }
                 return false;
             }
@@ -519,7 +515,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             else if (_type == ShaderType.Pixel) _definitionTypes = DEFINITION_TYPE_PIXEL;
             else
             {
-                MFDebug.DialogError("暂不支持");
+                Debug.LogError("暂不支持");
             }
 
             if (_type == ShaderType.Vertex)
@@ -668,7 +664,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                     }
                     case 33://if
                     {
-                        MFDebug.LogError($"行{line.lineIndex} if判定有问题");
+                        Debug.LogError($"行{line.lineIndex} if判定有问题");
                         break;
                     }
                     case 36://imad
@@ -824,7 +820,7 @@ namespace moonflow_system.Tools.MFUtilityTools
                         line.noEqualSign = true;
                         line.str = "if("+line.result.GetDisplayVar()+" != 0){";
                         break;
-                    default : MFDebug.LogError($"第{line.lineIndex}行检测到未做处理的计算类型，运算编号{line.opIndex}");
+                    default : Debug.LogError($"第{line.lineIndex}行检测到未做处理的计算类型，运算编号{line.opIndex}");
                         break;
                 }
                 line.opArranged = true;
@@ -1502,7 +1498,7 @@ namespace moonflow_system.Tools.MFUtilityTools
 
                         if (target.linkedVar == null)
                         {
-                            MFDebug.LogError($"{singlesplit[0]} 找不到对应property");
+                            Debug.LogError($"{singlesplit[0]} 找不到对应property");
                         }
                     }
                     catch (Exception e)
@@ -1570,7 +1566,7 @@ namespace moonflow_system.Tools.MFUtilityTools
             // else if (_type == ShaderType.Pixel) _definitionTypes = DEFINITION_TYPE_PIXEL;
             // else
             // {
-            //     MFDebug.DialogError("暂不支持");
+            //     Debug.LogError("暂不支持");
             // }
             string[] temp;
             _cbufferCount = 0;
