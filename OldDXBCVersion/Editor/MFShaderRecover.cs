@@ -92,7 +92,7 @@ namespace moonflow_system.Tools.MFUtilityTools
         private int _tabLevel = 0;
         private static readonly string[] DEFINITION_TYPE_VERTEX = new[] {"globalFlags", "constantbuffer", "input", "output_siv", "output", "sampler", "resource_texture2d", "resource_texture3d", "temps", "resource_buffer"};//dcl_input_sgv未知定义
         private static readonly string[] DEFINITION_TYPE_PIXEL = new[] {"globalFlags", "constantbuffer", "input_ps", "input_ps_siv", "output", "sampler", "resource_texture2d", "resource_texture3d", "temps", "resource_buffer"};
-        [MenuItem("Tools/Moonflow/Tools/ShaderRecover")]
+        [MenuItem("Tools/Moonflow/Tools/Misc/ShaderRecover")]
         public static void ShowWindow()
         {
             if (!window) window = GetWindow<MFShaderRecover>("Shader重构（临时）");
