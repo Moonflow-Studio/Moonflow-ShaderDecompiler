@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
+namespace Moonflow.Tools.MFUtilityTools.GLSLCC
 {
     public static class GLSL2SAIL
     {

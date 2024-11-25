@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using Object = System.Object;
 
-namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
+namespace Moonflow.Tools.MFUtilityTools.GLSLCC
 {
     public class GLSLCCLexerEditor : EditorWindow
     {

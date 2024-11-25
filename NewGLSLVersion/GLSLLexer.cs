@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
+namespace Moonflow.Tools.MFUtilityTools.GLSLCC
 {
     public class GLSLLexer
     {

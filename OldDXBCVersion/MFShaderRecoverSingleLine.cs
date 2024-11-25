@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace moonflow_system.Tools.MFUtilityTools
+namespace Moonflow.Tools.MFUtilityTools
 {
     public class SingleLine
     {

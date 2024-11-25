@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace moonflow_system.Tools.MFUtilityTools.GLSLCC
+namespace Moonflow.Tools.MFUtilityTools.GLSLCC
 {
     public static class SAILEditorUtility
     {
