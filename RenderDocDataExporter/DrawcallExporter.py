@@ -67,21 +67,25 @@ def debug_print_cbuffer(variable_list):
 
 
 def variable_to_text(sv, indent):
-    varstr = ''
+    varstr = indent
     if len(sv.members) == 0:
-        varstr += str(sv.type) + '  ' + str(sv.name) + '  '
+        print(str(sv.type) + '  ' + str(sv.name) + '  Columns:' + str(sv.columns) + '  Rows:' + str(sv.rows))
+        varstr += str(sv.name) + '  '
         inlineindex = 0
+        if '[' in sv.name:
+            print(str(sv.name)+'  insidefloat:'+str(sv.value.f32v))
         while inlineindex < sv.columns:
             if sv.type is rd.VarType.Float:
                 varstr += str(sv.value.f32v[inlineindex]) + ' '
             elif sv.type is rd.VarType.Half:
                 varstr += str(sv.value.f16v[inlineindex]) + ' '
             inlineindex = inlineindex + 1
+        varstr += '\n'
     else:
-        varstr += str(sv.type) + '  ' + str(sv.name) + '  MEMBERS\n'
+        varstr += str(sv.name) + '  MEMBERS\n'
         for m in sv.members:
-            variable_to_text(m, indent + '    ')
-    varstr += '\n'
+            varstr += variable_to_text(m, indent + '    ')
+
     return varstr
 
 
