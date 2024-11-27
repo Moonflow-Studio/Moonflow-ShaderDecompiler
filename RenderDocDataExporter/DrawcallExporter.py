@@ -1,8 +1,14 @@
-import os, sys, struct
+# The tool requires PyQt5, you should install PyQt5 first
+# The tool based on renderdoc.dll and qrenderdoc.dll
+
+import os, sys, struct, subprocess
 from pathlib import Path
+from PyQt5 import QtWidgets
 
 filename = "E:\Intime\FrameCapture\AFK\MuMuVMMHeadless_2024.11.13_15.35_frame2730.rdc"
-target_folder = "E:\\Intime\\FrameCapture\\AFK\\Release"
+target_folder = "E:/Intime/FrameCapture/AFK/Release"
+spirv_cross_path = "C:/Program Files/RenderDoc/plugins/spirv/spirv-cross.exe"
+glslang_validator_path = "C:/Program Files/RenderDoc/plugins/spirv/glslangValidator.exe"
 
 # Import renderdoc if not already imported (e.g. in the UI)
 if 'renderdoc' not in sys.modules and '_renderdoc' not in sys.modules:
@@ -223,7 +229,7 @@ def extract_mesh_input(controller, meshData, eventId):
 
             # We don't go into the details of semantic matching here, just print both
             # print("\tAttribute '%s': %s" % (attr.name, value))
-            inlinetext += ' '+ str(value)
+            inlinetext += ' ' + str(value)
         vdict[idx] = inlinetext + '\n'
         index = index + 1
 
@@ -232,7 +238,7 @@ def extract_mesh_input(controller, meshData, eventId):
 
     indices = ''
     for vi in viarray:
-        indices += str(vi)+'\n'
+        indices += str(vi) + '\n'
 
     path = Path(target_folder + '\\' + str(eventId) + '\\' + 'VertexIndices.txt')
     path.write_text(indices)
@@ -261,6 +267,26 @@ def loadCapture(filename):
     #if result != rd.ReplayStatus.Succeeded:
     #raise RuntimeError("Couldn't initialise replay: " + str(result))
     return cap, controller
+
+
+def translate_spirv(stage_name, shader_source_path, evt_id):
+    output_file_name = target_folder + '/' + str(evt_id) + '/' + stage_name + "_output.txt"
+    # command = [spirv_cross_path, shader_source_path]
+    command = [spirv_cross_path, shader_source_path, "--output", output_file_name, "-V", "--entry", "main", "--stage", "vert", "--version", "460"]
+    # command = [glslang_validator_path, "-H", "-V", "-o", shader_source_path, output_file_name]
+    # command = ["glslangValidator", "-H", "-V", "-o", shader_source_path, output_file_name, "./spirv-cross", "--version 450", "--es", shader_source_path]
+    try:
+        result = subprocess.run(command, shell=True)
+        if result.returncode == 0:
+            print("转译成功，输出：", result.stdout)
+            # 可以进一步处理转译后的文件，如读取内容等
+            with open(output_file_name, "r") as output_file:
+                output_content = output_file.read()
+                print("转译后的内容：", output_content)
+        else:
+            print("转译失败，错误输出：", str(result.returncode))
+    except FileNotFoundError:
+        print("SPIRV - Cross.exe或shader源码文件未找到")
 
 
 #######################################################################################################################
@@ -367,7 +393,8 @@ def disassemble_vertex_shader(ctrl, state, pipeline, target, evt_id):
     print("disassemble_vertex_shader")
     shader_refl = state.GetShaderReflection(rd.ShaderStage.Vertex)
     vertex_shader_text = ctrl.DisassembleShader(pipeline, shader_refl, target)
-    text_path = Path(target_folder + '\\' + str(evt_id) + '\\' + 'vs.txt')
+    text_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original.txt'
+    text_path = Path(text_path_name)
     text_path.write_text(vertex_shader_text)
 
     entryPoint = state.GetShaderEntryPoint(rd.ShaderStage.Vertex)
@@ -376,11 +403,16 @@ def disassemble_vertex_shader(ctrl, state, pipeline, target, evt_id):
     disassemble_cbuffers(ctrl, shader_refl, state, rd.ShaderStage.Vertex, pipeline, evt_id)
     disassemble_textures(ctrl, shader_refl, state, rd.ShaderStage.Vertex, target_folder + '\\' + str(evt_id) + '\\')
 
+    byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original.spv'
+    byte_path = Path(byte_path_name)
+    byte_path.write_bytes(shader_refl.rawBytes)
+    translate_spirv('vs', byte_path_name, evt_id)
 
 def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
     shader_refl = state.GetShaderReflection(rd.ShaderStage.Pixel)
     pixel_shader_text = ctrl.DisassembleShader(pipeline, shader_refl, target)
-    text_path = Path(target_folder + '\\' + str(evt_id) + '\\' + 'ps.txt')
+    text_path_name = target_folder + '\\' + str(evt_id) + '\\' + 'ps_original.txt'
+    text_path = Path(text_path_name)
     text_path.write_text(pixel_shader_text)
 
     entryPoint = state.GetShaderEntryPoint(rd.ShaderStage.Pixel)
@@ -388,6 +420,11 @@ def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
 
     disassemble_cbuffers(ctrl, shader_refl, state, rd.ShaderStage.Pixel, pipeline, evt_id)
     disassemble_textures(ctrl, shader_refl, state, rd.ShaderStage.Pixel, target_folder + '\\' + str(evt_id) + '\\')
+
+    byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'ps_original.spv'
+    byte_path = Path(byte_path_name)
+    byte_path.write_bytes(shader_refl.rawBytes)
+    translate_spirv('ps', byte_path_name, evt_id)
 
 
 def disassemble_shader(ctrl, evt_id):
