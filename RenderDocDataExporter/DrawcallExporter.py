@@ -278,11 +278,11 @@ def translate_spirv(stage_name, shader_source_path, evt_id):
     try:
         result = subprocess.run(command, shell=True)
         if result.returncode == 0:
-            print("转译成功，输出：", result.stdout)
+            # print("转译成功，输出：", result.stdout)
             # 可以进一步处理转译后的文件，如读取内容等
             with open(output_file_name, "r") as output_file:
                 output_content = output_file.read()
-                print("转译后的内容：", output_content)
+                # print("转译后的内容：", output_content)
         else:
             print("转译失败，错误输出：", str(result.returncode))
     except FileNotFoundError:
@@ -334,24 +334,22 @@ def cbuffer_list_to_text(cblist):
 
 
 def disassemble_cbuffers(controller, refl, state, stage, pipeline, eventId):
-    blocks = state.GetConstantBlocks(stage, False)
+    blocks = state.GetConstantBlocks(stage, True)
     block_count = len(blocks)
-
+    print(str(stage)+'  CBuffers length: ' + str(block_count))
     entry = state.GetShaderEntryPoint(stage)
     cbuffer_list = []
     buffer_index = 0
     stage_name = str(stage).replace("ShaderStage.", '')
     while buffer_index < block_count:
         resource_name = str(blocks[buffer_index].descriptor.resource).replace('ResourceId::', '')
-        if buffer_index == 1:
+        print("Load Stage: " + stage_name + "  CBuffer: " + str(buffer_index) + "  Name: " + str(blocks[buffer_index].descriptor.resource) + "  Shader:" + str(refl.resourceId))
+        cbuffer_variables = controller.GetCBufferVariableContents(pipeline, refl.resourceId, stage, entry, buffer_index,
+                                                                  blocks[buffer_index].descriptor.resource, blocks[buffer_index].descriptor.byteOffset, blocks[buffer_index].descriptor.byteSize)
+        if len(cbuffer_variables) == 20:
             new_file_name = 'CBuffer_' + stage_name + '_' + str(buffer_index) + '_' + resource_name + '_UnityPerDraw'
-        elif buffer_index == 2:
-            new_file_name = 'CBuffer_' + stage_name + '_' + str(
-                buffer_index) + '_' + resource_name + '_UnityPerMaterial'
         else:
             new_file_name = 'CBuffer_' + stage_name + '_' + str(buffer_index) + '_' + resource_name + '_Unknown'
-        cbuffer_variables = controller.GetCBufferVariableContents(pipeline, refl.resourceId, stage, entry, buffer_index,
-                                                                  blocks[buffer_index].descriptor.resource, 0, 0)
         # if len(cbuffer_variables):
         #     new_file_name = 'CBuffer_' + stage_name + '_' + str(buffer_index) + '_' + resource_name + '_UnityPerMaterial'
         # else:
@@ -391,39 +389,39 @@ def disassemble_textures(ctrl, refl, state, stage, path):
 
 def disassemble_vertex_shader(ctrl, state, pipeline, target, evt_id):
     print("disassemble_vertex_shader")
-    shader_refl = state.GetShaderReflection(rd.ShaderStage.Vertex)
-    vertex_shader_text = ctrl.DisassembleShader(pipeline, shader_refl, target)
+    shader_refl_vert = state.GetShaderReflection(rd.ShaderStage.Vertex)
+    vertex_shader_text = ctrl.DisassembleShader(pipeline, shader_refl_vert, target)
     text_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original.txt'
     text_path = Path(text_path_name)
     text_path.write_text(vertex_shader_text)
 
-    entryPoint = state.GetShaderEntryPoint(rd.ShaderStage.Vertex)
-    shader_resId = shader_refl.resourceId
+    entryPoint_vert = state.GetShaderEntryPoint(rd.ShaderStage.Vertex)
+    shader_resId = shader_refl_vert.resourceId
 
-    disassemble_cbuffers(ctrl, shader_refl, state, rd.ShaderStage.Vertex, pipeline, evt_id)
-    disassemble_textures(ctrl, shader_refl, state, rd.ShaderStage.Vertex, target_folder + '\\' + str(evt_id) + '\\')
+    disassemble_cbuffers(ctrl, shader_refl_vert, state, rd.ShaderStage.Vertex, pipeline, evt_id)
+    disassemble_textures(ctrl, shader_refl_vert, state, rd.ShaderStage.Vertex, target_folder + '\\' + str(evt_id) + '\\')
 
     byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original.spv'
     byte_path = Path(byte_path_name)
-    byte_path.write_bytes(shader_refl.rawBytes)
+    byte_path.write_bytes(shader_refl_vert.rawBytes)
     translate_spirv('vs', byte_path_name, evt_id)
 
 def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
-    shader_refl = state.GetShaderReflection(rd.ShaderStage.Pixel)
-    pixel_shader_text = ctrl.DisassembleShader(pipeline, shader_refl, target)
+    shader_refl_pixel = state.GetShaderReflection(rd.ShaderStage.Pixel)
+    pixel_shader_text = ctrl.DisassembleShader(pipeline, shader_refl_pixel, target)
     text_path_name = target_folder + '\\' + str(evt_id) + '\\' + 'ps_original.txt'
     text_path = Path(text_path_name)
     text_path.write_text(pixel_shader_text)
 
-    entryPoint = state.GetShaderEntryPoint(rd.ShaderStage.Pixel)
-    shader_resId = shader_refl.resourceId
+    entryPoint_pixel = state.GetShaderEntryPoint(rd.ShaderStage.Pixel)
+    shader_resId = shader_refl_pixel.resourceId
 
-    disassemble_cbuffers(ctrl, shader_refl, state, rd.ShaderStage.Pixel, pipeline, evt_id)
-    disassemble_textures(ctrl, shader_refl, state, rd.ShaderStage.Pixel, target_folder + '\\' + str(evt_id) + '\\')
+    disassemble_cbuffers(ctrl, shader_refl_pixel, state, rd.ShaderStage.Pixel, pipeline, evt_id)
+    disassemble_textures(ctrl, shader_refl_pixel, state, rd.ShaderStage.Pixel, target_folder + '\\' + str(evt_id) + '\\')
 
     byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'ps_original.spv'
     byte_path = Path(byte_path_name)
-    byte_path.write_bytes(shader_refl.rawBytes)
+    byte_path.write_bytes(shader_refl_pixel.rawBytes)
     translate_spirv('ps', byte_path_name, evt_id)
 
 
