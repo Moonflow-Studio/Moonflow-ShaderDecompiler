@@ -13,6 +13,9 @@ filename = "E:/Intime/FrameCapture/AFK/MuMuVMMHeadless_2024.11.13_15.35_frame273
 target_folder = "E:/Intime/FrameCapture/AFK/Release"
 spirv_cross_path = "C:/Program Files/RenderDoc/plugins/spirv/spirv-cross.exe"
 
+# Because of read mesh data cost too much time, if you don't need to refresh extracted mesh data, set it to False to skip the process
+read_mesh_data = False
+
 #######################################################################################################################
 #  Before Sample ######################################################################################################
 #######################################################################################################################
@@ -321,6 +324,24 @@ def variable_to_text(sv, indent):
                 varstr += str(sv.value.f32v[inlineindex]) + ' '
             elif sv.type is rd.VarType.Half:
                 varstr += str(sv.value.f16v[inlineindex]) + ' '
+            elif sv.type is rd.VarType.Double:
+                varstr += str(sv.value.f64v[inlineindex]) + ' '
+            elif sv.type is rd.VarType.SShort:
+                varstr += str(sv.value.s16v[inlineindex]) + ' '
+            elif sv.type is rd.VarType.SInt:
+                varstr += str(sv.value.s32v[inlineindex]) + ' '
+            elif sv.type is rd.VarType.SLong:
+                varstr += str(sv.value.s64v[inlineindex]) + ' '
+            elif sv.type is rd.VarType.UShort:
+                varstr += str(sv.value.u16v[inlineindex]) + ' '
+            elif sv.type is rd.VarType.UInt:
+                varstr += str(sv.value.u32v[inlineindex]) + ' '
+            elif sv.type is rd.VarType.ULong:
+                varstr += str(sv.value.u64v[inlineindex]) + ' '
+            elif sv.type is rd.VarType.SByte:
+                varstr += str(sv.value.s8v[inlineindex]) + ' '
+            elif sv.type is rd.VarType.UByte:
+                varstr += str(sv.value.u8v[inlineindex]) + ' '
             inlineindex = inlineindex + 1
         varstr += '\n'
     else:
@@ -469,22 +490,20 @@ def sample_drawcall(drawcall, index, ctrl):
         ctrl.SetFrameEvent(drawcall.eventId, True)
         extract_drawcall_data(ctrl, drawcall.eventId)
 
-        # Calculate the mesh input configuration
-        meshInputs = getMeshInputs(ctrl, drawcall)
-        # path = Path(target_folder + '\\' + str(drawcall.eventId) + '\\' + 'TESTMESHINPUTS.txt')
-        # path.write_text(str(meshInputs))
-        # Fetch and print the data from the mesh inputs
-        extract_mesh_input(ctrl, meshInputs, drawcall.eventId)
-        current_datetime = datetime.datetime.now()
-        formatted_time = current_datetime.strftime("%Y-%m-%d %H-%M-%S")
-        print("当前时间: %s" % formatted_time)
-        # print("Decoding mesh outputs\n\n")
-        # Fetch the postvs data
-        # postvs = ctrl.GetPostVSData(0, 0, rd.MeshDataStage.VSOut)
-        # Calcualte the mesh configuration from that
-        # meshOutputs = getMeshOutputs(ctrl, postvs)
-        # Print it
-        # extract_mesh_input(ctrl, meshOutputs)
+        if read_mesh_data:
+            meshInputs = getMeshInputs(ctrl, drawcall)
+            extract_mesh_input(ctrl, meshInputs, drawcall.eventId)
+            current_datetime = datetime.datetime.now()
+            formatted_time = current_datetime.strftime("%Y-%m-%d %H-%M-%S")
+            print("当前时间: %s" % formatted_time)
+            # print("Decoding mesh outputs\n\n")
+            # Fetch the postvs data
+            # postvs = ctrl.GetPostVSData(0, 0, rd.MeshDataStage.VSOut)
+            # Calcualte the mesh configuration from that
+            # meshOutputs = getMeshOutputs(ctrl, postvs)
+            # Print it
+            # extract_mesh_input(ctrl, meshOutputs)
+
         return
 
 
