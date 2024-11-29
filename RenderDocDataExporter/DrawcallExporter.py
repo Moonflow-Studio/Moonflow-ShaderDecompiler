@@ -10,7 +10,7 @@ from numba import njit
 #######################################################################################################################
 
 filename = "E:/Intime/FrameCapture/AFK/MuMuVMMHeadless_2024.11.13_15.35_frame2730.rdc"
-target_folder = "E:/Intime/FrameCapture/AFK/Release"
+target_folder = "C:/Users/frankmhli/Documents/Project/Moonflow/TempMF/Assets/moonflow-system/Tools/Editor/MFUtilityTools/MFShaderDecompiler/RenderDocDataExporter/Release"
 spirv_cross_path = "C:/Program Files/RenderDoc/plugins/spirv/spirv-cross.exe"
 
 # Because of read mesh data cost too much time, if you don't need to refresh extracted mesh data, set it to False to skip the process
@@ -322,8 +322,10 @@ def variable_to_text(sv, indent):
         while inlineindex < sv.columns:
             if sv.type is rd.VarType.Float:
                 varstr += str(sv.value.f32v[inlineindex]) + ' '
+                # print(str(sv.name)+str(sv.value.f32v[inlineindex]))
             elif sv.type is rd.VarType.Half:
                 varstr += str(sv.value.f16v[inlineindex]) + ' '
+                # print(str(sv.name)+str(sv.value.f16v[inlineindex]))
             elif sv.type is rd.VarType.Double:
                 varstr += str(sv.value.f64v[inlineindex]) + ' '
             elif sv.type is rd.VarType.SShort:

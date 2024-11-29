@@ -38,21 +38,22 @@ public class DrawcallAnalyzer
         Debug.Log($"Find {files.Length} files in {_drawcallFolderPath}");
         foreach (string file in files)
         {
-            if (file.EndsWith(".txt"))
+            string fileName = Path.GetFileName(file);
+            if (fileName.EndsWith(".txt"))
             {
-                if (file.StartsWith("CBuffer"))
+                if (fileName.StartsWith("CBuffer"))
                 {
                     _cbufferAnalyzer.AddResource(file);
                 }
-                else if (file.EndsWith("_output.txt"))
+                else if (fileName.EndsWith("_output.txt"))
                 {
                     _hlslAnalyzer.AddResource(file);
                 }
-                else if (file.EndsWith("VertexIndices.txt") || file.EndsWith("VertexInputData.txt"))
+                else if (fileName.EndsWith("VertexIndices.txt") || fileName.EndsWith("VertexInputData.txt"))
                 {
                     _meshInstaller.AddResource(file);
                 }
-            }else if (file.EndsWith(".png"))
+            }else if (fileName.EndsWith(".png"))
             {
                 _hlslAnalyzer.AddResource(file);
             }

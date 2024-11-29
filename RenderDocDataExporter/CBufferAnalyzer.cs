@@ -29,6 +29,12 @@ namespace Moonflow
             
             //file name format is "CBuffer_<Pixel/Vertex>_s<SetIndex>_b<BindingIndex>_<bufferIndex>_<bufferID>_<bufferName>.txt"
             string[] nameArray = fileName.Split('_');
+            string bindingIndex = nameArray[3].Substring(1);
+            if (Convert.ToInt32(bindingIndex) > 32)
+            {
+                Debug.Log("Binding index is too high, skipping file: " + path);
+                return;
+            }
             BufferDeclaration buffer = new BufferDeclaration();
             buffer.linkedFile = path;
             buffer.setIndex = int.Parse(nameArray[2].Substring(1));
@@ -89,17 +95,29 @@ namespace Moonflow
                             }
                             else
                             {
-                                tempVariable.values[index] = new Vector4(
-                                    Convert.ToSingle(subValues[0]),
-                                    Convert.ToSingle(subValues[1]),
-                                    Convert.ToSingle(subValues[2]),
-                                    Convert.ToSingle(subValues[3])
-                                );
+                                tempVariable.values = new Vector4[1];
+                                if (subValues.Length > 0)
+                                {
+                                    tempVariable.values[0].x = subValues[0] == "nan" ? Mathf.Infinity : Convert.ToSingle(subValues[0]);
+                                    if (subValues.Length > 1)
+                                    {
+                                        tempVariable.values[0].y = subValues[1] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[1]);
+                                        if (subValues.Length > 2)
+                                        {
+                                            tempVariable.values[0].z = subValues[2] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[2]);
+                                            if (subValues.Length > 3)
+                                            {
+                                                tempVariable.values[0].w = subValues[3] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[3]);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                     else
                     {
+                        subflag = false;
                         if(tempVariable!=null)variables.Add(tempVariable.Clone() as ShaderVariable);
                         if (line.Contains("MEMBERS:"))
                         {
@@ -109,32 +127,53 @@ namespace Moonflow
                             }
                             tempVariable = new ShaderVariable();
                             tempVariable.name = line.Split("  ")[0].Trim();
-                            tempVariable.values = new Vector4[Convert.ToInt32(line.Split(":")[1].Trim())];
-                            
+                            int listCount = Convert.ToInt32(line.Split(":")[1].Trim());
+                            if (listCount > 64)
+                            {
+                                Debug.LogError($"Buffer seems like a bone matrix buffer, SKIP. path:{path}");
+                                return new List<ShaderVariable>();
+                            }
+                            tempVariable.values = new Vector4[listCount];
                             subflag = true;
                         }
                         else
                         {
-                            subflag = false;
                             tempVariable = new ShaderVariable();
                             string[] splitted = line.Split("  ");
                             tempVariable.name = splitted[0].Trim();
-                            string[] data = splitted[1].Split(" ");
+                            string[] data = splitted[1].Trim().Split(" ");
                             if (data.Length == 1)
                             {
                                 tempVariable.value = Convert.ToSingle(data[0]);
                             }
                             else
                             {
-                                tempVariable.values = new Vector4[1]
+                                try
                                 {
-                                    new Vector4(
-                                        Convert.ToSingle(data[0]),
-                                        Convert.ToSingle(data[1]),
-                                        Convert.ToSingle(data[2]),
-                                        Convert.ToSingle(data[3])
-                                        )
-                                };
+                                    tempVariable.values = new Vector4[1];
+                                    if (data.Length > 0)
+                                    {
+                                        tempVariable.values[0].x = data[0] == "nan" ? Mathf.Infinity : Convert.ToSingle(data[0]);
+                                        if (data.Length > 1)
+                                        {
+                                            tempVariable.values[0].y = data[1] == "nan" ? Mathf.Infinity :  Convert.ToSingle(data[1]);
+                                            if (data.Length > 2)
+                                            {
+                                                tempVariable.values[0].z = data[2] == "nan" ? Mathf.Infinity :  Convert.ToSingle(data[2]);
+                                                if (data.Length > 3)
+                                                {
+                                                    tempVariable.values[0].w = data[3] == "nan" ? Mathf.Infinity :  Convert.ToSingle(data[3]);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e);
+                                    throw;
+                                }
+                                
                             }
                         }
                         
