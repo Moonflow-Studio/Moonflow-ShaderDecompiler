@@ -324,7 +324,7 @@ def variable_to_text(sv, indent):
             inlineindex = inlineindex + 1
         varstr += '\n'
     else:
-        varstr += str(sv.name) + '  MEMBERS\n'
+        varstr += str(sv.name) + '  MEMBERS:' + str(len(sv.members)) + '\n'
         for m in sv.members:
             varstr += variable_to_text(m, indent + '    ')
     return varstr
