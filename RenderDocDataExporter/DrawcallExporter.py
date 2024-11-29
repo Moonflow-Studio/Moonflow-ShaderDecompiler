@@ -1,14 +1,21 @@
-# The tool requires PyQt5, you should install PyQt5 first
-# The tool based on renderdoc.dll and qrenderdoc.dll
+# The tool based on renderdoc.lib and qrenderdoc.lib
 
-import os, sys, struct, subprocess
+import os, sys, struct, subprocess, datetime
 from pathlib import Path
-from PyQt5 import QtWidgets
+import numpy as np
+from numba import njit
 
-filename = "E:\Intime\FrameCapture\AFK\MuMuVMMHeadless_2024.11.13_15.35_frame2730.rdc"
+#######################################################################################################################
+#   Config Part  ######################################################################################################
+#######################################################################################################################
+
+filename = "E:/Intime/FrameCapture/AFK/MuMuVMMHeadless_2024.11.13_15.35_frame2730.rdc"
 target_folder = "E:/Intime/FrameCapture/AFK/Release"
 spirv_cross_path = "C:/Program Files/RenderDoc/plugins/spirv/spirv-cross.exe"
-glslang_validator_path = "C:/Program Files/RenderDoc/plugins/spirv/glslangValidator.exe"
+
+#######################################################################################################################
+#  Before Sample ######################################################################################################
+#######################################################################################################################
 
 # Import renderdoc if not already imported (e.g. in the UI)
 if 'renderdoc' not in sys.modules and '_renderdoc' not in sys.modules:
@@ -17,20 +24,18 @@ if 'renderdoc' not in sys.modules and '_renderdoc' not in sys.modules:
 if 'qrenderdoc' not in sys.modules and '_qrenderdoc' not in sys.modules:
     import qrenderdoc
 
+startEventID = 806
+endEventID = 1727
+
 # Alias renderdoc for legibility
 rd = renderdoc
 qrd = qrenderdoc
 rd.InitialiseReplay(rd.GlobalEnvironment(), [])
 
-startEventID = 816
-endEventID = 817
-
-
 # We base our data on a MeshFormat, but we add some properties
 class MeshData(rd.MeshFormat):
     indexOffset = 0
     name = ''
-
 
 # Unpack a tuple of the given format, from the data
 def unpackData(fmt, data):
@@ -213,11 +218,14 @@ def extract_mesh_input(controller, meshData, eventId):
     vdict = dict()
     viarray = []
     index = 0
+    print("Combing through %d indices" % length)
+    inlinetext_parts = []
     for i in indices:
         idx = indices[index]
         viarray.append(idx)
-        # print("Vertex %d is index %d:" % (index, idx))
-        inlinetext = str(idx)
+        print("Index %d / %d" % (index, length))
+        # inlinetext = str(idx)
+        inlinetext_parts.append(str(idx))
         for attr in meshData:
             # This is the data we're reading from. This would be good to cache instead of
             # re-fetching for every attribute for every index
@@ -229,19 +237,21 @@ def extract_mesh_input(controller, meshData, eventId):
 
             # We don't go into the details of semantic matching here, just print both
             # print("\tAttribute '%s': %s" % (attr.name, value))
-            inlinetext += ' ' + str(value)
-        vdict[idx] = inlinetext + '\n'
+            # inlinetext += ' ' + str(value)
+            inlinetext_parts.append(str(value))
+        # vdict[idx] = inlinetext + '\n'
+        vdict[idx] = ' '.join(inlinetext_parts) + '\n'
         index = index + 1
+        inlinetext_parts.clear()
+    print("Writing %d vertices" % length)
+    text += ''.join(vdict.values())
 
-    for vd in vdict:
-        text += str(vdict[vd])
+    print("Writing %d indices" % length)
+    indices_str = '\n'.join(map(str, viarray))
 
-    indices = ''
-    for vi in viarray:
-        indices += str(vi) + '\n'
-
+    print("Writing to disk")
     path = Path(target_folder + '\\' + str(eventId) + '\\' + 'VertexIndices.txt')
-    path.write_text(indices)
+    path.write_text(indices_str)
     path = Path(target_folder + '\\' + str(eventId) + '\\' + 'VertexInputData.txt')
     path.write_text(text)
 
@@ -269,10 +279,10 @@ def loadCapture(filename):
     return cap, controller
 
 
-def translate_spirv(stage_name, shader_source_path, evt_id, stage_tag):
+def translate_spirv(stage_name, shader_source_path, evt_id, stage_tag, entry_point):
     output_file_name = target_folder + '/' + str(evt_id) + '/' + stage_name + "_output.txt"
     # command = [spirv_cross_path, shader_source_path]
-    command = [spirv_cross_path, shader_source_path, "--output", output_file_name, "-V", "--entry", "main", "--stage", stage_tag, "--version", "460"]
+    command = [spirv_cross_path, shader_source_path, "--output", output_file_name, "-V", "--entry", entry_point, "--stage", stage_tag, "--version", "460"]
     # command = [glslang_validator_path, "-H", "-V", "-o", shader_source_path, output_file_name]
     # command = ["glslangValidator", "-H", "-V", "-o", shader_source_path, output_file_name, "./spirv-cross", "--version 450", "--es", shader_source_path]
     try:
@@ -287,11 +297,6 @@ def translate_spirv(stage_name, shader_source_path, evt_id, stage_tag):
             print("转译失败，错误输出：", str(result.returncode))
     except FileNotFoundError:
         print("SPIRV - Cross.exe或shader源码文件未找到")
-
-
-#######################################################################################################################
-#  Before Sample ######################################################################################################
-#######################################################################################################################
 
 #######################################################################################################################
 #   Start Sample ######################################################################################################
@@ -391,7 +396,7 @@ def disassemble_vertex_shader(ctrl, state, pipeline, target, evt_id):
     print("disassemble_vertex_shader")
     shader_refl_vert = state.GetShaderReflection(rd.ShaderStage.Vertex)
     vertex_shader_text = ctrl.DisassembleShader(pipeline, shader_refl_vert, target)
-    text_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original.txt'
+    text_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original_'+str(shader_refl_vert.resourceId).replace('ResourceId::','')+'.txt'
     text_path = Path(text_path_name)
     text_path.write_text(vertex_shader_text)
 
@@ -404,13 +409,13 @@ def disassemble_vertex_shader(ctrl, state, pipeline, target, evt_id):
     byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original.spv'
     byte_path = Path(byte_path_name)
     byte_path.write_bytes(shader_refl_vert.rawBytes)
-    translate_spirv('vs', byte_path_name, evt_id, 'vert')
+    translate_spirv('vs', byte_path_name, evt_id, 'vert', str(shader_refl_vert.entryPoint))
 
 def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
     print("disassemble_pixel_shader")
     shader_refl_pixel = state.GetShaderReflection(rd.ShaderStage.Pixel)
     pixel_shader_text = ctrl.DisassembleShader(pipeline, shader_refl_pixel, target)
-    text_path_name = target_folder + '\\' + str(evt_id) + '\\' + 'ps_original.txt'
+    text_path_name = target_folder + '\\' + str(evt_id) + '\\' + 'ps_original_'+str(shader_refl_pixel.resourceId).replace('ResourceId::','')+'.txt'
     text_path = Path(text_path_name)
     text_path.write_text(pixel_shader_text)
 
@@ -423,7 +428,8 @@ def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
     byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'ps_original.spv'
     byte_path = Path(byte_path_name)
     byte_path.write_bytes(shader_refl_pixel.rawBytes)
-    translate_spirv('ps', byte_path_name, evt_id, 'frag')
+    translate_spirv('ps', byte_path_name, evt_id, 'frag', str(shader_refl_pixel.entryPoint))
+
 
 
 def disassemble_shader(ctrl, evt_id):
@@ -465,8 +471,13 @@ def sample_drawcall(drawcall, index, ctrl):
 
         # Calculate the mesh input configuration
         meshInputs = getMeshInputs(ctrl, drawcall)
+        # path = Path(target_folder + '\\' + str(drawcall.eventId) + '\\' + 'TESTMESHINPUTS.txt')
+        # path.write_text(str(meshInputs))
         # Fetch and print the data from the mesh inputs
         extract_mesh_input(ctrl, meshInputs, drawcall.eventId)
+        current_datetime = datetime.datetime.now()
+        formatted_time = current_datetime.strftime("%Y-%m-%d %H-%M-%S")
+        print("当前时间: %s" % formatted_time)
         # print("Decoding mesh outputs\n\n")
         # Fetch the postvs data
         # postvs = ctrl.GetPostVSData(0, 0, rd.MeshDataStage.VSOut)
