@@ -65,10 +65,12 @@ namespace Moonflow
 
         private void Save()
         {
+            AssetDatabase.StartAssetEditing();
             for (int i = 0; i < _drawcallAnalyzers.Length; i++)
             {
                 _drawcallAnalyzers[i].Save();
             }
+            AssetDatabase.StopAssetEditing();
         }
     }
 }
