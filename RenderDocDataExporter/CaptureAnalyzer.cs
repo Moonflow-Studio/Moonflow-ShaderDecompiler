@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -11,6 +12,8 @@ namespace Moonflow
     {
         private string _capturePath;
         private DrawcallAnalyzer[] _drawcallAnalyzers;
+        private List<HLSLAnalyzer> _hlslAnalyzers;
+        private Dictionary<ShaderCodeIdPair, ShaderCodePair> _shaderCodePairs = new Dictionary<ShaderCodeIdPair, ShaderCodePair>();
 
         [MenuItem("Tools/Moonflow/Utility/Capture Analyzer")]
         public static void ShowWindow()
@@ -53,14 +56,32 @@ namespace Moonflow
                     string correctFolder = subFolders[i].Replace('\\', '/');
                     Debug.Log($"Analyze {correctFolder}");
                     _drawcallAnalyzers[i] = new DrawcallAnalyzer();
-                    _drawcallAnalyzers[i].Setup(correctFolder);
+                    _drawcallAnalyzers[i].Setup(correctFolder, this);
                 }
             }
             else
             {
                 Debug.LogError("Capture folder is not found!");
             }
+            Debug.Log("Finish setup drawcall data, starting analyze hlsl code");
+            AnalyzeHLSL();
             Debug.Log("Finish!!");
+        }
+
+        private void AnalyzeHLSL()
+        {
+            _hlslAnalyzers = new List<HLSLAnalyzer>();
+            foreach (var codepair in _shaderCodePairs)
+            {
+                var _HLSLAnalyzer = new HLSLAnalyzer();
+                _HLSLAnalyzer.Setup(codepair.Value);
+                _hlslAnalyzers.Add(_HLSLAnalyzer);
+            }
+
+            foreach (var hlslAnalyzer in _hlslAnalyzers)
+            {
+                hlslAnalyzer.Analyze();
+            }
         }
 
         private void Save()
@@ -71,6 +92,11 @@ namespace Moonflow
                 _drawcallAnalyzers[i].Save();
             }
             AssetDatabase.StopAssetEditing();
+        }
+
+        public void AddShaderFile(ShaderCodePair pair)
+        {
+            _shaderCodePairs.TryAdd(pair.id, pair);
         }
     }
 }

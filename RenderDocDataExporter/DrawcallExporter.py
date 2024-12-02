@@ -479,18 +479,16 @@ def extract_drawcall_data(ctrl, evt_id):
 
 
 def sample_drawcall(drawcall, index, ctrl):
+    print('\n\n\n\n')
     if drawcall.eventId < startEventID or drawcall.eventId > endEventID:
         return
     while len(drawcall.children) > 0:
         drawcall = drawcall.children[0]
-    print(" ")
-    print(" ")
-    print(" ")
     print("Action #%d Pass #0 starts with %d: %s" % (
         index, drawcall.eventId, drawcall.GetName(ctrl.GetStructuredFile())))
 
     if drawcall != None:
-        print("Decoding Drawcall Data\n\n")
+        print("Decoding Drawcall Data")
         drawcall_path = Path(target_folder + '\\' + str(drawcall.eventId))
         drawcall_path.mkdir(parents=True, exist_ok=True)
         ctrl.SetFrameEvent(drawcall.eventId, True)

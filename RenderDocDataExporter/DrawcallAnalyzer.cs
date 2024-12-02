@@ -7,15 +7,18 @@ using UnityEngine;
 public class DrawcallAnalyzer
 {
     private CBufferAnalyzer _cbufferAnalyzer;
-    private HLSLAnalyzer _hlslAnalyzer = new HLSLAnalyzer();
+    // private HLSLAnalyzer _hlslAnalyzer = new HLSLAnalyzer();
     private TextureAnalyzer _textureAnalyzer = new TextureAnalyzer();
     private MeshInstaller _meshInstaller = new MeshInstaller();
     private string _drawcallFolderPath;
     private string _captureFolderPath;
     private string _translatedPath;
+    private CaptureAnalyzer _captureAnalyzer;
+    private ShaderCodePair _shaderCodePair;
 
-    public void Setup(string drawcallFolderPath)
+    public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer)
     {
+        _captureAnalyzer = captureAnalyzer;
         _cbufferAnalyzer = ScriptableObject.CreateInstance<CBufferAnalyzer>();
         _drawcallFolderPath = drawcallFolderPath;
         //Create new folder {_drawcallIndex}_Translated for translated files
@@ -46,9 +49,19 @@ public class DrawcallAnalyzer
                 {
                     _cbufferAnalyzer.AddResource(file);
                 }
-                else if (fileName.EndsWith("_output.txt"))
+                else if (fileName.EndsWith("_output_hlsl.txt"))
                 {
-                    _hlslAnalyzer.AddResource(file);
+                    string[] split = fileName.Split("_");
+                    if (split[0] == "vs")
+                    {
+                        _shaderCodePair.vsFilePath = file;
+                        _shaderCodePair.id.vsid = split[1];
+                    }
+                    else if (split[0] == "ps")
+                    {
+                        _shaderCodePair.psFilePath = file;
+                        _shaderCodePair.id.psid = split[1];
+                    }
                 }
                 else if (fileName.EndsWith("VertexIndices.txt") || fileName.EndsWith("VertexInputData.txt"))
                 {
@@ -64,6 +77,7 @@ public class DrawcallAnalyzer
                 //They are just a backup and will not be used in any part
             }
         }
+        _captureAnalyzer.AddShaderFile(_shaderCodePair);
     }
 
     public void Translate()

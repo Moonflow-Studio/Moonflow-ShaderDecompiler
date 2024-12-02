@@ -9,19 +9,7 @@ namespace Moonflow
     {
         public List<BufferDeclaration> buffers = new List<BufferDeclaration>();
         // public List<BufferDeclaration> vBuffers = new List<BufferDeclaration>();
-        // public List<BufferDeclaration> pBuffers = new List<BufferDeclaration>();
-        
-        [Serializable]
-        public struct BufferDeclaration
-        {
-            public int setIndex;
-            public int bindingIndex;
-            public ShaderPassDef passDef;
-            public string linkedFile;
-            public string bufferName;
-            public List<ShaderVariable> variables;
-        }
-        
+
         public void AddResource(string path)
         {
             Debug.Log($"Adding resource as CBufferFile: {path}");
@@ -30,7 +18,7 @@ namespace Moonflow
             //get file name without extension
             fileName = System.IO.Path.GetFileNameWithoutExtension(fileName);
             
-            //file name format is "CBuffer_<Pixel/Vertex>_s<SetIndex>_b<BindingIndex>_<bufferIndex>_<bufferID>_<bufferName>.txt"
+            //file name format is "CBuffer_<Pixel/Vertex>_s<SetIndex>_b<BindingIndex>_<uniformIndex>_<bufferID>_<bufferName>.txt"
             string[] nameArray = fileName.Split('_');
             string bindingIndex = nameArray[3].Substring(1);
             if (Convert.ToInt32(bindingIndex) > 32)
@@ -42,6 +30,7 @@ namespace Moonflow
             buffer.linkedFile = path;
             buffer.setIndex = int.Parse(nameArray[2].Substring(1));
             buffer.bindingIndex = int.Parse(nameArray[3].Substring(1));
+            buffer.uniformIndex = int.Parse(nameArray[4].Replace("uniforms",""));
             buffer.bufferName = nameArray[6];
             buffer.variables = AnalyzeCBufferFile(path);
             if (nameArray[1] == "Pixel")
