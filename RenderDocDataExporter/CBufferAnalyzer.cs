@@ -7,18 +7,21 @@ namespace Moonflow
     [Serializable]
     public class CBufferAnalyzer : ScriptableObject, IResourceReceiver
     {
-        public List<BufferDeclaration> vBuffers = new List<BufferDeclaration>();
-        public List<BufferDeclaration> pBuffers = new List<BufferDeclaration>();
+        public List<BufferDeclaration> buffers = new List<BufferDeclaration>();
+        // public List<BufferDeclaration> vBuffers = new List<BufferDeclaration>();
+        // public List<BufferDeclaration> pBuffers = new List<BufferDeclaration>();
         
         [Serializable]
         public struct BufferDeclaration
         {
             public int setIndex;
             public int bindingIndex;
+            public ShaderPassDef passDef;
             public string linkedFile;
             public string bufferName;
             public List<ShaderVariable> variables;
         }
+        
         public void AddResource(string path)
         {
             Debug.Log($"Adding resource as CBufferFile: {path}");
@@ -43,15 +46,16 @@ namespace Moonflow
             buffer.variables = AnalyzeCBufferFile(path);
             if (nameArray[1] == "Pixel")
             {
-                pBuffers.Add(buffer);
+                buffer.passDef = ShaderPassDef.Pixel;
             }else if (nameArray[1] == "Vertex")
             {
-                vBuffers.Add(buffer);
+                buffer.passDef = ShaderPassDef.Vertex;
             }
             else
             {
                 Debug.LogError($"Unknown buffer type: {nameArray[1]}, path: {path}");
             }
+            buffers.Add(buffer);
         }
 
         private List<ShaderVariable> AnalyzeCBufferFile(string path)

@@ -8,6 +8,7 @@ public class DrawcallAnalyzer
 {
     private CBufferAnalyzer _cbufferAnalyzer;
     private HLSLAnalyzer _hlslAnalyzer = new HLSLAnalyzer();
+    private TextureAnalyzer _textureAnalyzer = new TextureAnalyzer();
     private MeshInstaller _meshInstaller = new MeshInstaller();
     private string _drawcallFolderPath;
     private string _captureFolderPath;
@@ -29,7 +30,7 @@ public class DrawcallAnalyzer
     {
         // get relative path of _translatedPath
         string relativePath = _translatedPath.Substring(Application.dataPath.Length + 1);
-        AssetDatabase.CreateAsset(_cbufferAnalyzer, "Assets/"+relativePath + "/CBufferAnalyzer.asset");
+        AssetDatabase.CreateAsset(_cbufferAnalyzer, "Assets/"+relativePath + "/CBuffer.asset");
     }
     private void AnalyzeResources()
     {
@@ -53,9 +54,10 @@ public class DrawcallAnalyzer
                 {
                     _meshInstaller.AddResource(file);
                 }
-            }else if (fileName.EndsWith(".png"))
+            }
+            else if (fileName.EndsWith(".png"))
             {
-                _hlslAnalyzer.AddResource(file);
+                _textureAnalyzer.AddResource(file);
             }
             else
             {
