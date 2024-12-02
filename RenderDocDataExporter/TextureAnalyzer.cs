@@ -20,7 +20,7 @@ namespace Moonflow
         }
         public void AddResource(string path)
         {
-            Debug.Log($"Adding resource as HLSLFile: {path}");
+            Debug.Log($"Adding resource as Texture File: {path}");
             //get file name from path
             string fileName = System.IO.Path.GetFileName(path);
             //get file name without extension

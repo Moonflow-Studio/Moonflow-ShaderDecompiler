@@ -16,6 +16,10 @@ spirv_cross_path = "C:/Program Files/RenderDoc/plugins/spirv/spirv-cross.exe"
 # Because of read mesh data cost too much time, if you don't need to refresh extracted mesh data, set it to False to skip the process
 read_mesh_data = False
 
+startEventID = 806
+endEventID = 823
+# endEventID = 1727
+
 #######################################################################################################################
 #  Before Sample ######################################################################################################
 #######################################################################################################################
@@ -27,8 +31,7 @@ if 'renderdoc' not in sys.modules and '_renderdoc' not in sys.modules:
 if 'qrenderdoc' not in sys.modules and '_qrenderdoc' not in sys.modules:
     import qrenderdoc
 
-startEventID = 806
-endEventID = 1727
+
 
 # Alias renderdoc for legibility
 rd = renderdoc
@@ -282,10 +285,10 @@ def loadCapture(filename):
     return cap, controller
 
 
-def translate_spirv(stage_name, shader_source_path, evt_id, stage_tag, entry_point):
-    output_file_name = target_folder + '/' + str(evt_id) + '/' + stage_name + "_output.txt"
+def translate_spirv(stage_name, shader_source_path, evt_id, stage_tag, entry_point, shader_res_id):
+    output_file_name = target_folder + '/' + str(evt_id) + '/' + stage_name + "_" + shader_res_id + "_output_hlsl.txt"
     # command = [spirv_cross_path, shader_source_path]
-    command = [spirv_cross_path, shader_source_path, "--output", output_file_name, "-V", "--entry", entry_point, "--stage", stage_tag, "--version", "460"]
+    command = [spirv_cross_path, shader_source_path, "--output", output_file_name, "--hlsl", "--entry", entry_point, "--stage", stage_tag]
     # command = [glslang_validator_path, "-H", "-V", "-o", shader_source_path, output_file_name]
     # command = ["glslangValidator", "-H", "-V", "-o", shader_source_path, output_file_name, "./spirv-cross", "--version 450", "--es", shader_source_path]
     try:
@@ -376,9 +379,9 @@ def disassemble_cbuffers(controller, refl, state, stage, pipeline, eventId):
         cbuffer_variables = controller.GetCBufferVariableContents(pipeline, refl.resourceId, stage, entry, buffer_index,
                                                                   blocks_data[buffer_index].descriptor.resource, blocks_data[buffer_index].descriptor.byteOffset, blocks_data[buffer_index].descriptor.byteSize)
         if len(cbuffer_variables) == 20:
-            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(buffer_index) + '_' + resource_name + '_UnityPerDraw'
+            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_' + resource_name + '_UnityPerDraw'
         else:
-            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(buffer_index) + '_' + resource_name + '_Unknown'
+            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_' + resource_name + '_Unknown'
         # if len(cbuffer_variables):
         #     new_file_name = 'CBuffer_' + stage_name + '_' + str(buffer_index) + '_' + resource_name + '_UnityPerMaterial'
         # else:
@@ -419,7 +422,8 @@ def disassemble_vertex_shader(ctrl, state, pipeline, target, evt_id):
     print("disassemble_vertex_shader")
     shader_refl_vert = state.GetShaderReflection(rd.ShaderStage.Vertex)
     vertex_shader_text = ctrl.DisassembleShader(pipeline, shader_refl_vert, target)
-    text_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original_'+str(shader_refl_vert.resourceId).replace('ResourceId::','')+'.txt'
+    shader_res_id = str(shader_refl_vert.resourceId).replace('ResourceId::', '')
+    text_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original_'+shader_res_id+'.txt'
     text_path = Path(text_path_name)
     text_path.write_text(vertex_shader_text)
 
@@ -429,16 +433,17 @@ def disassemble_vertex_shader(ctrl, state, pipeline, target, evt_id):
     disassemble_cbuffers(ctrl, shader_refl_vert, state, rd.ShaderStage.Vertex, pipeline, evt_id)
     disassemble_textures(ctrl, shader_refl_vert, state, rd.ShaderStage.Vertex, target_folder + '\\' + str(evt_id) + '\\')
 
-    byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original.spv'
+    byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original' + shader_res_id + '.spv'
     byte_path = Path(byte_path_name)
     byte_path.write_bytes(shader_refl_vert.rawBytes)
-    translate_spirv('vs', byte_path_name, evt_id, 'vert', str(shader_refl_vert.entryPoint))
+    translate_spirv('vs', byte_path_name, evt_id, 'vert', str(shader_refl_vert.entryPoint), shader_res_id)
 
 def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
     print("disassemble_pixel_shader")
     shader_refl_pixel = state.GetShaderReflection(rd.ShaderStage.Pixel)
     pixel_shader_text = ctrl.DisassembleShader(pipeline, shader_refl_pixel, target)
-    text_path_name = target_folder + '\\' + str(evt_id) + '\\' + 'ps_original_'+str(shader_refl_pixel.resourceId).replace('ResourceId::','')+'.txt'
+    shader_res_id = str(shader_refl_pixel.resourceId).replace('ResourceId::', '')
+    text_path_name = target_folder + '\\' + str(evt_id) + '\\' + 'ps_original_' + shader_res_id + '.txt'
     text_path = Path(text_path_name)
     text_path.write_text(pixel_shader_text)
 
@@ -451,7 +456,7 @@ def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
     byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'ps_original.spv'
     byte_path = Path(byte_path_name)
     byte_path.write_bytes(shader_refl_pixel.rawBytes)
-    translate_spirv('ps', byte_path_name, evt_id, 'frag', str(shader_refl_pixel.entryPoint))
+    translate_spirv('ps', byte_path_name, evt_id, 'frag', str(shader_refl_pixel.entryPoint), shader_res_id)
 
 
 
