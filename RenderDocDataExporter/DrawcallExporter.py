@@ -14,11 +14,10 @@ target_folder = "C:/Users/frankmhli/Documents/Project/Moonflow/TempMF/Assets/moo
 spirv_cross_path = "C:/Program Files/RenderDoc/plugins/spirv/spirv-cross.exe"
 
 # Because of read mesh data cost too much time, if you don't need to refresh extracted mesh data, set it to False to skip the process
-read_mesh_data = False
+read_mesh_data = True
 
 startEventID = 806
-endEventID = 823
-# endEventID = 1727
+endEventID = 1727
 
 #######################################################################################################################
 #  Before Sample ######################################################################################################
