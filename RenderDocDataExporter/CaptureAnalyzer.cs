@@ -97,7 +97,13 @@ namespace Moonflow
             {
                 _drawcallAnalyzers[i].Save();
             }
+
+            for (int i = 0; i < _hlslAnalyzers.Count; i++)
+            {
+                _hlslAnalyzers[i].SaveAsFile(_capturePath);
+            }
             AssetDatabase.StopAssetEditing();
+            AssetDatabase.Refresh();
         }
 
         public void AddShaderFile(ShaderCodePair pair)

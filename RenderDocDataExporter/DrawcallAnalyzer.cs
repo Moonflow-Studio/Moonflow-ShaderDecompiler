@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Moonflow;
@@ -27,6 +28,12 @@ public class DrawcallAnalyzer
         Debug.Log($"Create Translated Folder:{_translatedPath}");
         AssetDatabase.SaveAssets();
         AnalyzeResources();
+        //copy buffer linkers
+        List<BufferLinker> linker = new List<BufferLinker>();
+        foreach (var item in _cbufferAnalyzer.bufferLinkers)
+            linker.Add(item.Clone() is BufferLinker ? (BufferLinker)item.Clone() : default);
+        _shaderCodePair.bufferLinkersExample = _cbufferAnalyzer.bufferLinkers;
+        _captureAnalyzer.AddShaderFile(_shaderCodePair);
     }
 
     public void Save()
@@ -77,11 +84,9 @@ public class DrawcallAnalyzer
                 //They are just a backup and will not be used in any part
             }
         }
-        _captureAnalyzer.AddShaderFile(_shaderCodePair);
     }
 
     public void Translate()
     {
-        
     }
 }

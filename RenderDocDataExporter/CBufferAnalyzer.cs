@@ -30,7 +30,7 @@ namespace Moonflow
             BufferData buffer = new BufferData();
             BufferLinker linker = new BufferLinker();
             buffer.linkedFile = path;
-            buffer.dec.offset = int.Parse(nameArray[5]);
+            buffer.dec.offset = int.Parse(nameArray[5].Replace("o",""));
             buffer.dec.bufferName = nameArray[6];
             buffer.variables = AnalyzeCBufferFile(path);
             if (nameArray[1] == "Pixel")
@@ -63,6 +63,8 @@ namespace Moonflow
             linker.bindingIndex = int.Parse(nameArray[3].Substring(1));
             linker.uniformIndex = int.Parse(nameArray[4].Replace("uniforms",""));
             linker.bufferDec = buffer.dec;
+            linker.passDef = buffer.passDef;
+            bufferLinkers.Add(linker);
         }
 
         private List<ShaderVariable> AnalyzeCBufferFile(string path)
@@ -76,7 +78,7 @@ namespace Moonflow
                 while (!file.EndOfStream)
                 {
                     string line = file.ReadLine();
-                    Debug.Log("ReadingLine: " + line);
+                    // Debug.Log("ReadingLine: " + line);
                     if(line != null && line.Length ==0 && tempVariable!=null) variables.Add(tempVariable.Clone() as ShaderVariable);
                     // is sub
                     if (line.StartsWith("    "))

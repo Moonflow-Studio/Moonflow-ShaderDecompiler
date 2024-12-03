@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine.Serialization;
 
 namespace Moonflow
@@ -9,6 +10,7 @@ namespace Moonflow
         public ShaderCodeIdPair id;
         public string vsFilePath;
         public string psFilePath;
+        public List<BufferLinker> bufferLinkersExample;
     }
 
     [Serializable]
