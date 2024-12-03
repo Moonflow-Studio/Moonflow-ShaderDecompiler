@@ -7,7 +7,8 @@ namespace Moonflow
     [Serializable]
     public class CBufferAnalyzer : ScriptableObject, IResourceReceiver
     {
-        public List<BufferDeclaration> buffers = new List<BufferDeclaration>();
+        public List<BufferLinker> bufferLinkers = new List<BufferLinker>();
+        public List<BufferData> buffers = new List<BufferData>();
         // public List<BufferDeclaration> vBuffers = new List<BufferDeclaration>();
 
         public void AddResource(string path)
@@ -18,7 +19,7 @@ namespace Moonflow
             //get file name without extension
             fileName = System.IO.Path.GetFileNameWithoutExtension(fileName);
             
-            //file name format is "CBuffer_<Pixel/Vertex>_s<SetIndex>_b<BindingIndex>_<uniformIndex>_<bufferID>_<bufferName>.txt"
+            //file name format is "CBuffer_<Pixel/Vertex>_s<SetIndex>_b<BindingIndex>_<uniformIndex>_o<byteOffset>_<bufferName>.txt"
             string[] nameArray = fileName.Split('_');
             string bindingIndex = nameArray[3].Substring(1);
             if (Convert.ToInt32(bindingIndex) > 32)
@@ -26,12 +27,11 @@ namespace Moonflow
                 Debug.Log("Binding index is too high, skipping file: " + path);
                 return;
             }
-            BufferDeclaration buffer = new BufferDeclaration();
+            BufferData buffer = new BufferData();
+            BufferLinker linker = new BufferLinker();
             buffer.linkedFile = path;
-            buffer.setIndex = int.Parse(nameArray[2].Substring(1));
-            buffer.bindingIndex = int.Parse(nameArray[3].Substring(1));
-            buffer.uniformIndex = int.Parse(nameArray[4].Replace("uniforms",""));
-            buffer.bufferName = nameArray[6];
+            buffer.dec.offset = int.Parse(nameArray[5]);
+            buffer.dec.bufferName = nameArray[6];
             buffer.variables = AnalyzeCBufferFile(path);
             if (nameArray[1] == "Pixel")
             {
@@ -44,7 +44,25 @@ namespace Moonflow
             {
                 Debug.LogError($"Unknown buffer type: {nameArray[1]}, path: {path}");
             }
-            buffers.Add(buffer);
+
+            bool hasBuffer = false;
+            for (int i = 0; i < buffers.Count; i++)
+            {
+                if (buffers[i].dec.bufferName == buffer.dec.bufferName && buffers[i].dec.offset == buffer.dec.offset)
+                {
+                    hasBuffer = true;
+                    break;
+                }
+            }
+            if (!hasBuffer)
+            {
+                buffers.Add(buffer);
+            }
+            
+            linker.setIndex = int.Parse(nameArray[2].Substring(1));
+            linker.bindingIndex = int.Parse(nameArray[3].Substring(1));
+            linker.uniformIndex = int.Parse(nameArray[4].Replace("uniforms",""));
+            linker.bufferDec = buffer.dec;
         }
 
         private List<ShaderVariable> AnalyzeCBufferFile(string path)

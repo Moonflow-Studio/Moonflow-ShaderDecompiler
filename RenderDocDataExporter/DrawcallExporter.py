@@ -378,9 +378,9 @@ def disassemble_cbuffers(controller, refl, state, stage, pipeline, eventId):
         cbuffer_variables = controller.GetCBufferVariableContents(pipeline, refl.resourceId, stage, entry, buffer_index,
                                                                   blocks_data[buffer_index].descriptor.resource, blocks_data[buffer_index].descriptor.byteOffset, blocks_data[buffer_index].descriptor.byteSize)
         if len(cbuffer_variables) == 20:
-            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_' + resource_name + '_UnityPerDraw'
+            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_UnityPerDraw'
         else:
-            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_' + resource_name + '_Unknown'
+            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_Unknown'
         # if len(cbuffer_variables):
         #     new_file_name = 'CBuffer_' + stage_name + '_' + str(buffer_index) + '_' + resource_name + '_UnityPerMaterial'
         # else:

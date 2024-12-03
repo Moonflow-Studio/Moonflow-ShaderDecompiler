@@ -14,7 +14,8 @@ namespace Moonflow
         private DrawcallAnalyzer[] _drawcallAnalyzers;
         private List<HLSLAnalyzer> _hlslAnalyzers;
         private Dictionary<ShaderCodeIdPair, ShaderCodePair> _shaderCodePairs = new Dictionary<ShaderCodeIdPair, ShaderCodePair>();
-
+        
+        public Dictionary<int, BufferDeclaration> cbuffers;
         [MenuItem("Tools/Moonflow/Utility/Capture Analyzer")]
         public static void ShowWindow()
         {
@@ -22,7 +23,12 @@ namespace Moonflow
             _ins.minSize = new Vector2(200, 300);
             _ins.maxSize = new Vector2(200, 300);
         }
-        
+
+        private void OnDestroy()
+        {
+            DestroyImmediate(this);
+        }
+
         private void OnGUI()
         {
             EditorGUILayout.LabelField(_capturePath);
@@ -74,7 +80,7 @@ namespace Moonflow
             foreach (var codepair in _shaderCodePairs)
             {
                 var _HLSLAnalyzer = new HLSLAnalyzer();
-                _HLSLAnalyzer.Setup(codepair.Value);
+                _HLSLAnalyzer.Setup(this, codepair.Value);
                 _hlslAnalyzers.Add(_HLSLAnalyzer);
             }
 
