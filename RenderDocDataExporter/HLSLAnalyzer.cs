@@ -78,6 +78,7 @@ namespace Moonflow
             bool endDefinition = false;
             Dictionary<string, string> tempVarName = new Dictionary<string, string>();
             Dictionary<string, string> tempSamplerName = new Dictionary<string, string>();
+            HashSet<string> _v2fIndex = new HashSet<string>();
             if (String.IsNullOrEmpty(filePath)) return "";
             using (System.IO.StreamReader file = new System.IO.StreamReader(filePath))
             {
@@ -120,8 +121,12 @@ namespace Moonflow
                                 string[] split = line.Trim().Split(" ");
                                 if (split.Length == 4)
                                 {
-                                    if(split[3].Contains("TEXCOORD"))
+                                    if (split[3].Contains("TEXCOORD"))
+                                    {
+                                        line = line.Replace(split[1], "v2f" + split[1]);
                                         _varingTuple.TryAdd(split[3], split[1]);
+                                        _v2fIndex.Add(split[1]);
+                                    }
                                 }
                                 output += line + '\n';
                             }
@@ -181,6 +186,10 @@ namespace Moonflow
             {
                 output = output.Replace("SPIRV_Cross_Input", "Attribute");
                 output = output.Replace("SPIRV_Cross_Output", "Varying");
+                foreach (var oldName in _v2fIndex)
+                {
+                    output = output.Replace("." + oldName, ".v2f" + oldName);
+                }
             }
             else
             {
@@ -189,7 +198,7 @@ namespace Moonflow
                 output = output.Replace("gl_FragCoord", "gl_Position");
                 foreach (var vaying in _varingTuple)
                 {
-                    output = output.Replace("."+vaying.Key, "."+vaying.Value);
+                    output = output.Replace("."+vaying.Key, ".v2f"+vaying.Value);
                 }
             }
             return output;
