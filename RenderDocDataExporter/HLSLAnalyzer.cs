@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -141,9 +142,12 @@ namespace Moonflow
                                 string[] split = line.Trim().Split(" ");
                                 if (split.Length == 4)
                                 {
-                                    _varingTuple.TryGetValue(split[3], out string oldName);
-                                    _varingTuple.Remove(split[3]);
-                                    _varingTuple.Add(split[1], oldName);
+                                    if (split[3].Contains("TEXCOORD"))
+                                    {
+                                        _varingTuple.TryGetValue(split[3], out string oldName);
+                                        _varingTuple.Remove(split[3]);
+                                        _varingTuple.Add(split[1], oldName);
+                                    }
                                 }
                             }
                             line = file.ReadLine();
@@ -207,9 +211,25 @@ namespace Moonflow
             {
                 foreach (var pair in tempVarName)
                 {
-                    line = line.Replace(" "+pair.Key, " "+pair.Value);
-                    line = line.Replace("("+pair.Key, "("+pair.Value);
-                    line = line.Replace("-"+pair.Key, "-"+pair.Value);
+                    // string pattern = $@"([\w' '()-,=]*[\w' '()-,=]*){pair.Key}([\w' '()-.;,=]*)";
+                    // string replacement = "$1"+pair.Value+"$2";
+                    // line = Regex.Replace(line, pattern, replacement);
+                    line = line.Replace(" "+pair.Key+".", " "+pair.Value+".");
+                    line = line.Replace(" "+pair.Key+" ", " "+pair.Value+" ");
+                    line = line.Replace(" "+pair.Key+";", " "+pair.Value+";");
+                    line = line.Replace(" "+pair.Key+")", " "+pair.Value+")");
+                    line = line.Replace(" "+pair.Key+",", " "+pair.Value+",");
+                    line = line.Replace(" "+pair.Key+"[", " "+pair.Value+"[");
+                    line = line.Replace(" "+pair.Key+"[", " "+pair.Value+"[");
+                    line = line.Replace("-"+pair.Key+".", "-"+pair.Value+".");
+                    line = line.Replace("-"+pair.Key+" ", "-"+pair.Value+" ");
+                    line = line.Replace("-"+pair.Key+")", "-"+pair.Value+")");
+                    line = line.Replace("("+pair.Key+".", "("+pair.Value+".");
+                    line = line.Replace("("+pair.Key+" ", "("+pair.Value+" ");
+                    line = line.Replace("("+pair.Key+",", "("+pair.Value+",");
+                    line = line.Replace("("+pair.Key+")", "("+pair.Value+")");
+                    line = line.Replace("["+pair.Key+".", "["+pair.Value+".");
+                    line = line.Replace("["+pair.Key+" ", "["+pair.Value+" ");
                 }
 
                 foreach (var pair in tempSamplerName)
