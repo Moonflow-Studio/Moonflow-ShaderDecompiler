@@ -50,6 +50,7 @@ namespace Moonflow
 
         private void Analyze(string capturePath)
         {
+            _shaderCodePairs = new Dictionary<ShaderCodeIdPair, ShaderCodePair>();
             _capturePath = capturePath;
             if (Directory.Exists(_capturePath))
             {
