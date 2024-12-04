@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Moonflow
 {
@@ -13,6 +14,7 @@ namespace Moonflow
         private CaptureAnalyzer _captureAnalyzer;
         private Dictionary<BufferLinker, BufferLinker> _bufferLinkerMapper = new Dictionary<BufferLinker, BufferLinker>();
         private Tuple<string, string>[] _replaceTuple;
+        private Dictionary<string, string> _varingTuple;
         public void Setup(CaptureAnalyzer cap, ShaderCodePair codepairValue)
         {
             _captureAnalyzer = cap;
@@ -21,6 +23,7 @@ namespace Moonflow
 
         public void Analyze()
         {
+            _varingTuple = new Dictionary<string, string>();
             AnalyzeCommonBuffer();
             vsCode = AnalyzeSinglePass(ShaderPassDef.Vertex, shaderCodePair.vsFilePath);
             psCode = AnalyzeSinglePass(ShaderPassDef.Pixel, shaderCodePair.psFilePath);
@@ -71,6 +74,10 @@ namespace Moonflow
         private string AnalyzeSinglePass(ShaderPassDef passDef, string filePath)
         {
             string output = "";
+            string prefix = passDef == ShaderPassDef.Pixel ? "p" : "v";
+            bool endDefinition = false;
+            Dictionary<string, string> tempVarName = new Dictionary<string, string>();
+            Dictionary<string, string> tempSamplerName = new Dictionary<string, string>();
             if (String.IsNullOrEmpty(filePath)) return "";
             using (System.IO.StreamReader file = new System.IO.StreamReader(filePath))
             {
@@ -86,7 +93,14 @@ namespace Moonflow
                     }
                     else if (line.StartsWith("static"))
                     {
-                        //这里是固定输入
+                        //这里是临时变量
+                        string[] split = line.Split(" ");
+                        if (split.Length == 3)
+                        {
+                            string old = split[2].Replace(";", "");
+                            line = line.Replace(old, $"{prefix}{old}");
+                            tempVarName.TryAdd(old, $"{prefix}{old}");
+                        }
                         output += line + '\n';
                     }
                     else if (line.StartsWith("cbuffer"))
@@ -97,12 +111,53 @@ namespace Moonflow
                     else if (line.StartsWith("struct"))
                     {
                         //这里是结构体
+                        if (passDef == ShaderPassDef.Vertex && line.Contains("SPIRV_Cross_Output"))
+                        {
+                            output += line + '\n';
+                            while (!line.Contains("}"))
+                            {
+                                line = file.ReadLine();
+                                string[] split = line.Trim().Split(" ");
+                                if (split.Length == 4)
+                                {
+                                    if(split[3].Contains("TEXCOORD"))
+                                        _varingTuple.TryAdd(split[3], split[1]);
+                                }
+                                output += line + '\n';
+                            }
+                            line = file.ReadLine();
+                        }
+                        if (passDef == ShaderPassDef.Pixel && line.Contains("SPIRV_Cross_Input"))
+                        {
+                            // output += line + '\n';
+                            while (!line.Contains("}"))
+                            {
+                                line = file.ReadLine();
+                                string[] split = line.Trim().Split(" ");
+                                if (split.Length == 4)
+                                {
+                                    _varingTuple.TryGetValue(split[3], out string oldName);
+                                    _varingTuple.Remove(split[3]);
+                                    _varingTuple.Add(split[1], oldName);
+                                }
+                            }
+                            line = file.ReadLine();
+                        }
                         output += line + '\n';
                     }
                     else if (line.StartsWith("void"))
                     {
                         //这里是函数
-                        
+                        endDefinition = true;
+                        output += line + '\n';
+                    }
+                    else if (line.StartsWith("uniform"))
+                    {
+                        //这里是采样器定义
+                        string[] split = line.Split(" ");
+                        string old = split[2].Replace(";", "");
+                        line = line.Replace(old, $"{prefix}_s{old}");
+                        tempSamplerName.TryAdd(old, $"{prefix}_s{old}");
                         output += line + '\n';
                     }
                     else if (line == "\n")
@@ -112,11 +167,51 @@ namespace Moonflow
                     }
                     else
                     {
+                        if (endDefinition)
+                        {
+                            line = ReplaceDefinition(ref line);
+                        }
                         output += ReplaceSame(line) + '\n';
                     }
                 }
             }
+
+            output = output.Replace("f.xxxx", "").Replace("f.xxx", "").Replace("f.xx", "");
+            if (passDef == ShaderPassDef.Vertex)
+            {
+                output = output.Replace("SPIRV_Cross_Input", "Attribute");
+                output = output.Replace("SPIRV_Cross_Output", "Varying");
+            }
+            else
+            {
+                output = output.Replace("SPIRV_Cross_Input", "Varying");
+                output = output.Replace("SPIRV_Cross_Output", "Output");
+                output = output.Replace("gl_FragCoord", "gl_Position");
+                foreach (var vaying in _varingTuple)
+                {
+                    output = output.Replace("."+vaying.Key, "."+vaying.Value);
+                }
+            }
             return output;
+
+            string ReplaceDefinition(ref string line)
+            {
+                foreach (var pair in tempVarName)
+                {
+                    line = line.Replace(" "+pair.Key, " "+pair.Value);
+                    line = line.Replace("("+pair.Key, "("+pair.Value);
+                    line = line.Replace("-"+pair.Key, "-"+pair.Value);
+                }
+
+                foreach (var pair in tempSamplerName)
+                {
+                    line = line.Replace(" "+pair.Key, " "+pair.Value);
+                    line = line.Replace("("+pair.Key, "("+pair.Value);
+                    line = line.Replace("-"+pair.Key, "-"+pair.Value);
+                }
+
+                return line;
+            }
         }
         
         
