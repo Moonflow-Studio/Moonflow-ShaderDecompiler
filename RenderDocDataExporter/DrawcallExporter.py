@@ -287,7 +287,7 @@ def loadCapture(filename):
 def translate_spirv(stage_name, shader_source_path, evt_id, stage_tag, entry_point, shader_res_id):
     output_file_name = target_folder + '/' + str(evt_id) + '/' + stage_name + "_" + shader_res_id + "_output_hlsl.txt"
     # command = [spirv_cross_path, shader_source_path]
-    command = [spirv_cross_path, shader_source_path, "--output", output_file_name, "--hlsl", "--entry", entry_point, "--stage", stage_tag]
+    command = [spirv_cross_path, shader_source_path, "--output", output_file_name, "--hlsl", "--entry", entry_point, "--stage", stage_tag, "--shader-model", "50"]
     # command = [glslang_validator_path, "-H", "-V", "-o", shader_source_path, output_file_name]
     # command = ["glslangValidator", "-H", "-V", "-o", shader_source_path, output_file_name, "./spirv-cross", "--version 450", "--es", shader_source_path]
     try:
