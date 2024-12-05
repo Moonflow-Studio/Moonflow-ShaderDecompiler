@@ -16,6 +16,7 @@ public class DrawcallAnalyzer
     private string _translatedPath;
     private CaptureAnalyzer _captureAnalyzer;
     private ShaderCodePair _shaderCodePair;
+    private MeshDepacker _meshDepacker;
 
     public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer)
     {
