@@ -35,8 +35,10 @@ namespace Moonflow
 
         public void SaveAsFile(string path)
         {
-            string fileName = $"Shader_VS{shaderCodePair.id.vsid}_PS{shaderCodePair.id.psid}.hlsl";
-            File.WriteAllText(Path.Combine(path, fileName), "#####################    VSFILE\n"+vsCode + "\n\n\n\n" + "#####################    PSFILE\n" + psCode);
+            // string fileName = $"Shader_VS{shaderCodePair.id.vsid}_PS{shaderCodePair.id.psid}.hlsl";
+            string fileName = $"Shader_VS{shaderCodePair.id.vsid}_PS{shaderCodePair.id.psid}";
+            // File.WriteAllText(Path.Combine(path, fileName), "#####################    VSFILE\n"+vsCode + "\n\n\n\n" + "#####################    PSFILE\n" + psCode);
+            File.WriteAllText(Path.Combine(path, fileName+".shader"), GetCombinedURPShader(fileName));
             Debug.Log($"Shader {shaderCodePair.id.vsid} {shaderCodePair.id.psid} saved.");
         }
 
@@ -87,6 +89,7 @@ namespace Moonflow
             _cbufferName = new List<string>();
             
             if (String.IsNullOrEmpty(filePath)) return "";
+            int bindingIndexCounter = 0;
             using (System.IO.StreamReader file = new System.IO.StreamReader(filePath))
             {
                 int indent = 0;
@@ -114,8 +117,9 @@ namespace Moonflow
                     else if (line.StartsWith("cbuffer"))
                     {
                         //这里是cbuffer
-                        output += StartExtractCBufferDefinition(passDef == ShaderPassDef.Pixel, file, filePath,ref line, out string cbufferName);
+                        output += StartExtractCBufferDefinition(passDef == ShaderPassDef.Pixel, file, filePath, bindingIndexCounter, ref line, out string cbufferName);
                         _cbufferName.Add(cbufferName);
+                        bindingIndexCounter++;
                     }
                     else if (line.StartsWith("struct"))
                     {
@@ -165,7 +169,7 @@ namespace Moonflow
                     {
                         //这里是函数
                         endDefinition = true;
-                        output += line + '\n';
+                        output += "inline " + line + '\n';
                     }
                     else if (line.StartsWith("uniform"))
                     {
@@ -195,6 +199,10 @@ namespace Moonflow
                     {
                         //这里是间隔
                         output += line + '\n';
+                    }
+                    else if (line.Contains(" main("))
+                    {
+                        output += line.Replace(" main(", $" {passDef}_main(");
                     }
                     else
                     {
@@ -236,7 +244,7 @@ namespace Moonflow
             foreach (var pair in _texSamplerTuple)
             {
                 output = output.Replace(" "+pair.Key+".", " "+prefix + "_t" + pair.Key+".");
-                output = output.Replace(pair.Value, prefix + "_s" + pair.Value);
+                output = output.Replace(pair.Value, " sampler_"+prefix + "_t" + pair.Key);
             }
             return output;
 
@@ -312,7 +320,7 @@ namespace Moonflow
             return line;
         }
 
-        private string StartExtractCBufferDefinition(bool needReplaceBufferName, StreamReader file, string filePath, ref string line, out string cbufferName)
+        private string StartExtractCBufferDefinition(bool needReplaceBufferName, StreamReader file, string filePath, int bindingIndexCounter,  ref string line, out string cbufferName)
         {
             string output = "";
             //skip first line, but use to find the buffer name
@@ -340,7 +348,12 @@ namespace Moonflow
                     break;
                 }
             }
-            if(!skip)output += line + '\n';
+
+            if (!skip)
+            {
+                line = line.Replace(split[3], $"register(b{bindingIndexCounter})");
+                output += line + '\n';
+            }
 
             string prefix = needReplaceBufferName ? "p" : "v";
             while (!line.Contains("}"))
@@ -353,6 +366,37 @@ namespace Moonflow
                 }
             }
             return output;
+        }
+        
+        string GetCombinedURPShader(string fileName)
+        {
+            string template = "";
+            template += "Shader\"Capture/"+ fileName+"\"\n"+
+                        "{\n";
+            template += "    Properties\n" +
+                        "    {\n" + 
+                        "        _MainTex (\"Texture\", 2D) = \"white\" {}\n" + 
+                        "    }\n";
+            template += "    SubShader\n" + 
+                        "    {\n";
+            template += "        Tags { \"RenderType\"=\"Opaque\" }\n" +
+                        "        LOD 100\n\n";
+            template += "        Pass\n" + 
+                        "        {\n";
+            template += "            HLSLPROGRAM\n" + 
+                        "            #pragma vertex Vertex_main\n" + 
+                        "            #pragma fragment Pixel_main\n" + 
+                        "            #include \"Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl\"\n\n";
+            template += "               //########### VSCODE ##########\n";
+            template += vsCode + '\n';
+            template += "               //########### PSCODE ##########\n";
+            template += psCode + '\n';
+            template += "               //########### END ##########\n";
+            template += "            ENDHLSL\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}\n";
+            return template;
         }
     }
 }
