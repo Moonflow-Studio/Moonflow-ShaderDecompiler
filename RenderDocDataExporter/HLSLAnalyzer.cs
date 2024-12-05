@@ -16,6 +16,8 @@ namespace Moonflow
         private Dictionary<BufferLinker, BufferLinker> _bufferLinkerMapper = new Dictionary<BufferLinker, BufferLinker>();
         private Tuple<string, string>[] _replaceTuple;
         private Dictionary<string, string> _varingTuple;
+        private Dictionary<string, string> _texSamplerTuple;
+        private List<string> _cbufferName;
         public void Setup(CaptureAnalyzer cap, ShaderCodePair codepairValue)
         {
             _captureAnalyzer = cap;
@@ -25,6 +27,7 @@ namespace Moonflow
         public void Analyze()
         {
             _varingTuple = new Dictionary<string, string>();
+            
             AnalyzeCommonBuffer();
             vsCode = AnalyzeSinglePass(ShaderPassDef.Vertex, shaderCodePair.vsFilePath);
             psCode = AnalyzeSinglePass(ShaderPassDef.Pixel, shaderCodePair.psFilePath);
@@ -79,7 +82,10 @@ namespace Moonflow
             bool endDefinition = false;
             Dictionary<string, string> tempVarName = new Dictionary<string, string>();
             Dictionary<string, string> tempSamplerName = new Dictionary<string, string>();
+            _texSamplerTuple = new Dictionary<string, string>();
             HashSet<string> _v2fIndex = new HashSet<string>();
+            _cbufferName = new List<string>();
+            
             if (String.IsNullOrEmpty(filePath)) return "";
             using (System.IO.StreamReader file = new System.IO.StreamReader(filePath))
             {
@@ -108,7 +114,8 @@ namespace Moonflow
                     else if (line.StartsWith("cbuffer"))
                     {
                         //这里是cbuffer
-                        output += StartExtractCBufferDefinition(passDef == ShaderPassDef.Pixel, file, filePath,ref line);
+                        output += StartExtractCBufferDefinition(passDef == ShaderPassDef.Pixel, file, filePath,ref line, out string cbufferName);
+                        _cbufferName.Add(cbufferName);
                     }
                     else if (line.StartsWith("struct"))
                     {
@@ -162,12 +169,27 @@ namespace Moonflow
                     }
                     else if (line.StartsWith("uniform"))
                     {
-                        //这里是采样器定义
+                        //这里是采样器定义(旧版本)
                         string[] split = line.Split(" ");
                         string old = split[2].Replace(";", "");
                         line = line.Replace(old, $"{prefix}_s{old}");
                         tempSamplerName.TryAdd(old, $"{prefix}_s{old}");
                         output += line + '\n';
+                    }
+                    else if (line.StartsWith("Texture2D"))
+                    {
+                        //这里是纹理定义
+                        string[] splitTexLine = line.Split(" ");
+                        string newTexDef = prefix + "_t" + splitTexLine[1];
+                        line = line.Replace(splitTexLine[1], newTexDef);
+                        output += line + '\n';
+                        
+                        line = file.ReadLine();
+                        string[] splitSamplerLine = line.Split(" ");
+                        // string newSamplerDef = prefix + "_s" + splitSamplerLine[1];
+                        // line = line.Replace(splitSamplerLine[1], newSamplerDef);
+                        output += line + '\n';
+                        _texSamplerTuple.Add(splitTexLine[1], splitSamplerLine[1]);
                     }
                     else if (line == "\n")
                     {
@@ -178,9 +200,14 @@ namespace Moonflow
                     {
                         if (endDefinition)
                         {
+                            line = ReplaceSame(line);
+                            // for (int i = 0; i < _replaceTuple.Length; i++)
+                            // {
+                                // line = line.Replace(_replaceTuple[i].Item1, _replaceTuple[i].Item2);
+                            // }
                             line = ReplaceDefinition(ref line);
                         }
-                        output += ReplaceSame(line) + '\n';
+                        output += line + '\n';
                     }
                 }
             }
@@ -205,6 +232,12 @@ namespace Moonflow
                     output = output.Replace("."+vaying.Key, ".v2f"+vaying.Value);
                 }
             }
+
+            foreach (var pair in _texSamplerTuple)
+            {
+                output = output.Replace(" "+pair.Key+".", " "+prefix + "_t" + pair.Key+".");
+                output = output.Replace(pair.Value, prefix + "_s" + pair.Value);
+            }
             return output;
 
             string ReplaceDefinition(ref string line)
@@ -220,16 +253,22 @@ namespace Moonflow
                     line = line.Replace(" "+pair.Key+")", " "+pair.Value+")");
                     line = line.Replace(" "+pair.Key+",", " "+pair.Value+",");
                     line = line.Replace(" "+pair.Key+"[", " "+pair.Value+"[");
-                    line = line.Replace(" "+pair.Key+"[", " "+pair.Value+"[");
+                    line = line.Replace("   "+pair.Key+"[", "   "+pair.Value+"[");
                     line = line.Replace("-"+pair.Key+".", "-"+pair.Value+".");
                     line = line.Replace("-"+pair.Key+" ", "-"+pair.Value+" ");
                     line = line.Replace("-"+pair.Key+")", "-"+pair.Value+")");
+                    line = line.Replace("-"+pair.Key+";", "-"+pair.Value+";");
                     line = line.Replace("("+pair.Key+".", "("+pair.Value+".");
                     line = line.Replace("("+pair.Key+" ", "("+pair.Value+" ");
                     line = line.Replace("("+pair.Key+",", "("+pair.Value+",");
                     line = line.Replace("("+pair.Key+")", "("+pair.Value+")");
                     line = line.Replace("["+pair.Key+".", "["+pair.Value+".");
                     line = line.Replace("["+pair.Key+" ", "["+pair.Value+" ");
+                    line = line.Replace("!"+pair.Key+" ", "!"+pair.Value+" ");
+                    line = line.Replace("!"+pair.Key+")", "!"+pair.Value+")");
+                    line = line.Replace("!"+pair.Key+";", "!"+pair.Value+";");
+                    line = line.Replace("!"+pair.Key+".", "!"+pair.Value+".");
+                    line = line.Replace("!"+pair.Key+",", "!"+pair.Value+",");
                 }
 
                 foreach (var pair in tempSamplerName)
@@ -238,23 +277,42 @@ namespace Moonflow
                     line = line.Replace("("+pair.Key, "("+pair.Value);
                     line = line.Replace("-"+pair.Key, "-"+pair.Value);
                 }
-
+                
+                for (int i = 0; i < _cbufferName.Count; i++)
+                {
+                    if (passDef == ShaderPassDef.Pixel && isLinkedCBuffer(_cbufferName[i]))
+                    {
+                        line = line.Replace("_"+_cbufferName[i] + "_m", "v_"+_cbufferName[i] + "_m");
+                    }
+                    else
+                    {
+                        line = line.Replace("_"+_cbufferName[i] + "_m", prefix + "_"+_cbufferName[i] + "_m");
+                    }
+                }
                 return line;
             }
         }
-        
+
+        private bool isLinkedCBuffer(string name)
+        {
+            foreach (var mapper in _bufferLinkerMapper)
+            {
+                if (mapper.Key.uniformIndex == int.Parse(name)) return true;
+            }
+            return false;
+        }
         
 
         private string ReplaceSame(string line)
         {
             for (int i = 0; i < _replaceTuple.Length; i++)
             {
-                line = line.Replace(_replaceTuple[i].Item1, _replaceTuple[i].Item2);
+                line = line.Replace(_replaceTuple[i].Item1, "v"+_replaceTuple[i].Item2);
             }
             return line;
         }
 
-        private string StartExtractCBufferDefinition(bool needReplaceBufferName, StreamReader file, string filePath, ref string line)
+        private string StartExtractCBufferDefinition(bool needReplaceBufferName, StreamReader file, string filePath, ref string line, out string cbufferName)
         {
             string output = "";
             //skip first line, but use to find the buffer name
@@ -269,10 +327,12 @@ namespace Moonflow
             {
                 linkedBufferName = bufferName[2];
             }
-            
+
+            cbufferName = bufferName[2];
             bool skip = false;
             foreach (var mapper in _bufferLinkerMapper)
             {
+                //uniformIndex一致不代表内容一致，buffer序号可能也是一致的，但是bufferRange和offer可能不一致
                 if (mapper.Key.uniformIndex == int.Parse(linkedBufferName))
                 {
                     skip = true;
@@ -282,10 +342,15 @@ namespace Moonflow
             }
             if(!skip)output += line + '\n';
 
+            string prefix = needReplaceBufferName ? "p" : "v";
             while (!line.Contains("}"))
             {
                 line = file.ReadLine();
-                if(!skip) output += line + '\n';
+                if (!skip)
+                {
+                    line = line.Replace("_"+cbufferName + "_m", prefix + "_"+cbufferName + "_m");
+                    output += line + '\n';
+                }
             }
             return output;
         }

@@ -16,6 +16,7 @@ namespace Moonflow
         private Dictionary<ShaderCodeIdPair, ShaderCodePair> _shaderCodePairs = new Dictionary<ShaderCodeIdPair, ShaderCodePair>();
         
         public Dictionary<int, BufferDeclaration> cbuffers;
+        private Vector2Int _drawcallRange;
         [MenuItem("Tools/Moonflow/Utility/Capture Analyzer")]
         public static void ShowWindow()
         {
@@ -37,10 +38,49 @@ namespace Moonflow
                 _capturePath = EditorUtility.OpenFolderPanel("Select RenderDoc Capture Folder", "", "");
             }
             EditorGUILayout.Space();
-            if (GUILayout.Button("Analyze"))
+            _drawcallRange = EditorGUILayout.Vector2IntField("Drawcall Range", _drawcallRange);
+            if (GUILayout.Button("Analyze Data"))
             {
-                Analyze(_capturePath);
+                AnalyzeData(_capturePath);
+                Debug.Log("Finish!!");
             }
+
+            using (new EditorGUILayout.VerticalScope("box"))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("Setup HLSL File"))
+                    {
+                        Debug.Log("starting analyze hlsl code");
+                        SetupHLSLFile();
+                        Debug.Log("Finish!!");
+                    }
+
+                    if (GUILayout.Button("Analyze HLSL"))
+                    {
+                        Debug.Log("starting analyze hlsl code");
+                        AnalyzeHLSL();
+                        Debug.Log("Finish!!");
+                    }
+                }
+
+                if (_hlslAnalyzers != null)
+                {
+                    for (int i = 0; i < _hlslAnalyzers.Count; i++)
+                    {
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            EditorGUILayout.LabelField("Vertex Shader:", _hlslAnalyzers[i].shaderCodePair.id.vsid, GUILayout.Width(200));
+                            EditorGUILayout.LabelField("Pixel Shader:", _hlslAnalyzers[i].shaderCodePair.id.psid,GUILayout.Width(200));
+                            if (GUILayout.Button("Analyze"))
+                            {
+                                _hlslAnalyzers[i].Analyze();
+                            }
+                        }
+                    }
+                }
+            }
+            
 
             if (GUILayout.Button("Save"))
             {
@@ -48,7 +88,7 @@ namespace Moonflow
             }
         }
 
-        private void Analyze(string capturePath)
+        private void AnalyzeData(string capturePath)
         {
             _shaderCodePairs = new Dictionary<ShaderCodeIdPair, ShaderCodePair>();
             _capturePath = capturePath;
@@ -63,19 +103,21 @@ namespace Moonflow
                     string correctFolder = subFolders[i].Replace('\\', '/');
                     Debug.Log($"Analyze {correctFolder}");
                     _drawcallAnalyzers[i] = new DrawcallAnalyzer();
-                    _drawcallAnalyzers[i].Setup(correctFolder, this);
+                    string[] folderSplit = correctFolder.Split('/');
+                    int drawcallIndex = int.Parse(folderSplit[^1]);
+                    if(drawcallIndex >= _drawcallRange.x && drawcallIndex <= _drawcallRange.y)
+                        _drawcallAnalyzers[i].Setup(correctFolder, this);
                 }
             }
             else
             {
                 Debug.LogError("Capture folder is not found!");
             }
-            Debug.Log("Finish setup drawcall data, starting analyze hlsl code");
-            AnalyzeHLSL();
-            Debug.Log("Finish!!");
+
+            Debug.Log("Finish setup drawcall data");
         }
 
-        private void AnalyzeHLSL()
+        private void SetupHLSLFile()
         {
             _hlslAnalyzers = new List<HLSLAnalyzer>();
             foreach (var codepair in _shaderCodePairs)
@@ -84,11 +126,18 @@ namespace Moonflow
                 _HLSLAnalyzer.Setup(this, codepair.Value);
                 _hlslAnalyzers.Add(_HLSLAnalyzer);
             }
-
-            foreach (var hlslAnalyzer in _hlslAnalyzers)
+        }
+        private void AnalyzeHLSL()
+        {
+            for (var index = 0; index < _hlslAnalyzers.Count; index++)
             {
-                hlslAnalyzer.Analyze();
+                AnalyzeHLSL(index);
             }
+        }
+
+        private void AnalyzeHLSL(int index)
+        {
+            _hlslAnalyzers[index].Analyze();
         }
 
         private void Save()
