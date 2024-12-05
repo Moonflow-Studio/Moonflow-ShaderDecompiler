@@ -100,7 +100,7 @@ namespace Moonflow
                     if (line.StartsWith("#"))
                     {
                         //这里是define
-                        output += line + '\n';
+                        output += "         "+line + '\n';
                     }
                     else if (line.StartsWith("static"))
                     {
@@ -112,7 +112,7 @@ namespace Moonflow
                             line = line.Replace(old, $"{prefix}{old}");
                             tempVarName.TryAdd(old, $"{prefix}{old}");
                         }
-                        output += line + '\n';
+                        output += "         "+line + '\n';
                     }
                     else if (line.StartsWith("cbuffer"))
                     {
@@ -126,7 +126,7 @@ namespace Moonflow
                         //这里是结构体
                         if (passDef == ShaderPassDef.Vertex && line.Contains("SPIRV_Cross_Output"))
                         {
-                            output += line + '\n';
+                            output += "         "+line + '\n';
                             while (!line.Contains("}"))
                             {
                                 line = file.ReadLine();
@@ -140,7 +140,7 @@ namespace Moonflow
                                         _v2fIndex.Add(split[1]);
                                     }
                                 }
-                                output += line + '\n';
+                                output += "         "+line + '\n';
                             }
                             line = file.ReadLine();
                         }
@@ -163,13 +163,13 @@ namespace Moonflow
                             }
                             line = file.ReadLine();
                         }
-                        output += line + '\n';
+                        output += "         "+line + '\n';
                     }
                     else if (line.StartsWith("void"))
                     {
                         //这里是函数
                         endDefinition = true;
-                        output += "inline " + line + '\n';
+                        output += "         "+"inline " + line + '\n';
                     }
                     else if (line.StartsWith("uniform"))
                     {
@@ -178,7 +178,7 @@ namespace Moonflow
                         string old = split[2].Replace(";", "");
                         line = line.Replace(old, $"{prefix}_s{old}");
                         tempSamplerName.TryAdd(old, $"{prefix}_s{old}");
-                        output += line + '\n';
+                        output += "         "+line + '\n';
                     }
                     else if (line.StartsWith("Texture2D"))
                     {
@@ -186,23 +186,23 @@ namespace Moonflow
                         string[] splitTexLine = line.Split(" ");
                         string newTexDef = prefix + "_t" + splitTexLine[1];
                         line = line.Replace(splitTexLine[1], newTexDef);
-                        output += line + '\n';
+                        output += "         "+line + '\n';
                         
                         line = file.ReadLine();
                         string[] splitSamplerLine = line.Split(" ");
                         // string newSamplerDef = prefix + "_s" + splitSamplerLine[1];
                         // line = line.Replace(splitSamplerLine[1], newSamplerDef);
-                        output += line + '\n';
+                        output += "         "+line + '\n';
                         _texSamplerTuple.Add(splitTexLine[1], splitSamplerLine[1]);
                     }
                     else if (line == "\n")
                     {
                         //这里是间隔
-                        output += line + '\n';
+                        output += "         "+line + '\n';
                     }
                     else if (line.Contains(" main("))
                     {
-                        output += line.Replace(" main(", $" {passDef}_main(");
+                        output += "         "+line.Replace(" main(", $" {passDef}_main(");
                     }
                     else
                     {
@@ -215,7 +215,7 @@ namespace Moonflow
                             // }
                             line = ReplaceDefinition(ref line);
                         }
-                        output += line + '\n';
+                        output += "         "+line + '\n';
                     }
                 }
             }
@@ -352,7 +352,7 @@ namespace Moonflow
             if (!skip)
             {
                 line = line.Replace(split[3], $"register(b{bindingIndexCounter})");
-                output += line + '\n';
+                output += "         "+line + '\n';
             }
 
             string prefix = needReplaceBufferName ? "p" : "v";
@@ -362,7 +362,7 @@ namespace Moonflow
                 if (!skip)
                 {
                     line = line.Replace("_"+cbufferName + "_m", prefix + "_"+cbufferName + "_m");
-                    output += line + '\n';
+                    output += "         "+line + '\n';
                 }
             }
             return output;
