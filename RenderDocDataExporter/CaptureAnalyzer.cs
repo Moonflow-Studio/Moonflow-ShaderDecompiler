@@ -46,41 +46,43 @@ namespace Moonflow
                 Debug.Log("Finish!!");
             }
 
-            // using (new EditorGUILayout.VerticalScope("box"))
-            // {
-            //     using (new EditorGUILayout.HorizontalScope())
-            //     {
-            //         if (GUILayout.Button("Setup HLSL File"))
-            //         {
-            //             Debug.Log("starting analyze hlsl code");
-            //             SetupHLSLFile();
-            //             Debug.Log("Finish!!");
-            //         }
-            //
-            //         if (GUILayout.Button("Analyze HLSL"))
-            //         {
-            //             Debug.Log("starting analyze hlsl code");
-            //             AnalyzeHLSL();
-            //             Debug.Log("Finish!!");
-            //         }
-            //     }
-            //
-            //     if (_hlslAnalyzers != null)
-            //     {
-            //         for (int i = 0; i < _hlslAnalyzers.Count; i++)
-            //         {
-            //             using (new EditorGUILayout.HorizontalScope())
-            //             {
-            //                 EditorGUILayout.LabelField("Vertex Shader:", _hlslAnalyzers[i].shaderCodePair.id.vsid, GUILayout.Width(200));
-            //                 EditorGUILayout.LabelField("Pixel Shader:", _hlslAnalyzers[i].shaderCodePair.id.psid,GUILayout.Width(200));
-            //                 if (GUILayout.Button("Analyze"))
-            //                 {
-            //                     _hlslAnalyzers[i].Analyze();
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
+            using (new EditorGUILayout.VerticalScope("box"))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (GUILayout.Button("Setup HLSL File"))
+                    {
+                        Debug.Log("starting analyze hlsl code");
+                        SetupHLSLFile();
+                        Debug.Log("Finish!!");
+                    }
+            
+                    if (GUILayout.Button("Analyze HLSL"))
+                    {
+                        Debug.Log("starting analyze hlsl code");
+                        AnalyzeHLSL();
+                        Debug.Log("Finish!!");
+                    }
+                }
+            
+                if (_hlslAnalyzers != null)
+                {
+                    for (int i = 0; i < _hlslAnalyzers.Count; i++)
+                    {
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            EditorGUILayout.LabelField("Vertex Shader:", _hlslAnalyzers[i].shaderCodePair.id.vsid, GUILayout.Width(200));
+                            EditorGUILayout.LabelField("Pixel Shader:", _hlslAnalyzers[i].shaderCodePair.id.psid,GUILayout.Width(200));
+                            _hlslAnalyzers[i].diffuseResIndex =
+                                EditorGUILayout.IntField(_hlslAnalyzers[i].diffuseResIndex);
+                            // if (GUILayout.Button("Analyze"))
+                            // {
+                            //     _hlslAnalyzers[i].Analyze();
+                            // }
+                        }
+                    }
+                }
+            }
             
 
             if (GUILayout.Button("Save"))
@@ -98,7 +100,7 @@ namespace Moonflow
         {
             foreach (var drawcall in _drawcallAnalyzers)
             {
-                drawcall.Translate();
+                drawcall.Translate(_hlslAnalyzers);
             }
         }
 
@@ -162,10 +164,10 @@ namespace Moonflow
                 _drawcallAnalyzers[i].Save();
             }
 
-            // for (int i = 0; i < _hlslAnalyzers.Count; i++)
-            // {
-            //     _hlslAnalyzers[i].SaveAsFile(_capturePath);
-            // }
+            for (int i = 0; i < _hlslAnalyzers.Count; i++)
+            {
+                _hlslAnalyzers[i].SaveAsFile(_capturePath);
+            }
             AssetDatabase.StopAssetEditing();
             AssetDatabase.Refresh();
         }

@@ -21,7 +21,9 @@ namespace Moonflow
             Matrix4x4 rotationMatrix = new Matrix4x4(new Vector4(matrix.m00, matrix.m01, matrix.m02,0.0f),
                 new Vector4(matrix.m10, matrix.m11, matrix.m12,0.0f),
                 new Vector4(matrix.m20, matrix.m21, matrix.m22,0.0f),Vector4.zero);
-            prs.rotation = Quaternion.LookRotation(rotationMatrix.GetColumn(2), rotationMatrix.GetColumn(1));
+            rotationMatrix = rotationMatrix.transpose;
+            // prs.rotation = Quaternion.LookRotation(rotationMatrix.GetColumn(0), rotationMatrix.GetColumn(1));
+            prs.rotation = rotationMatrix.rotation;
             prs.scale = new Vector3(
                 matrix.GetColumn(0).magnitude,
                 matrix.GetColumn(1).magnitude,

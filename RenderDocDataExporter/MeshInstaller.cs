@@ -10,15 +10,17 @@ namespace Moonflow
     public class MeshInstaller : IResourceReceiver
     {
         // private string _drawcallIndex;
+        private int _diffuseIndex;
         public PRSReverseAux.PRS prs;
         
+        public Material mat;
         private Mesh _mesh;
         private List<Vector4>[] _vertexDataList;
         private int[] _vertexDataChannel;
         private List<int> _vertexIndices = new List<int>();
         private string _path;
         private string _savePath;
-        public Material mat;
+        private int _startVertexOffset = 0;
         private static readonly int BASE_MAP = Shader.PropertyToID("_BaseMap");
 
         public void AddResource(string path)
@@ -57,6 +59,10 @@ namespace Moonflow
                         else if(lineIndex >= 2)
                         {
                             var attrSplit = line.Split("  ");
+                            if (lineIndex == 2)
+                            {
+                                _startVertexOffset = int.Parse(attrSplit[0]);
+                            }
                             for (int i = 1; i < attrSplit.Length; i++)
                             {
                                 var attr = attrSplit[i].Remove(attrSplit[i].Length-1,1).Remove(0,1).Split(", ");
@@ -98,6 +104,11 @@ namespace Moonflow
             }
         }
 
+        public void SetDiffuseIndex(int index)
+        {
+            _diffuseIndex = index;
+        }
+
         private void MakeMesh()
         {
             if (_vertexDataChannel == null)
@@ -137,7 +148,12 @@ namespace Moonflow
             
             try
             {
-                _mesh.SetIndices(_vertexIndices,MeshTopology.Triangles,0,true,0);
+                for (int i = 0; i < _vertexIndices.Count; i++)
+                {
+                    _vertexIndices[i] -= _startVertexOffset;
+                }
+                _mesh.SetTriangles(_vertexIndices, 0,true,0);
+                // _mesh.SetIndices(_vertexIndices,MeshTopology.Triangles,0,true,0);
                 // _mesh.triangles = _vertexIndices.ToArray();
             }
             catch (Exception e)
@@ -153,7 +169,7 @@ namespace Moonflow
                 Vector2[] uvArray2 = new Vector2[uvArray.Length];
                 for (int i = 0; i < uvArray2.Length; i++)
                 {
-                    uvArray2[i] = uvArray[i];
+                    uvArray2[i] = new Vector2(uvArray[i].x, 1 - uvArray[i].y);
                 }
                 _mesh.uv = uvArray2;
             }
@@ -163,18 +179,18 @@ namespace Moonflow
         {
             MakeMesh();
             _savePath = "Assets/" + relativePath + "/mesh.asset";
-            Shader lit = Shader.Find("Universal Render Pipeline/Lit");
+            Shader lit = Shader.Find("Universal Render Pipeline/Unlit");
             mat = new Material(lit);
-            if (textureAnalyzer != null)
-            {
-                if (textureAnalyzer.textureDeclarations != null)
-                {
-                    if (textureAnalyzer.textureDeclarations[0].texture != null)
-                    {
-                        mat.SetTexture(BASE_MAP, textureAnalyzer.textureDeclarations[0].texture);
-                    }
-                }
-            }
+
+            mat.SetFloat("_Surface", 1);
+            mat.SetFloat("_Blend", 0);
+            mat.SetFloat("_BlendOp", 0);
+            mat.SetFloat("_DstBlend", 10);
+            mat.SetFloat("_DstBlendAlpha", 10);
+            mat.SetFloat("_SrcBlend", 5);
+            mat.SetFloat("_SrcBlendAlpha", 1);
+            mat.renderQueue = 3000;
+            
             AssetDatabase.CreateAsset(mat, "Assets/" + relativePath + "/material.mat");
             AssetDatabase.CreateAsset(_mesh, _savePath);
         }

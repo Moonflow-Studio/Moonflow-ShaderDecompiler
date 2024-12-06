@@ -17,6 +17,7 @@ public class DrawcallAnalyzer
     private string _translatedPath;
     private CaptureAnalyzer _captureAnalyzer;
     private ShaderCodePair _shaderCodePair;
+    private int _diffuseIndex;
 
     public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer)
     {
@@ -90,8 +91,15 @@ public class DrawcallAnalyzer
         }
     }
 
-    public void Translate()
+    public void Translate(List<HLSLAnalyzer> hlslAnalyzers)
     {
+        foreach (var hlslAnalyzer in hlslAnalyzers)
+        {
+            if (hlslAnalyzer.shaderCodePair.id.vsid == _shaderCodePair.id.vsid && hlslAnalyzer.shaderCodePair.id.psid == _shaderCodePair.id.psid)
+            {
+                _diffuseIndex = hlslAnalyzer.diffuseResIndex;
+            }
+        }
         for (int i = 0; i < _cbufferAnalyzer.buffers.Count; i++)
         {
             var data = _cbufferAnalyzer.buffers[i];
@@ -115,7 +123,19 @@ public class DrawcallAnalyzer
                 break;
             }
         }
-
+        if (_textureAnalyzer != null)
+        {
+            if (_textureAnalyzer.textureDeclarations != null)
+            {
+                for (int i = 0; i < _textureAnalyzer.textureDeclarations.Count; i++)
+                {
+                    if (int.Parse(_textureAnalyzer.textureDeclarations[i].resourceIndex) == _diffuseIndex)
+                    {
+                        _meshInstaller.mat.SetTexture("_BaseMap", _textureAnalyzer.textureDeclarations[i].texture);
+                    }
+                }
+            }
+        }
         GameObject go = new GameObject();
         MeshFilter filter = go.AddComponent<MeshFilter>();
         MeshRenderer renderer = go.AddComponent<MeshRenderer>();

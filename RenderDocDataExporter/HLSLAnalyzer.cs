@@ -12,6 +12,7 @@ namespace Moonflow
         public ShaderCodePair shaderCodePair;
         public string vsCode;
         public string psCode;
+        public int diffuseResIndex;
         private CaptureAnalyzer _captureAnalyzer;
         private Dictionary<BufferLinker, BufferLinker> _bufferLinkerMapper = new Dictionary<BufferLinker, BufferLinker>();
         private Tuple<string, string>[] _replaceTuple;

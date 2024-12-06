@@ -7,7 +7,7 @@ namespace Moonflow
 {
     public class TextureAnalyzer : IResourceReceiver
     {
-        public List<TextureDeclaration> textureDeclarations;
+        public List<TextureDeclaration> textureDeclarations = new List<TextureDeclaration>();
         [Serializable]
         public struct TextureDeclaration
         {
@@ -49,17 +49,18 @@ namespace Moonflow
                     int setIndex = int.Parse(nameArray[1].Substring(1));
                     int bindingIndex = int.Parse(nameArray[2].Substring(1));
                     string resourceIndex = nameArray[3].Substring(3);
+                    string relativePath = path.Substring(Application.dataPath.Length + 1);
                     TextureDeclaration textureDeclaration = new TextureDeclaration
                     {
                         passDef = spd,
                         setIndex = setIndex,
                         bindingIndex = bindingIndex,
                         resourceIndex = resourceIndex,
-                        texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path),
+                        texture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/"+relativePath),
                         linkedFile = path
                     };
                     //load texture
-                    byte[] fileData = System.IO.File.ReadAllBytes(path);
+                    textureDeclarations.Add(textureDeclaration);
                 }
             }
             else
