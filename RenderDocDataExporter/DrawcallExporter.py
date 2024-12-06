@@ -211,12 +211,14 @@ def getIndices(controller, mesh):
         return tuple(range(mesh.numIndices))
 
 
-def extract_mesh_input(controller, meshData, eventId):
+def extract_mesh_input(controller, meshData, eventId, instance_count):
     indices = getIndices(controller, meshData[0])
     text = 'VertexIndex'
     for attr in meshData:
         text += ' ' + str(attr.name)
-    text += '\n\n'
+    text += '\n'
+    text += str(instance_count)+'\n'
+    text += '\n'
 
     length = len(indices)
     # We'll decode the first three indices making up a triangle
@@ -493,10 +495,10 @@ def sample_drawcall(drawcall, index, ctrl):
         drawcall_path.mkdir(parents=True, exist_ok=True)
         ctrl.SetFrameEvent(drawcall.eventId, True)
         extract_drawcall_data(ctrl, drawcall.eventId)
-
+        instance_count = drawcall.numInstances
         if read_mesh_data:
             meshInputs = getMeshInputs(ctrl, drawcall)
-            extract_mesh_input(ctrl, meshInputs, drawcall.eventId)
+            extract_mesh_input(ctrl, meshInputs, drawcall.eventId, instance_count)
             current_datetime = datetime.datetime.now()
             formatted_time = current_datetime.strftime("%Y-%m-%d %H-%M-%S")
             print("当前时间: %s" % formatted_time)
