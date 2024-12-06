@@ -123,7 +123,9 @@ public class DrawcallAnalyzer
                 break;
             }
         }
-        if (_textureAnalyzer != null)
+
+        bool needInstanciate = false;
+        if (_textureAnalyzer != null && _diffuseIndex!=0)
         {
             if (_textureAnalyzer.textureDeclarations != null)
             {
@@ -132,11 +134,14 @@ public class DrawcallAnalyzer
                     if (int.Parse(_textureAnalyzer.textureDeclarations[i].resourceIndex) == _diffuseIndex)
                     {
                         _meshInstaller.mat.SetTexture("_BaseMap", _textureAnalyzer.textureDeclarations[i].texture);
+                        needInstanciate = true;
                     }
                 }
             }
         }
-        GameObject go = new GameObject();
+
+        if (!needInstanciate) return;
+        GameObject go = new GameObject(_drawcallFolderPath.Split('/')[^1]);
         MeshFilter filter = go.AddComponent<MeshFilter>();
         MeshRenderer renderer = go.AddComponent<MeshRenderer>();
         filter.mesh = _meshInstaller.GetMeshFile();
