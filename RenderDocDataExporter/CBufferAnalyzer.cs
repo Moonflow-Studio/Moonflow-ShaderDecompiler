@@ -75,7 +75,7 @@ namespace Moonflow
             Debug.Log("Analyzing CBuffer file: " + path);
             using (System.IO.StreamReader file = new System.IO.StreamReader(path))
             {
-                bool subflag = false;
+                int subflag = 0;
                 ShaderVariable tempVariable = null;
                 while (!file.EndOfStream)
                 {
@@ -85,7 +85,7 @@ namespace Moonflow
                     // is sub
                     if (line.StartsWith(" "))
                     {
-                        if (!subflag)
+                        if (subflag == 0)
                         {
                             Debug.LogError($"子项出现在非列表变量中, path: {path}, line: {line}");
                             continue;
@@ -132,13 +132,14 @@ namespace Moonflow
                     }
                     else
                     {
-                        subflag = false;
+                        subflag = 0;
                         if(tempVariable!=null)variables.Add(tempVariable.Clone() as ShaderVariable);
                         if (line.Contains("MEMBERS:"))
                         {
-                            if (subflag)
+                            if (subflag != 0)
                             {
-                                Debug.LogError($"父项出现在子项中, path: {path}, line: {line}");
+                                
+                                Debug.Log($"存在嵌套");
                             }
                             tempVariable = new ShaderVariable();
                             tempVariable.name = line.Split("  ")[0].Trim();
@@ -149,7 +150,7 @@ namespace Moonflow
                                 return new List<ShaderVariable>();
                             }
                             tempVariable.values = new Vector4[listCount];
-                            subflag = true;
+                            subflag += 1;
                         }
                         else
                         {

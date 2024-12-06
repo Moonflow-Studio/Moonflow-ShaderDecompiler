@@ -14,6 +14,7 @@ namespace Moonflow
         public ShaderPassDef passDef;
         public string linkedFile;
         public List<ShaderVariable> variables;
+        public BufferData subBuffer;
 
         // public void SetValueToMat(Material mat)
         // {
