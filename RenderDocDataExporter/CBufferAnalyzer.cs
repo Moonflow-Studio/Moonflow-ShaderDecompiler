@@ -10,16 +10,17 @@ namespace Moonflow
         public List<BufferLinker> bufferLinkers = new List<BufferLinker>();
         public List<BufferData> buffers = new List<BufferData>();
         // public List<BufferDeclaration> vBuffers = new List<BufferDeclaration>();
-
+        private string _path;
         public void AddResource(string path)
         {
+            _path = path;
             Debug.Log($"Adding resource as CBufferFile: {path}");
             //get file name from path
             string fileName = System.IO.Path.GetFileName(path);
             //get file name without extension
             fileName = System.IO.Path.GetFileNameWithoutExtension(fileName);
             
-            //file name format is "CBuffer_<Pixel/Vertex>_s<SetIndex>_b<BindingIndex>_<uniformIndex>_o<byteOffset>_<bufferName>.txt"
+            //file name format is "CBuffer_<Pixel/Vertex>_s<SetIndex>_b<BindingIndex>_<uniformIndex>_o<byteOffset>_<bufferID>_<bufferName>.txt"
             string[] nameArray = fileName.Split('_');
             string bindingIndex = nameArray[3].Substring(1);
             if (Convert.ToInt32(bindingIndex) > 32)
@@ -31,7 +32,8 @@ namespace Moonflow
             BufferLinker linker = new BufferLinker();
             buffer.linkedFile = path;
             buffer.dec.offset = int.Parse(nameArray[5].Replace("o",""));
-            buffer.dec.bufferName = nameArray[6];
+            buffer.dec.bufferId = int.Parse(nameArray[6]);
+            buffer.dec.bufferName = nameArray[7];
             buffer.variables = AnalyzeCBufferFile(path);
             if (nameArray[1] == "Pixel")
             {
@@ -81,7 +83,7 @@ namespace Moonflow
                     // Debug.Log("ReadingLine: " + line);
                     if(line != null && line.Length ==0 && tempVariable!=null) variables.Add(tempVariable.Clone() as ShaderVariable);
                     // is sub
-                    if (line.StartsWith("    "))
+                    if (line.StartsWith(" "))
                     {
                         if (!subflag)
                         {
@@ -108,19 +110,19 @@ namespace Moonflow
                             }
                             else
                             {
-                                tempVariable.values = new Vector4[1];
+                                // tempVariable.values = new Vector4[1];
                                 if (subValues.Length > 0)
                                 {
-                                    tempVariable.values[0].x = subValues[0] == "nan" ? Mathf.Infinity : Convert.ToSingle(subValues[0]);
+                                    tempVariable.values[index].x = subValues[0] == "nan" ? Mathf.Infinity : Convert.ToSingle(subValues[0]);
                                     if (subValues.Length > 1)
                                     {
-                                        tempVariable.values[0].y = subValues[1] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[1]);
+                                        tempVariable.values[index].y = subValues[1] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[1]);
                                         if (subValues.Length > 2)
                                         {
-                                            tempVariable.values[0].z = subValues[2] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[2]);
+                                            tempVariable.values[index].z = subValues[2] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[2]);
                                             if (subValues.Length > 3)
                                             {
-                                                tempVariable.values[0].w = subValues[3] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[3]);
+                                                tempVariable.values[index].w = subValues[3] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[3]);
                                             }
                                         }
                                     }
@@ -140,7 +142,7 @@ namespace Moonflow
                             }
                             tempVariable = new ShaderVariable();
                             tempVariable.name = line.Split("  ")[0].Trim();
-                            int listCount = Convert.ToInt32(line.Split(":")[1].Trim());
+                            int listCount = Convert.ToInt32(line.Trim().Split(":")[1]);
                             if (listCount > 64)
                             {
                                 Debug.LogError($"Buffer seems like a bone matrix buffer, SKIP. path:{path}");

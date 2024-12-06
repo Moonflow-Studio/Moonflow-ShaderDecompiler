@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -16,7 +17,6 @@ public class DrawcallAnalyzer
     private string _translatedPath;
     private CaptureAnalyzer _captureAnalyzer;
     private ShaderCodePair _shaderCodePair;
-    private MeshDepacker _meshDepacker;
 
     public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer)
     {
@@ -42,6 +42,8 @@ public class DrawcallAnalyzer
         // get relative path of _translatedPath
         string relativePath = _translatedPath.Substring(Application.dataPath.Length + 1);
         AssetDatabase.CreateAsset(_cbufferAnalyzer, "Assets/"+relativePath + "/CBuffer.asset");
+        
+        _meshInstaller.SaveMesh(relativePath, _textureAnalyzer);
     }
     private void AnalyzeResources()
     {
@@ -73,6 +75,7 @@ public class DrawcallAnalyzer
                 }
                 else if (fileName.EndsWith("VertexIndices.txt") || fileName.EndsWith("VertexInputData.txt"))
                 {
+                    // _meshInstaller.SetDrawcall(_drawcallFolderPath.Split('/')[^1]);
                     _meshInstaller.AddResource(file);
                 }
             }
@@ -89,5 +92,38 @@ public class DrawcallAnalyzer
 
     public void Translate()
     {
+        for (int i = 0; i < _cbufferAnalyzer.buffers.Count; i++)
+        {
+            var data = _cbufferAnalyzer.buffers[i];
+            if (data.dec.bufferName == "UnityPerDraw")
+            {
+                Matrix4x4 m = new Matrix4x4();
+                try
+                {
+                    m.SetColumn(0,data.variables[0].values[0]);
+                    m.SetColumn(1,data.variables[0].values[1]);
+                    m.SetColumn(2,data.variables[0].values[2]);
+                    m.SetColumn(3,data.variables[0].values[3]);
+                    _meshInstaller.SetMatrix(m);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    Debug.LogError(_drawcallFolderPath + "没有UnityPerDraw的Buffer或者识别错误导致没有读到obj2World矩阵");
+                    return;
+                }
+                break;
+            }
+        }
+
+        GameObject go = new GameObject();
+        MeshFilter filter = go.AddComponent<MeshFilter>();
+        MeshRenderer renderer = go.AddComponent<MeshRenderer>();
+        filter.mesh = _meshInstaller.GetMeshFile();
+        go.transform.position = _meshInstaller.prs.position;
+        go.transform.rotation = _meshInstaller.prs.rotation;
+        go.transform.localScale = _meshInstaller.prs.scale;
+        
+        renderer.material = _meshInstaller.mat;
     }
 }

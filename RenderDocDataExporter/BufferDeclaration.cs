@@ -8,6 +8,7 @@ namespace Moonflow
     public struct BufferDeclaration
     {
         public string bufferName;
+        public int bufferId;
         public int offset;
     }
 }

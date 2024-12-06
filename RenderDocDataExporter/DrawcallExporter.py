@@ -245,7 +245,7 @@ def extract_mesh_input(controller, meshData, eventId):
             # inlinetext += ' ' + str(value)
             inlinetext_parts.append(str(value))
         # vdict[idx] = inlinetext + '\n'
-        vdict[idx] = ' '.join(inlinetext_parts) + '\n'
+        vdict[idx] = '  '.join(inlinetext_parts) + '\n'
         index = index + 1
         inlinetext_parts.clear()
     print("Writing %d vertices" % length)
