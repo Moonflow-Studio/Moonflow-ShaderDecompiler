@@ -19,6 +19,9 @@ read_mesh_data = True
 startEventID = 806
 endEventID = 1727
 
+unity_perDraw_Length = 20
+unity_instancing_perDraw_Length = 128
+
 #######################################################################################################################
 #  Before Sample ######################################################################################################
 #######################################################################################################################
@@ -379,8 +382,10 @@ def disassemble_cbuffers(controller, refl, state, stage, pipeline, eventId):
         print("Load Stage: " + stage_name + "  CBuffer: " + str(buffer_index) + "  Name: " + str(blocks_data[buffer_index].descriptor.resource) + "  Shader:" + str(refl.resourceId))
         cbuffer_variables = controller.GetCBufferVariableContents(pipeline, refl.resourceId, stage, entry, buffer_index,
                                                                   blocks_data[buffer_index].descriptor.resource, blocks_data[buffer_index].descriptor.byteOffset, blocks_data[buffer_index].descriptor.byteSize)
-        if len(cbuffer_variables) == 20:
+        if len(cbuffer_variables) == unity_perDraw_Length:
             new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_UnityPerDraw'
+        elif len(cbuffer_variables) == unity_instancing_perDraw_Length:
+            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_UnityPerFrame'
         else:
             new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_Unknown'
         # if len(cbuffer_variables):
