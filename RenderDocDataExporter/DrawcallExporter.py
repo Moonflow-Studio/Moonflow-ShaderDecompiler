@@ -385,7 +385,7 @@ def disassemble_cbuffers(controller, refl, state, stage, pipeline, eventId):
         if len(cbuffer_variables) == unity_perDraw_Length:
             new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_UnityPerDraw'
         elif len(cbuffer_variables) == unity_instancing_perDraw_Length:
-            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_UnityPerFrame'
+            new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_UnityInstancingPerDraw'
         else:
             new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_Unknown'
         # if len(cbuffer_variables):
