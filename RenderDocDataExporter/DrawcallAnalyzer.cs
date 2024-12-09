@@ -103,7 +103,7 @@ public class DrawcallAnalyzer
             }
         }
         
-        bool needInstanciate = false;
+        bool needInstance = false;
         for (int i = 0; i < _cbufferAnalyzer.buffers.Count; i++)
         {
             var data = _cbufferAnalyzer.buffers[i];
@@ -128,7 +128,7 @@ public class DrawcallAnalyzer
             }
             else if (data.dec.bufferName == "UnityInstancingPerDraw")
             {
-                needInstanciate = true;
+                needInstance = true;
                 Matrix4x4[] matrix4X4s = new Matrix4x4[_meshInstaller.instanceCount];
                 for (int j = 0; j < _meshInstaller.instanceCount; j++)
                 {
@@ -160,7 +160,7 @@ public class DrawcallAnalyzer
             {
                 for (int i = 0; i < _textureAnalyzer.textureDeclarations.Count; i++)
                 {
-                    if (int.Parse(_textureAnalyzer.textureDeclarations[i].resourceIndex) == _diffuseIndex)
+                    if (int.Parse(_textureAnalyzer.textureDeclarations[i].resourceIndex) == _diffuseIndex && _textureAnalyzer.textureDeclarations[i].passDef == ShaderPassDef.Pixel)
                     {
                         _meshInstaller.mat.SetTexture("_BaseMap", _textureAnalyzer.textureDeclarations[i].texture);
                     }
@@ -168,7 +168,7 @@ public class DrawcallAnalyzer
             }
         }
         
-        if (!needInstanciate)
+        if (!needInstance)
         {
             GameObject go = new GameObject(_drawcallFolderPath.Split('/')[^1]);
             MeshFilter filter = go.AddComponent<MeshFilter>();
