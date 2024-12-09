@@ -10,10 +10,10 @@ namespace Moonflow
     public class MeshInstaller : IResourceReceiver
     {
         // private string _drawcallIndex;
-        private int _diffuseIndex;
-        public PRSReverseAux.PRS prs;
-        
+        public int instanceCount;
+        public PRSReverseAux.PRS[] prs;
         public Material mat;
+        private int _diffuseIndex;
         private Mesh _mesh;
         private List<Vector4>[] _vertexDataList;
         private int[] _vertexDataChannel;
@@ -54,19 +54,31 @@ namespace Moonflow
                         }
                         else if (lineIndex == 1)
                         {
+                            instanceCount = int.Parse(line);
+                        }
+                        else if (lineIndex == 2)
+                        {
                             
                         }
-                        else if(lineIndex >= 2)
+                        else if(lineIndex >= 3)
                         {
                             var attrSplit = line.Split("  ");
-                            if (lineIndex == 2)
+                            if (lineIndex == 3)
                             {
-                                _startVertexOffset = int.Parse(attrSplit[0]);
+                                try
+                                {
+                                    _startVertexOffset = int.Parse(attrSplit[0]);
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e);
+                                    throw;
+                                }
                             }
                             for (int i = 1; i < attrSplit.Length; i++)
                             {
                                 var attr = attrSplit[i].Remove(attrSplit[i].Length-1,1).Remove(0,1).Split(", ");
-                                if (lineIndex == 2)
+                                if (lineIndex == 3)
                                 {
                                     try
                                     {
@@ -77,6 +89,7 @@ namespace Moonflow
                                         Console.WriteLine(e);
                                         throw;
                                     }
+                                    
                                 }
                                 Vector4 data = Vector4.zero;
                                 if (attr.Length > 0)
@@ -109,7 +122,7 @@ namespace Moonflow
             _diffuseIndex = index;
         }
 
-        private void MakeMesh()
+        private bool MakeMesh()
         {
             if (_vertexDataChannel == null)
             {
@@ -134,10 +147,14 @@ namespace Moonflow
                     break;
                 }
             }
-            _mesh = new Mesh();
 
+            if (findObjPos < 0)
+            {
+                Debug.LogError($"{_path} cannot combine to mesh because no object position(no 3 channel) attribute could be found");
+                return false;
+            }
             
-            
+            _mesh = new Mesh();
             var verticesArray = _vertexDataList[findObjPos].ToArray();
             Vector3[] verticesArray3 = new Vector3[verticesArray.Length];
             for (int i = 0; i < verticesArray3.Length; i++)
@@ -173,31 +190,45 @@ namespace Moonflow
                 }
                 _mesh.uv = uvArray2;
             }
+
+            return true;
         }
 
-        public void SaveMesh(string relativePath, TextureAnalyzer textureAnalyzer)
+        public void SaveMesh(string relativePath/*, TextureAnalyzer textureAnalyzer*/)
         {
-            MakeMesh();
-            _savePath = "Assets/" + relativePath + "/mesh.asset";
-            Shader lit = Shader.Find("Universal Render Pipeline/Unlit");
-            mat = new Material(lit);
+            if (MakeMesh())
+            {
+                _savePath = "Assets/" + relativePath + "/mesh.asset";
+                Shader lit = Shader.Find("Universal Render Pipeline/Unlit");
+                mat = new Material(lit);
 
-            mat.SetFloat("_Surface", 1);
-            mat.SetFloat("_Blend", 0);
-            mat.SetFloat("_BlendOp", 0);
-            mat.SetFloat("_DstBlend", 10);
-            mat.SetFloat("_DstBlendAlpha", 10);
-            mat.SetFloat("_SrcBlend", 5);
-            mat.SetFloat("_SrcBlendAlpha", 1);
-            mat.renderQueue = 3000;
+                mat.SetFloat("_Surface", 1);
+                mat.SetFloat("_Blend", 0);
+                mat.SetFloat("_BlendOp", 0);
+                mat.SetFloat("_DstBlend", 10);
+                mat.SetFloat("_DstBlendAlpha", 10);
+                mat.SetFloat("_SrcBlend", 5);
+                mat.SetFloat("_SrcBlendAlpha", 1);
+                mat.renderQueue = 3000;
             
-            AssetDatabase.CreateAsset(mat, "Assets/" + relativePath + "/material.mat");
-            AssetDatabase.CreateAsset(_mesh, _savePath);
+                AssetDatabase.CreateAsset(mat, "Assets/" + relativePath + "/material.mat");
+                AssetDatabase.CreateAsset(_mesh, _savePath);
+            }
         }
 
         public void SetMatrix(Matrix4x4 prsMatrix)
         {
-            prs = PRSReverseAux.GetPRS(prsMatrix);
+            prs = new PRSReverseAux.PRS[1];
+            prs[0] = PRSReverseAux.GetPRS(prsMatrix);
+        }
+
+        public void SetMatrixes(Matrix4x4[] prsMatrix)
+        {
+            prs = new PRSReverseAux.PRS[prsMatrix.Length];
+            for (int i = 0; i < prs.Length; i++)
+            {
+                prs[i] = PRSReverseAux.GetPRS(prsMatrix[i]);
+            }
         }
 
         

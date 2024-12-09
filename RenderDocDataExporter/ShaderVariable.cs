@@ -9,25 +9,30 @@ namespace Moonflow
     {
         public string name;
         public float value;
-        public Vector4[] values;
+        // public Vector4[] values;
+        public List<ShaderVariable> sub = new List<ShaderVariable>();
 
         public VariableType GetType()
         {
-            if (values == null || values.Length == 0)
+            if (sub == null || sub.Count == 0)
             {
                 return VariableType.Float;
             }
-
-            if (values.Length == 1)
+            if (sub.Count == 1 && sub[0].sub.Count == 4)
             {
                 return VariableType.Vector;
             }
-
-            if (values.Length == 4)
+            if (sub.Count == 4)
             {
+                for (int i = 0; i < sub.Count; i++)
+                {
+                    if(sub[i].sub.Count != 4)
+                    {
+                        return VariableType.ERROR;
+                    }
+                }
                 return VariableType.Matrix;
             }
-            
             return VariableType.VectorList;
         }
 
@@ -36,7 +41,13 @@ namespace Moonflow
             ShaderVariable clone = new ShaderVariable();
             clone.name = name;
             clone.value = value;
-            clone.values = values;
+            clone.sub = new List<ShaderVariable>();
+            if (sub == null) sub = new List<ShaderVariable>();
+            foreach (ShaderVariable v in sub)
+            {
+                clone.sub.Add((ShaderVariable)v.Clone());
+            }
+            
             return clone;
         }
     }
@@ -46,6 +57,8 @@ namespace Moonflow
         Float,
         Vector,
         Matrix,
-        VectorList
+        VectorList,
+        Sub,
+        ERROR
     }
 }

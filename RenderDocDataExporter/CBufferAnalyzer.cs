@@ -75,114 +75,131 @@ namespace Moonflow
             Debug.Log("Analyzing CBuffer file: " + path);
             using (System.IO.StreamReader file = new System.IO.StreamReader(path))
             {
-                int subflag = 0;
-                ShaderVariable tempVariable = null;
+                Stack<ShaderVariable> stack = new Stack<ShaderVariable>();
+                int indent = 0;
+                // ShaderVariable tempVariable = null;
                 while (!file.EndOfStream)
                 {
                     string line = file.ReadLine();
-                    // Debug.Log("ReadingLine: " + line);
-                    if(line != null && line.Length ==0 && tempVariable!=null) variables.Add(tempVariable.Clone() as ShaderVariable);
-                    // is sub
-                    if (line.StartsWith(" "))
+                    string[] splitDef = line.Split("_child");
+                    //缩进数量与标记一致，说明该行没有变为父项或者子项
+                    if (splitDef[0].Length / 4 == indent)
                     {
-                        if (subflag == 0)
+                        stack.TryPop(out ShaderVariable last);
+                        //没嵌套就是新的variable
+                        if (splitDef[0].Length == 0)
                         {
-                            Debug.LogError($"子项出现在非列表变量中, path: {path}, line: {line}");
-                            continue;
-                        }
-                        string trimline = line.Trim();
-                        string[] splitted = trimline.Split("  ");
-                        if (splitted.Length != 2)
-                        {
-                            Debug.LogError($"子项格式错误, path: {path}, line: {line}");
-                        }
-                        else
-                        {
-                            string subName = splitted[0];
-                            string subValue = splitted[1];
-                            //subName looks like _childName[{index}], so we need to get the index
-                            int index = Convert.ToInt32(subName.Split("[")[1].Split("]")[0]);
-                            //subValue splitted with ' ', so we need to get the value
-                            string[] subValues = subValue.Split(" ");
-                            if (subValues.Length != 4 && subValues.Length!= 1)
+                            ShaderVariable variable = new ShaderVariable();
+                            if (line.Contains("MEMBERS:"))
                             {
-                                Debug.LogError($"子项值格式错误, path: {path}, line: {line}");
+                                variable.name = line.Trim().Split("  ")[0];
+                                variable.sub ??= new List<ShaderVariable>();
                             }
                             else
                             {
-                                // tempVariable.values = new Vector4[1];
-                                if (subValues.Length > 0)
-                                {
-                                    tempVariable.values[index].x = subValues[0] == "nan" ? Mathf.Infinity : Convert.ToSingle(subValues[0]);
-                                    if (subValues.Length > 1)
-                                    {
-                                        tempVariable.values[index].y = subValues[1] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[1]);
-                                        if (subValues.Length > 2)
-                                        {
-                                            tempVariable.values[index].z = subValues[2] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[2]);
-                                            if (subValues.Length > 3)
-                                            {
-                                                tempVariable.values[index].w = subValues[3] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[3]);
-                                            }
-                                        }
-                                    }
-                                }
+                                AddItem(line.Trim(), ref variable);
                             }
+
+                            var newVariable = variable.Clone() as ShaderVariable;
+                            stack.Push(newVariable);
+                            variables.Add(newVariable);
+                        }
+                        //有嵌套就是为当前临时项（父项）增加一个子项
+                        else
+                        {
+                            ShaderVariable variable = new ShaderVariable();
+                            if (line.Contains("MEMBERS:"))
+                            {
+                                variable.name = line.Trim().Split("  ")[0];
+                                variable.sub ??= new List<ShaderVariable>();
+                            }
+                            else
+                            {
+                                AddItem(line.Trim(), ref variable);
+                            }
+                            stack.Peek().sub.Add(variable);
+                            stack.Push(variable);
                         }
                     }
                     else
                     {
-                        subflag = 0;
-                        if(tempVariable!=null)variables.Add(tempVariable.Clone() as ShaderVariable);
-                        if (line.Contains("MEMBERS:"))
+                        //产生了子项
+                        if (splitDef[0].Length / 4 > indent)
                         {
-                            if (subflag != 0)
+                            ShaderVariable subVariable = new ShaderVariable();
+                            stack.Peek().sub ??= new List<ShaderVariable>();
+                            if (line.Contains("MEMBERS:"))
                             {
-                                
-                                Debug.Log($"存在嵌套");
-                            }
-                            tempVariable = new ShaderVariable();
-                            tempVariable.name = line.Split("  ")[0].Trim();
-                            int listCount = Convert.ToInt32(line.Trim().Split(":")[1]);
-                            if (listCount > 64)
-                            {
-                                Debug.LogError($"Buffer seems like a bone matrix buffer, SKIP. path:{path}");
-                                return new List<ShaderVariable>();
-                            }
-                            tempVariable.values = new Vector4[listCount];
-                            subflag += 1;
-                        }
-                        else
-                        {
-                            tempVariable = new ShaderVariable();
-                            string[] splitted = line.Split("  ");
-                            tempVariable.name = splitted[0].Trim();
-                            string[] data = splitted[1].Trim().Split(" ");
-                            if (data.Length == 1)
-                            {
-                                tempVariable.value = Convert.ToSingle(data[0]);
+                                subVariable.name = line.Trim().Split("  ")[0];
+                                subVariable.sub ??= new List<ShaderVariable>();
                             }
                             else
                             {
+                                AddItem(line.Trim(), ref subVariable);
+                            }
+                            stack.Peek().sub.Add(subVariable);
+                            stack.Push(subVariable);
+                        }
+                        //回到了父项
+                        else
+                        {
+                            ShaderVariable subVariable = new ShaderVariable();
+                            if (line.Contains("MEMBERS:"))
+                            {
+                                subVariable.name = line.Trim().Split("  ")[0];
+                                subVariable.sub ??= new List<ShaderVariable>();
+                            }
+                            else
+                            {
+                                AddItem(line.Trim(), ref subVariable);
+                            }
+
+                            if (stack.Count == 0)
+                            {
+                                variables.Add(subVariable);
+                            }
+                            else
+                            {
+                                int currentIndent = splitDef[0].Length / 4;
+                                while (currentIndent <= indent)
+                                {
+                                    stack.Pop();
+                                    indent--;
+                                }
+
+                                if (currentIndent != 0)
+                                {
+                                    stack.Peek().sub.Add(subVariable);
+                                }
+                                else
+                                {
+                                    variables.Add(subVariable);
+                                }
+                                stack.Push(subVariable);
+                            }
+                        }
+                        indent = splitDef[0].Length / 4;
+                    }
+
+                    void AddItem(string trimmedLine, ref ShaderVariable variable)
+                    {
+                        string[] splitDef = trimmedLine.Split("  ");
+                        string def = splitDef[0];
+                        string data = splitDef[1];
+                        string[] subValues = data.Split(" ");
+                        variable.name = def;
+                        if (subValues.Length > 0)
+                        {
+                            variable.sub ??= new List<ShaderVariable>();
+                            for (int i = 0; i < subValues.Length; i++)
+                            {
                                 try
                                 {
-                                    tempVariable.values = new Vector4[1];
-                                    if (data.Length > 0)
+                                    float value = subValues[i] == "nan" ? Mathf.Infinity : Convert.ToSingle(subValues[i]);
+                                    variable.sub.Add(new ShaderVariable()
                                     {
-                                        tempVariable.values[0].x = data[0] == "nan" ? Mathf.Infinity : Convert.ToSingle(data[0]);
-                                        if (data.Length > 1)
-                                        {
-                                            tempVariable.values[0].y = data[1] == "nan" ? Mathf.Infinity :  Convert.ToSingle(data[1]);
-                                            if (data.Length > 2)
-                                            {
-                                                tempVariable.values[0].z = data[2] == "nan" ? Mathf.Infinity :  Convert.ToSingle(data[2]);
-                                                if (data.Length > 3)
-                                                {
-                                                    tempVariable.values[0].w = data[3] == "nan" ? Mathf.Infinity :  Convert.ToSingle(data[3]);
-                                                }
-                                            }
-                                        }
-                                    }
+                                        value = value
+                                    });
                                 }
                                 catch (Exception e)
                                 {
@@ -192,9 +209,123 @@ namespace Moonflow
                                 
                             }
                         }
-                        
                     }
-                    
+                    // Debug.Log("ReadingLine: " + line);
+                    // if(line != null && line.Length ==0 && tempVariable!=null) variables.Add(tempVariable.Clone() as ShaderVariable);
+
+                    // is sub
+                    // if (line.StartsWith(" "))
+                    // {
+                    //     if (indent == 0)
+                    //     {
+                    //         Debug.LogError($"子项出现在非列表变量中, path: {path}, line: {line}");
+                    //         continue;
+                    //     }
+                    //     string trimline = line.Trim();
+                    //     string[] splitted = trimline.Split("  ");
+                    //     if (splitted.Length != 2)
+                    //     {
+                    //         Debug.LogError($"子项格式错误, path: {path}, line: {line}");
+                    //     }
+                    //     else
+                    //     {
+                    //         string subName = splitted[0];
+                    //         string subValue = splitted[1];
+                    //         //subName looks like _childName[{index}], so we need to get the index
+                    //         int index = Convert.ToInt32(subName.Split("[")[1].Split("]")[0]);
+                    //         //subValue splitted with ' ', so we need to get the value
+                    //         string[] subValues = subValue.Split(" ");
+                    //         if (subValues.Length != 4 && subValues.Length!= 1)
+                    //         {
+                    //             Debug.LogError($"子项值格式错误, path: {path}, line: {line}");
+                    //         }
+                    //         else
+                    //         {
+                    //             // tempVariable.values = new Vector4[1];
+                    //             if (subValues.Length > 0)
+                    //             {
+                    //                 tempVariable.values[index].x = subValues[0] == "nan" ? Mathf.Infinity : Convert.ToSingle(subValues[0]);
+                    //                 if (subValues.Length > 1)
+                    //                 {
+                    //                     tempVariable.values[index].y = subValues[1] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[1]);
+                    //                     if (subValues.Length > 2)
+                    //                     {
+                    //                         tempVariable.values[index].z = subValues[2] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[2]);
+                    //                         if (subValues.Length > 3)
+                    //                         {
+                    //                             tempVariable.values[index].w = subValues[3] == "nan" ? Mathf.Infinity :  Convert.ToSingle(subValues[3]);
+                    //                         }
+                    //                     }
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                    // else
+                    // {
+                    //     indent = 0;
+                    //     if(tempVariable!=null)variables.Add(tempVariable.Clone() as ShaderVariable);
+                    //     if (line.Contains("MEMBERS:"))
+                    //     {
+                    //         if (indent != 0)
+                    //         {
+                    //             
+                    //             Debug.Log($"存在嵌套");
+                    //         }
+                    //         tempVariable = new ShaderVariable();
+                    //         tempVariable.name = line.Split("  ")[0].Trim();
+                    //         int listCount = Convert.ToInt32(line.Trim().Split(":")[1]);
+                    //         if (listCount > 64)
+                    //         {
+                    //             Debug.LogError($"Buffer seems like a bone matrix buffer, SKIP. path:{path}");
+                    //             return new List<ShaderVariable>();
+                    //         }
+                    //         tempVariable.values = new Vector4[listCount];
+                    //         indent += 1;
+                    //     }
+                    //     else
+                    //     {
+                    //         tempVariable = new ShaderVariable();
+                    //         string[] splitted = line.Split("  ");
+                    //         tempVariable.name = splitted[0].Trim();
+                    //         string[] data = splitted[1].Trim().Split(" ");
+                    //         if (data.Length == 1)
+                    //         {
+                    //             tempVariable.value = Convert.ToSingle(data[0]);
+                    //         }
+                    //         else
+                    //         {
+                    //             try
+                    //             {
+                    //                 tempVariable.values = new Vector4[1];
+                    //                 if (data.Length > 0)
+                    //                 {
+                    //                     tempVariable.values[0].x = data[0] == "nan" ? Mathf.Infinity : Convert.ToSingle(data[0]);
+                    //                     if (data.Length > 1)
+                    //                     {
+                    //                         tempVariable.values[0].y = data[1] == "nan" ? Mathf.Infinity :  Convert.ToSingle(data[1]);
+                    //                         if (data.Length > 2)
+                    //                         {
+                    //                             tempVariable.values[0].z = data[2] == "nan" ? Mathf.Infinity :  Convert.ToSingle(data[2]);
+                    //                             if (data.Length > 3)
+                    //                             {
+                    //                                 tempVariable.values[0].w = data[3] == "nan" ? Mathf.Infinity :  Convert.ToSingle(data[3]);
+                    //                             }
+                    //                         }
+                    //                     }
+                    //                 }
+                    //             }
+                    //             catch (Exception e)
+                    //             {
+                    //                 Console.WriteLine(e);
+                    //                 throw;
+                    //             }
+                    //             
+                    //         }
+                    //     }
+                    //     
+                    // }
+
                 } 
             }
             return variables;

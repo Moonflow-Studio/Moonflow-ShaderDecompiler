@@ -14,7 +14,7 @@ target_folder = "C:/Users/frankmhli/Documents/Project/Moonflow/TempMF/Assets/moo
 spirv_cross_path = "C:/Program Files/RenderDoc/plugins/spirv/spirv-cross.exe"
 
 # Because of read mesh data cost too much time, if you don't need to refresh extracted mesh data, set it to False to skip the process
-read_mesh_data = True
+read_mesh_data = False
 
 startEventID = 806
 endEventID = 1727
@@ -384,7 +384,7 @@ def disassemble_cbuffers(controller, refl, state, stage, pipeline, eventId):
                                                                   blocks_data[buffer_index].descriptor.resource, blocks_data[buffer_index].descriptor.byteOffset, blocks_data[buffer_index].descriptor.byteSize)
         if len(cbuffer_variables) == unity_perDraw_Length:
             new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_UnityPerDraw'
-        elif len(cbuffer_variables) == unity_instancing_perDraw_Length:
+        elif len(cbuffer_variables) == 1 and len(cbuffer_variables[0].members) == 128:
             new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_UnityInstancingPerDraw'
         else:
             new_file_name = 'CBuffer_' + stage_name + '_s' + str(const_blocks[buffer_index].fixedBindSetOrSpace) + '_b' + str(const_blocks[buffer_index].fixedBindNumber) + '_' + str(const_blocks[buffer_index].name) + '_o' + str(blocks_data[buffer_index].descriptor.byteOffset) + '_' + resource_name + '_Unknown'

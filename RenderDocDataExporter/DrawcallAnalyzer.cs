@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Moonflow;
 using UnityEditor;
@@ -36,6 +37,7 @@ public class DrawcallAnalyzer
             linker.Add(item.Clone() is BufferLinker ? (BufferLinker)item.Clone() : default);
         _shaderCodePair.bufferLinkersExample = _cbufferAnalyzer.bufferLinkers;
         _captureAnalyzer.AddShaderFile(_shaderCodePair);
+        
     }
 
     public void Save()
@@ -44,7 +46,7 @@ public class DrawcallAnalyzer
         string relativePath = _translatedPath.Substring(Application.dataPath.Length + 1);
         AssetDatabase.CreateAsset(_cbufferAnalyzer, "Assets/"+relativePath + "/CBuffer.asset");
         
-        _meshInstaller.SaveMesh(relativePath, _textureAnalyzer);
+        _meshInstaller.SaveMesh(relativePath/*, _textureAnalyzer*/);
     }
     private void AnalyzeResources()
     {
@@ -100,6 +102,8 @@ public class DrawcallAnalyzer
                 _diffuseIndex = hlslAnalyzer.diffuseResIndex;
             }
         }
+        
+        bool needInstanciate = false;
         for (int i = 0; i < _cbufferAnalyzer.buffers.Count; i++)
         {
             var data = _cbufferAnalyzer.buffers[i];
@@ -108,10 +112,10 @@ public class DrawcallAnalyzer
                 Matrix4x4 m = new Matrix4x4();
                 try
                 {
-                    m.SetColumn(0,data.variables[0].values[0]);
-                    m.SetColumn(1,data.variables[0].values[1]);
-                    m.SetColumn(2,data.variables[0].values[2]);
-                    m.SetColumn(3,data.variables[0].values[3]);
+                    m.SetColumn(0,new Vector4(data.variables[0].sub[0].sub[0].value, data.variables[0].sub[0].sub[1].value, data.variables[0].sub[0].sub[2].value, data.variables[0].sub[0].sub[3].value));
+                    m.SetColumn(1,new Vector4(data.variables[0].sub[1].sub[0].value, data.variables[0].sub[1].sub[1].value, data.variables[0].sub[1].sub[2].value, data.variables[0].sub[1].sub[3].value));
+                    m.SetColumn(2,new Vector4(data.variables[0].sub[2].sub[0].value, data.variables[0].sub[2].sub[1].value, data.variables[0].sub[2].sub[2].value, data.variables[0].sub[2].sub[3].value));
+                    m.SetColumn(3,new Vector4(data.variables[0].sub[3].sub[0].value, data.variables[0].sub[3].sub[1].value, data.variables[0].sub[3].sub[2].value, data.variables[0].sub[3].sub[3].value));
                     _meshInstaller.SetMatrix(m);
                 }
                 catch (Exception e)
@@ -122,9 +126,34 @@ public class DrawcallAnalyzer
                 }
                 break;
             }
+            else if (data.dec.bufferName == "UnityInstancingPerDraw")
+            {
+                needInstanciate = true;
+                Matrix4x4[] matrix4X4s = new Matrix4x4[_meshInstaller.instanceCount];
+                for (int j = 0; j < _meshInstaller.instanceCount; j++)
+                {
+                    Matrix4x4 m = new Matrix4x4();
+                    try
+                    {
+                        //data.variables[0].    sub[j].     sub[0].     sub[0]. sub[0]
+                        //     child0.          child0[0].  obj2world.  m1.     x
+                        m.SetColumn(0,new Vector4(data.variables[0].sub[j].sub[0].sub[0].sub[0].value, data.variables[0].sub[j].sub[0].sub[0].sub[1].value, data.variables[0].sub[j].sub[0].sub[0].sub[2].value, data.variables[0].sub[j].sub[0].sub[0].sub[3].value));
+                        m.SetColumn(1,new Vector4(data.variables[0].sub[j].sub[0].sub[1].sub[0].value, data.variables[0].sub[j].sub[0].sub[1].sub[1].value, data.variables[0].sub[j].sub[0].sub[1].sub[2].value, data.variables[0].sub[j].sub[0].sub[1].sub[3].value));
+                        m.SetColumn(2,new Vector4(data.variables[0].sub[j].sub[0].sub[2].sub[0].value, data.variables[0].sub[j].sub[0].sub[2].sub[1].value, data.variables[0].sub[j].sub[0].sub[2].sub[2].value, data.variables[0].sub[j].sub[0].sub[2].sub[3].value));
+                        m.SetColumn(3,new Vector4(data.variables[0].sub[j].sub[0].sub[3].sub[0].value, data.variables[0].sub[j].sub[0].sub[3].sub[1].value, data.variables[0].sub[j].sub[0].sub[3].sub[2].value, data.variables[0].sub[j].sub[0].sub[3].sub[3].value));
+                        matrix4X4s[j] = m;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Debug.LogError(_drawcallFolderPath + "没有UnityPerDraw的Buffer或者识别错误导致没有读到obj2World矩阵");
+                        return;
+                    }
+                }
+                _meshInstaller.SetMatrixes(matrix4X4s);
+            }
         }
 
-        bool needInstanciate = false;
         if (_textureAnalyzer != null && _diffuseIndex!=0)
         {
             if (_textureAnalyzer.textureDeclarations != null)
@@ -134,21 +163,39 @@ public class DrawcallAnalyzer
                     if (int.Parse(_textureAnalyzer.textureDeclarations[i].resourceIndex) == _diffuseIndex)
                     {
                         _meshInstaller.mat.SetTexture("_BaseMap", _textureAnalyzer.textureDeclarations[i].texture);
-                        needInstanciate = true;
                     }
                 }
             }
         }
-
-        if (!needInstanciate) return;
-        GameObject go = new GameObject(_drawcallFolderPath.Split('/')[^1]);
-        MeshFilter filter = go.AddComponent<MeshFilter>();
-        MeshRenderer renderer = go.AddComponent<MeshRenderer>();
-        filter.mesh = _meshInstaller.GetMeshFile();
-        go.transform.position = _meshInstaller.prs.position;
-        go.transform.rotation = _meshInstaller.prs.rotation;
-        go.transform.localScale = _meshInstaller.prs.scale;
         
-        renderer.material = _meshInstaller.mat;
+        if (!needInstanciate)
+        {
+            GameObject go = new GameObject(_drawcallFolderPath.Split('/')[^1]);
+            MeshFilter filter = go.AddComponent<MeshFilter>();
+            MeshRenderer renderer = go.AddComponent<MeshRenderer>();
+            filter.mesh = _meshInstaller.GetMeshFile();
+            go.transform.position = _meshInstaller.prs[0].position;
+            go.transform.rotation = _meshInstaller.prs[0].rotation;
+            go.transform.localScale = _meshInstaller.prs[0].scale;
+            renderer.material = _meshInstaller.mat;
+        }
+        else
+        {
+            GameObject goParent = new GameObject(_drawcallFolderPath.Split('/')[^1]);
+            for (int i = 0; i < _meshInstaller.instanceCount; i++)
+            {
+                GameObject go = new GameObject(_drawcallFolderPath.Split('/')[^1]);
+                MeshFilter filter = go.AddComponent<MeshFilter>();
+                MeshRenderer renderer = go.AddComponent<MeshRenderer>();
+                filter.mesh = _meshInstaller.GetMeshFile();
+                go.transform.position = _meshInstaller.prs[i].position;
+                go.transform.rotation = _meshInstaller.prs[i].rotation;
+                go.transform.localScale = _meshInstaller.prs[i].scale;
+                renderer.material = _meshInstaller.mat;
+                go.transform.parent = goParent.transform;
+            }
+        }
+        
+        
     }
 }
