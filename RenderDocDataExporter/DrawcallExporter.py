@@ -465,6 +465,15 @@ def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
     translate_spirv('ps', byte_path_name, evt_id, 'frag', str(shader_refl_pixel.entryPoint), shader_res_id)
 
 
+def disassemble_drawcall_setting(apistate, evt_id):
+    print("disassemble_drawcall_setting")
+    colorBlend = apistate.colorBlend.blends[0].enabled
+    cullMode = apistate.rasterizer.cullMode
+    pipelineData = "ColorBlend."+str(colorBlend) + ' ' + str(cullMode)
+    text_path_name = target_folder + '\\' + str(evt_id) + '\\' + 'pipeline.txt'
+    text_path = Path(text_path_name)
+    text_path.write_text(pipelineData)
+
 
 def disassemble_shader(ctrl, evt_id):
     targets = ctrl.GetDisassemblyTargets(True)
@@ -475,7 +484,9 @@ def disassemble_shader(ctrl, evt_id):
     target = targets[0]
     state = ctrl.GetPipelineState()
     pipeline = state.GetGraphicsPipelineObject()
+    apistate = ctrl.GetVulkanPipelineState()
 
+    disassemble_drawcall_setting(apistate, evt_id)
     disassemble_vertex_shader(ctrl, state, pipeline, target, evt_id)
     disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id)
 

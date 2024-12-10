@@ -6,6 +6,7 @@ using System.Text;
 using Moonflow;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class DrawcallAnalyzer
 {
@@ -19,6 +20,8 @@ public class DrawcallAnalyzer
     private CaptureAnalyzer _captureAnalyzer;
     private ShaderCodePair _shaderCodePair;
     private int _diffuseIndex;
+    private bool _enableBlend = false;
+    private CullMode _cullMode = CullMode.Back;
 
     public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer)
     {
@@ -46,7 +49,7 @@ public class DrawcallAnalyzer
         string relativePath = _translatedPath.Substring(Application.dataPath.Length + 1);
         AssetDatabase.CreateAsset(_cbufferAnalyzer, "Assets/"+relativePath + "/CBuffer.asset");
         
-        _meshInstaller.SaveMesh(relativePath/*, _textureAnalyzer*/);
+        _meshInstaller.SaveMesh(relativePath,_enableBlend, _cullMode);
     }
     private void AnalyzeResources()
     {
@@ -81,6 +84,24 @@ public class DrawcallAnalyzer
                     // _meshInstaller.SetDrawcall(_drawcallFolderPath.Split('/')[^1]);
                     _meshInstaller.AddResource(file);
                 }
+                else if (fileName.EndsWith("pipeline.txt"))
+                {
+                    using (System.IO.StreamReader sr = new System.IO.StreamReader(file))
+                    {
+                        while (!sr.EndOfStream)
+                        {
+                            string line = sr.ReadLine();
+                            string[] split = line.Split(' ');
+                            string blendMode = split[0].Split(".")[1];
+                            string cullMode = split[1].Split(".")[1];
+                            if (blendMode == "False") _enableBlend = false;
+                            else _enableBlend = true;
+                            if (cullMode == "NoCull") _cullMode = CullMode.Off;
+                            else if (cullMode == "Front") _cullMode = CullMode.Front;
+                            else if (cullMode == "Back") _cullMode = CullMode.Back;
+                        }
+                    }
+                }
             }
             else if (fileName.EndsWith(".png"))
             {
@@ -95,11 +116,19 @@ public class DrawcallAnalyzer
 
     public void Translate(List<HLSLAnalyzer> hlslAnalyzers)
     {
+        bool isAlphaClip = false;
         foreach (var hlslAnalyzer in hlslAnalyzers)
         {
             if (hlslAnalyzer.shaderCodePair.id.vsid == _shaderCodePair.id.vsid && hlslAnalyzer.shaderCodePair.id.psid == _shaderCodePair.id.psid)
             {
                 _diffuseIndex = hlslAnalyzer.diffuseResIndex;
+                //read file of shaderCodePair.psFilePath
+                string ps = File.ReadAllText(hlslAnalyzer.shaderCodePair.psFilePath);
+                if (ps.Contains("discard"))
+                {
+                    _meshInstaller.mat.SetFloat("_AlphaClip", 1);
+                }
+                break;
             }
         }
         
@@ -126,7 +155,7 @@ public class DrawcallAnalyzer
                 }
                 break;
             }
-            else if (data.dec.bufferName == "UnityInstancingPerDraw")
+            if (data.dec.bufferName == "UnityInstancingPerDraw")
             {
                 needInstance = true;
                 Matrix4x4[] matrix4X4s = new Matrix4x4[_meshInstaller.instanceCount];
@@ -151,6 +180,7 @@ public class DrawcallAnalyzer
                     }
                 }
                 _meshInstaller.SetMatrixes(matrix4X4s);
+                break;
             }
         }
 
@@ -163,17 +193,28 @@ public class DrawcallAnalyzer
                     if (int.Parse(_textureAnalyzer.textureDeclarations[i].resourceIndex) == _diffuseIndex && _textureAnalyzer.textureDeclarations[i].passDef == ShaderPassDef.Pixel)
                     {
                         _meshInstaller.mat.SetTexture("_BaseMap", _textureAnalyzer.textureDeclarations[i].texture);
+                        break;
                     }
                 }
             }
         }
-        
+
+        if (_diffuseIndex == -1) return;
+        if (isAlphaClip)
+        {
+            _meshInstaller.mat.SetFloat("_AlphaClip", 1);
+        }
         if (!needInstance)
         {
             GameObject go = new GameObject(_drawcallFolderPath.Split('/')[^1]);
             MeshFilter filter = go.AddComponent<MeshFilter>();
             MeshRenderer renderer = go.AddComponent<MeshRenderer>();
             filter.mesh = _meshInstaller.GetMeshFile();
+            if (_meshInstaller.prs == null)
+            {
+                Debug.LogError($"Drawcall {_drawcallFolderPath} didn't create prs matrix completely");
+                return;
+            }
             go.transform.position = _meshInstaller.prs[0].position;
             go.transform.rotation = _meshInstaller.prs[0].rotation;
             go.transform.localScale = _meshInstaller.prs[0].scale;

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Moonflow
 {
@@ -194,23 +195,53 @@ namespace Moonflow
             return true;
         }
 
-        public void SaveMesh(string relativePath/*, TextureAnalyzer textureAnalyzer*/)
+        public void SaveMesh(string relativePath, bool blendMode, CullMode cullMode)
         {
             if (MakeMesh())
             {
                 _savePath = "Assets/" + relativePath + "/mesh.asset";
                 Shader lit = Shader.Find("Universal Render Pipeline/Unlit");
                 mat = new Material(lit);
+                if (blendMode)
+                {
+                    mat.SetFloat("_Surface", 1);
+                    mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                    mat.SetFloat("_Blend", 1);
+                    mat.SetFloat("_DstBlend", 10);
+                    mat.SetFloat("_DstBlendAlpha", 10);
+                    mat.SetFloat("_SrcBlend", 5);
+                    mat.SetFloat("_SrcBlendAlpha", 1);
+                    mat.renderQueue = 3000;
+                }
+                else
+                {
+                    mat.SetFloat("_Surface", 0);
+                    mat.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                    mat.SetFloat("_DstBlend", 0);
+                    mat.SetFloat("_DstBlendAlpha", 0);
+                    mat.SetFloat("_SrcBlend", 1);
+                    mat.SetFloat("_SrcBlendAlpha", 1);
+                    mat.renderQueue = 2000;
+                }
 
-                mat.SetFloat("_Surface", 1);
-                mat.SetFloat("_Blend", 0);
-                mat.SetFloat("_BlendOp", 0);
-                mat.SetFloat("_DstBlend", 10);
-                mat.SetFloat("_DstBlendAlpha", 10);
-                mat.SetFloat("_SrcBlend", 5);
-                mat.SetFloat("_SrcBlendAlpha", 1);
-                mat.renderQueue = 3000;
-            
+                switch (cullMode)
+                {
+                    case CullMode.Back:
+                    {
+                        mat.SetFloat("_Cull", 2);
+                        break;
+                    }
+                    case CullMode.Front:
+                    {
+                        mat.SetFloat("_Cull", 1);
+                        break;
+                    }
+                    case CullMode.Off:
+                    {
+                        mat.SetFloat("_Cull", 0);
+                        break;
+                    }
+                }
                 AssetDatabase.CreateAsset(mat, "Assets/" + relativePath + "/material.mat");
                 AssetDatabase.CreateAsset(_mesh, _savePath);
             }
