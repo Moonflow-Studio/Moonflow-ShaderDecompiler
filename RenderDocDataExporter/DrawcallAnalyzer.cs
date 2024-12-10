@@ -126,7 +126,7 @@ public class DrawcallAnalyzer
                 string ps = File.ReadAllText(hlslAnalyzer.shaderCodePair.psFilePath);
                 if (ps.Contains("discard"))
                 {
-                    _meshInstaller.mat.SetFloat("_AlphaClip", 1);
+                    isAlphaClip = true;
                 }
                 break;
             }

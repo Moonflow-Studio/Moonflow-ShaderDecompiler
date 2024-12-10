@@ -434,7 +434,7 @@ def disassemble_textures(ctrl, refl, state, stage, path):
                             continue
                         texsave.alpha = rd.AlphaMapping.BlendToCheckerboard
                         texsave.mip = 0
-                        texsave.slice.sliceIndex = 0
+                        texsave.slice.sliceIndex = i
                         texsave.destType = rd.FileType.PNG
                         realPath = path + resName
                         ctrl.SaveTexture(texsave, realPath + ".png")
