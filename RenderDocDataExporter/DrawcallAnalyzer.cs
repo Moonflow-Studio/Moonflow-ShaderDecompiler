@@ -203,6 +203,7 @@ public class DrawcallAnalyzer
         if (isAlphaClip)
         {
             _meshInstaller.mat.SetFloat("_AlphaClip", 1);
+            _meshInstaller.mat.EnableKeyword("_ALPHATEST_ON");
         }
         if (!needInstance)
         {
