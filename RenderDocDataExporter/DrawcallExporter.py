@@ -401,26 +401,44 @@ def disassemble_cbuffers(controller, refl, state, stage, pipeline, eventId):
 
 
 def disassemble_textures(ctrl, refl, state, stage, path):
-    ress = refl.readOnlyResources
-    sress = state.GetReadOnlyResources(stage, True)
+    shader_res = refl.readOnlyResources
+    res_desc = state.GetReadOnlyResources(stage, True)
     stage_name = str(stage).replace("ShaderStage.", '')
-    if len(ress) == len(sress):
+    if len(shader_res) == len(res_desc):
         index = 0
-        while index < len(ress):
-            if sress[index].descriptor.type == rd.DescriptorType.ImageSampler:
-                resName = stage_name + '_s' + str(ress[index].fixedBindSetOrSpace) + '_b' + str(
-                    ress[index].fixedBindNumber) + '_' + str(ress[index].name) + '_' + str(
-                    sress[index].descriptor.resource).replace('ResourceId::', '')
-                texsave = rd.TextureSave()
-                texsave.resourceId = sress[index].descriptor.resource
-                if texsave.resourceId == rd.ResourceId.Null():
-                    continue
-                texsave.alpha = rd.AlphaMapping.BlendToCheckerboard
-                texsave.mip = 0
-                texsave.slice.sliceIndex = 0
-                texsave.destType = rd.FileType.PNG
-                realPath = path + resName
-                ctrl.SaveTexture(texsave, realPath + ".png")
+        while index < len(shader_res):
+            if res_desc[index].descriptor.type == rd.DescriptorType.ImageSampler:
+                if shader_res[index].textureType == rd.TextureType.Texture2D or shader_res[index].textureType == rd.TextureType.Texture3D or shader_res[index].textureType == rd.TextureType.TextureCube:
+                    resName = stage_name + '_s' + str(shader_res[index].fixedBindSetOrSpace) + '_b' + str(
+                        shader_res[index].fixedBindNumber) + '_' + str(shader_res[index].name) + '_' + str(
+                        res_desc[index].descriptor.resource).replace('ResourceId::', '')
+                    texsave = rd.TextureSave()
+                    texsave.resourceId = res_desc[index].descriptor.resource
+                    if texsave.resourceId == rd.ResourceId.Null():
+                        continue
+                    texsave.alpha = rd.AlphaMapping.BlendToCheckerboard
+                    texsave.mip = 0
+                    texsave.slice.sliceIndex = 0
+                    texsave.destType = rd.FileType.PNG
+                    realPath = path + resName
+                    ctrl.SaveTexture(texsave, realPath + ".png")
+                    print("Save Texture: " + realPath)
+                elif shader_res[index].textureType == rd.TextureType.Texture2DArray or shader_res[index].textureType == rd.TextureType.Texture3DArray or shader_res[index].textureType == rd.TextureType.TextureCubeArray:
+                    for i in range(0, res_desc[index].descriptor.numSlices):
+                        resName = stage_name + '_s' + str(shader_res[index].fixedBindSetOrSpace) + '_b' + str(
+                            shader_res[index].fixedBindNumber) + '_' + str(shader_res[index].name) + '_' + str(
+                            res_desc[index].descriptor.resource).replace('ResourceId::', '') + "_"+str(i)
+                        texsave = rd.TextureSave()
+                        texsave.resourceId = res_desc[index].descriptor.resource
+                        if texsave.resourceId == rd.ResourceId.Null():
+                            continue
+                        texsave.alpha = rd.AlphaMapping.BlendToCheckerboard
+                        texsave.mip = 0
+                        texsave.slice.sliceIndex = 0
+                        texsave.destType = rd.FileType.PNG
+                        realPath = path + resName
+                        ctrl.SaveTexture(texsave, realPath + ".png")
+                        print("Save Texture: " + realPath)
             index = index + 1
 
 
