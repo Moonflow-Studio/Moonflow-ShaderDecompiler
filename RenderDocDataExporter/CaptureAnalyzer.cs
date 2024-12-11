@@ -16,14 +16,14 @@ namespace Moonflow
         private Dictionary<ShaderCodeIdPair, ShaderCodePair> _shaderCodePairs = new Dictionary<ShaderCodeIdPair, ShaderCodePair>();
         
         public Dictionary<int, BufferDeclaration> cbuffers;
-        private Vector2Int _drawcallRange;
-        [MenuItem("Tools/Moonflow/Utility/Capture Analyzer")]
+        // private Vector2Int _drawcallRange;
+        [MenuItem("Tools/Utility/Capture Analyzer")]
         public static void ShowWindow()
         {
             var _ins = GetWindow<CaptureAnalyzer>("Capture Analyzer");
-            _ins.minSize = new Vector2(200, 300);
-            _ins.maxSize = new Vector2(200, 300);
-            _ins._drawcallRange = new Vector2Int(0, 20000);
+            _ins.minSize = new Vector2(500, 600);
+            _ins.maxSize = new Vector2(500, 600);
+            // _ins._drawcallRange = new Vector2Int(0, 20000);
         }
 
         private void OnDestroy()
@@ -39,7 +39,7 @@ namespace Moonflow
                 _capturePath = EditorUtility.OpenFolderPanel("Select RenderDoc Capture Folder", "", "");
             }
             EditorGUILayout.Space();
-            _drawcallRange = EditorGUILayout.Vector2IntField("Drawcall Range", _drawcallRange);
+            // _drawcallRange = EditorGUILayout.Vector2IntField("Drawcall Range", _drawcallRange);
             if (GUILayout.Button("Analyze Data"))
             {
                 AnalyzeData(_capturePath);
@@ -50,10 +50,10 @@ namespace Moonflow
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    if (GUILayout.Button("Setup HLSL File"))
+                    if (GUILayout.Button("Setup Original Shader File"))
                     {
-                        Debug.Log("starting analyze hlsl code");
-                        SetupHLSLFile();
+                        Debug.Log("starting analyze shader code");
+                        SetupShaderFile();
                         Debug.Log("Finish!!");
                     }
             
@@ -119,10 +119,10 @@ namespace Moonflow
                     string correctFolder = subFolders[i].Replace('\\', '/');
                     Debug.Log($"Analyze {correctFolder}");
                     _drawcallAnalyzers[i] = new DrawcallAnalyzer();
-                    string[] folderSplit = correctFolder.Split('/');
-                    int drawcallIndex = int.Parse(folderSplit[^1]);
-                    if(drawcallIndex >= _drawcallRange.x && drawcallIndex <= _drawcallRange.y)
-                        _drawcallAnalyzers[i].Setup(correctFolder, this);
+                    // string[] folderSplit = correctFolder.Split('/');
+                    // int drawcallIndex = int.Parse(folderSplit[^1]);
+                    // if(drawcallIndex >= _drawcallRange.x && drawcallIndex <= _drawcallRange.y)
+                    _drawcallAnalyzers[i].Setup(correctFolder, this);
                 }
             }
             else
@@ -133,7 +133,7 @@ namespace Moonflow
             Debug.Log("Finish setup drawcall data");
         }
 
-        private void SetupHLSLFile()
+        private void SetupShaderFile()
         {
             _hlslAnalyzers = new List<HLSLAnalyzer>();
             foreach (var codepair in _shaderCodePairs)

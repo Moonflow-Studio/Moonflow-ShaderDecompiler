@@ -131,6 +131,7 @@ namespace Moonflow
             }
             int findObjPos = -1;
             int findUV = -1;
+            int findecolor = -1;
             for (int i = 0; i < _vertexDataChannel.Length; i++)
             {
                 if (_vertexDataChannel[i] == 2 && findUV < 0)
@@ -141,6 +142,11 @@ namespace Moonflow
                 if (_vertexDataChannel[i] == 3 && findObjPos < 0)
                 {
                     findObjPos = i;
+                }
+
+                if (_vertexDataChannel[i] == 4 && findecolor < 0)
+                {
+                    findecolor = i;
                 }
 
                 if (findObjPos >= 0 && findUV >= 0)
@@ -162,7 +168,7 @@ namespace Moonflow
             {
                 verticesArray3[i] = verticesArray[i];
             }
-            _mesh.SetVertices(verticesArray3);
+            _mesh.SetVertices(verticesArray3, 0, verticesArray3.Length, MeshUpdateFlags.DontValidateIndices);
             
             try
             {
@@ -170,15 +176,17 @@ namespace Moonflow
                 {
                     _vertexIndices[i] -= _startVertexOffset;
                 }
-                _mesh.SetTriangles(_vertexIndices, 0,true,0);
-                // _mesh.SetIndices(_vertexIndices,MeshTopology.Triangles,0,true,0);
+                // _mesh.SetTriangles(_vertexIndices, 0,true,0);
+                _mesh.SetIndices(_vertexIndices,MeshTopology.Triangles,0,true,0);
                 // _mesh.triangles = _vertexIndices.ToArray();
+                // _mesh.SetIndexBufferParams(_vertexIndices.Count, IndexFormat.UInt32);
+                // _mesh.SetIndexBufferData(_vertexIndices, 0, 0, _vertexIndices.Count, MeshUpdateFlags.DontValidateIndices);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 Debug.LogError($"Error Drawcall {_path}");
-                throw;
+                return false;
             }
             _mesh.RecalculateNormals();
             if (findUV > 0)
@@ -190,6 +198,18 @@ namespace Moonflow
                     uvArray2[i] = new Vector2(uvArray[i].x, 1 - uvArray[i].y);
                 }
                 _mesh.uv = uvArray2;
+            }
+
+            if (findecolor > 0)
+            {
+                var colorArray = _vertexDataList[findecolor].ToArray();
+                Color[] color4 = new Color[colorArray.Length];
+                for (int i = 0; i < color4.Length; i++)
+                {
+                    color4[i] = new Color(colorArray[i].x, colorArray[i].y, colorArray[i].z, colorArray[i].w);
+                }
+
+                _mesh.colors = color4;
             }
 
             return true;

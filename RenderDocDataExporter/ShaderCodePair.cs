@@ -10,6 +10,8 @@ namespace Moonflow
         public ShaderCodeIdPair id;
         public string vsFilePath;
         public string psFilePath;
+        public string vsHLSLPath;
+        public string psHLSLPath;
         public List<BufferLinker> bufferLinkersExample;
     }
 

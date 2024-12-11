@@ -22,9 +22,11 @@ public class DrawcallAnalyzer
     private int _diffuseIndex;
     private bool _enableBlend = false;
     private CullMode _cullMode = CullMode.Back;
+    private int eventId;
 
     public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer)
     {
+        eventId = int.Parse(drawcallFolderPath.Substring(drawcallFolderPath.LastIndexOf('/') + 1));
         _captureAnalyzer = captureAnalyzer;
         _cbufferAnalyzer = ScriptableObject.CreateInstance<CBufferAnalyzer>();
         _drawcallFolderPath = drawcallFolderPath;
@@ -79,6 +81,18 @@ public class DrawcallAnalyzer
                         _shaderCodePair.id.psid = split[2].Replace(".txt","");
                     }
                 }
+                else if (fileName.EndsWith("_output_hlsl.txt"))
+                {
+                    string[] split = fileName.Split("_");
+                    if (split[0] == "vs")
+                    {
+                        _shaderCodePair.vsHLSLPath = file;
+                    }
+                    else if (split[0] == "ps")
+                    {
+                        _shaderCodePair.psHLSLPath = file;
+                    }
+                }
                 else if (fileName.EndsWith("VertexIndices.txt") || fileName.EndsWith("VertexInputData.txt"))
                 {
                     // _meshInstaller.SetDrawcall(_drawcallFolderPath.Split('/')[^1]);
@@ -123,7 +137,7 @@ public class DrawcallAnalyzer
             {
                 _diffuseIndex = hlslAnalyzer.diffuseResIndex;
                 //read file of shaderCodePair.psFilePath
-                string ps = File.ReadAllText(hlslAnalyzer.shaderCodePair.psFilePath);
+                string ps = File.ReadAllText(hlslAnalyzer.shaderCodePair.psHLSLPath);
                 if (ps.Contains("discard"))
                 {
                     isAlphaClip = true;
@@ -214,11 +228,13 @@ public class DrawcallAnalyzer
             if (_meshInstaller.prs == null)
             {
                 Debug.LogError($"Drawcall {_drawcallFolderPath} didn't create prs matrix completely");
-                return;
             }
-            go.transform.position = _meshInstaller.prs[0].position;
-            go.transform.rotation = _meshInstaller.prs[0].rotation;
-            go.transform.localScale = _meshInstaller.prs[0].scale;
+            else
+            {
+                go.transform.position = _meshInstaller.prs[0].position;
+                go.transform.rotation = _meshInstaller.prs[0].rotation;
+                go.transform.localScale = _meshInstaller.prs[0].scale;
+            }
             renderer.material = _meshInstaller.mat;
         }
         else
