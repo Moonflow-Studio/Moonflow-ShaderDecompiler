@@ -65,18 +65,18 @@ public class DrawcallAnalyzer
                 {
                     _cbufferAnalyzer.AddResource(file);
                 }
-                else if (fileName.EndsWith("_output_hlsl.txt"))
+                else if (fileName.Contains("_original_"))
                 {
                     string[] split = fileName.Split("_");
                     if (split[0] == "vs")
                     {
                         _shaderCodePair.vsFilePath = file;
-                        _shaderCodePair.id.vsid = split[1];
+                        _shaderCodePair.id.vsid = split[2].Replace(".txt","");
                     }
                     else if (split[0] == "ps")
                     {
                         _shaderCodePair.psFilePath = file;
-                        _shaderCodePair.id.psid = split[1];
+                        _shaderCodePair.id.psid = split[2].Replace(".txt","");
                     }
                 }
                 else if (fileName.EndsWith("VertexIndices.txt") || fileName.EndsWith("VertexInputData.txt"))

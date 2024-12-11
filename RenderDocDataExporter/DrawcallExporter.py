@@ -460,7 +460,8 @@ def disassemble_vertex_shader(ctrl, state, pipeline, target, evt_id):
     byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'vs_original' + shader_res_id + '.spv'
     byte_path = Path(byte_path_name)
     byte_path.write_bytes(shader_refl_vert.rawBytes)
-    translate_spirv('vs', byte_path_name, evt_id, 'vert', str(shader_refl_vert.entryPoint), shader_res_id)
+    if spirv_cross_path is not None:
+        translate_spirv('vs', byte_path_name, evt_id, 'vert', str(shader_refl_vert.entryPoint), shader_res_id)
 
 def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
     print("disassemble_pixel_shader")
@@ -480,7 +481,8 @@ def disassemble_pixel_shader(ctrl, state, pipeline, target, evt_id):
     byte_path_name = target_folder + '/' + str(evt_id) + '/' + 'ps_original.spv'
     byte_path = Path(byte_path_name)
     byte_path.write_bytes(shader_refl_pixel.rawBytes)
-    translate_spirv('ps', byte_path_name, evt_id, 'frag', str(shader_refl_pixel.entryPoint), shader_res_id)
+    if spirv_cross_path is not None:
+        translate_spirv('ps', byte_path_name, evt_id, 'frag', str(shader_refl_pixel.entryPoint), shader_res_id)
 
 
 def disassemble_drawcall_setting(apistate, evt_id):
