@@ -83,11 +83,17 @@ namespace Moonflow
                     }
                 }
             }
-            
+
+            using (new EditorGUILayout.HorizontalScope("box"))
+            {
+                if(GUILayout.Button("Save Mesh"))SaveMesh();
+                if(GUILayout.Button("Save CBuffer"))SaveCBuffer();
+                if(GUILayout.Button("Save Shader"))SaveShader();
+            }
 
             if (GUILayout.Button("Save"))
             {
-                Save();
+                SaveAll();
             }
 
             if (GUILayout.Button("Load"))
@@ -156,20 +162,40 @@ namespace Moonflow
             _hlslAnalyzers[index].Analyze();
         }
 
-        private void Save()
+        private void SaveAll()
         {
             AssetDatabase.StartAssetEditing();
+            
+            SaveCBuffer();
+            SaveMesh();
+            SaveShader();
+            
+            AssetDatabase.StopAssetEditing();
+            AssetDatabase.Refresh();
+        }
+
+        private void SaveCBuffer()
+        {
             for (int i = 0; i < _drawcallAnalyzers.Length; i++)
             {
-                _drawcallAnalyzers[i].Save();
+                _drawcallAnalyzers[i].SaveCBuffer();
             }
+        }
 
+        private void SaveMesh()
+        {
+            for (int i = 0; i < _drawcallAnalyzers.Length; i++)
+            {
+                _drawcallAnalyzers[i].SaveMesh();
+            }
+        }
+
+        private void SaveShader()
+        {
             for (int i = 0; i < _hlslAnalyzers.Count; i++)
             {
                 _hlslAnalyzers[i].SaveAsFile(_capturePath);
             }
-            AssetDatabase.StopAssetEditing();
-            AssetDatabase.Refresh();
         }
 
         public void AddShaderFile(ShaderCodePair pair)

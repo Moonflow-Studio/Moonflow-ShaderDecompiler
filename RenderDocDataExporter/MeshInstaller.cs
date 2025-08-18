@@ -17,6 +17,12 @@ namespace Moonflow
         private int _diffuseIndex;
         private Mesh _mesh;
         private List<Vector4>[] _vertexDataList;
+        private int _positionChannel;
+        private int _colorChannel;
+        private int _normalChannel;
+        private int _tangentChannel;
+        private int _texCoordChannel;
+        
         private int[] _vertexDataChannel;
         private List<int> _vertexIndices = new List<int>();
         private string _path;
@@ -26,6 +32,11 @@ namespace Moonflow
 
         public void AddResource(string path)
         {
+            _positionChannel = -1;
+            _colorChannel = -1;
+            _normalChannel = -1;
+            _tangentChannel = -1;
+            _texCoordChannel = -1;
             _path = path;
             if (path.EndsWith("VertexIndices.txt"))
             {
@@ -52,6 +63,15 @@ namespace Moonflow
                             var title = line.Split(' ');
                             _vertexDataList = new List<Vector4>[title.Length-1];
                             _vertexDataChannel = new int[title.Length - 1];
+                            for (int i = 0; i < title.Length; i++)
+                            {
+                                string channelName =  title[i];
+                                if(channelName.ToLower().Contains("position")) _positionChannel = i - 1;
+                                if(channelName.ToLower().Contains("color")) _colorChannel = i - 1;
+                                // if(channelName.ToLower().Contains("normal")) _normalChannel = i - 1;
+                                // if(channelName.ToLower().Contains("tangent")) _tangentChannel = i - 1;
+                                if(channelName.ToLower().Contains("texcoord")) _texCoordChannel = i - 1;
+                            }
                         }
                         else if (lineIndex == 1)
                         {
@@ -129,9 +149,9 @@ namespace Moonflow
             {
                 Debug.LogError($"{_path} cannot find vertex datachannel");
             }
-            int findObjPos = -1;
-            int findUV = -1;
-            int findecolor = -1;
+            int findObjPos = _positionChannel;
+            int findUV = _texCoordChannel;
+            int findecolor = _colorChannel;
             for (int i = 0; i < _vertexDataChannel.Length; i++)
             {
                 if (_vertexDataChannel[i] == 2 && findUV < 0)
@@ -220,7 +240,7 @@ namespace Moonflow
             if (MakeMesh())
             {
                 _savePath = "Assets/" + relativePath + "/mesh.asset";
-                Shader lit = Shader.Find("Universal Render Pipeline/Unlit");
+                Shader lit = Shader.Find("Universal Render Pipeline/Lit");
                 mat = new Material(lit);
                 if (blendMode)
                 {

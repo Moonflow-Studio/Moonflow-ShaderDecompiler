@@ -23,6 +23,10 @@ public class DrawcallAnalyzer
     private bool _enableBlend = false;
     private CullMode _cullMode = CullMode.Back;
     private int eventId;
+    private bool _hasCBuffer;
+    private bool _hasTexture;
+    private bool _hasMesh;
+    private int _shaderPrepare;
 
     public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer)
     {
@@ -45,12 +49,23 @@ public class DrawcallAnalyzer
         
     }
 
-    public void Save()
+    public void SaveAll()
     {
         // get relative path of _translatedPath
+        SaveCBuffer();
+        SaveMesh();
+    }
+
+    public void SaveCBuffer()
+    {
+        
         string relativePath = _translatedPath.Substring(Application.dataPath.Length + 1);
         AssetDatabase.CreateAsset(_cbufferAnalyzer, "Assets/"+relativePath + "/CBuffer.asset");
-        
+    }
+
+    public void SaveMesh()
+    {
+        string relativePath = _translatedPath.Substring(Application.dataPath.Length + 1);
         _meshInstaller.SaveMesh(relativePath,_enableBlend, _cullMode);
     }
     private void AnalyzeResources()
@@ -58,6 +73,10 @@ public class DrawcallAnalyzer
         //get all files from _drawcallFolderPath
         string[] files = Directory.GetFiles(_drawcallFolderPath);
         Debug.Log($"Find {files.Length} files in {_drawcallFolderPath}");
+        _hasCBuffer = false;
+        _hasTexture = false;
+        _hasMesh = false;
+        _shaderPrepare = 0;
         foreach (string file in files)
         {
             string fileName = Path.GetFileName(file);
@@ -66,6 +85,8 @@ public class DrawcallAnalyzer
                 if (fileName.StartsWith("CBuffer"))
                 {
                     _cbufferAnalyzer.AddResource(file);
+                    _hasCBuffer = true;
+                    _shaderPrepare++;
                 }
                 else if (fileName.Contains("_original_"))
                 {
@@ -80,6 +101,7 @@ public class DrawcallAnalyzer
                         _shaderCodePair.psFilePath = file;
                         _shaderCodePair.id.psid = split[2].Replace(".txt","");
                     }
+                    _shaderPrepare++;
                 }
                 else if (fileName.EndsWith("_output_hlsl.txt"))
                 {
@@ -92,11 +114,13 @@ public class DrawcallAnalyzer
                     {
                         _shaderCodePair.psHLSLPath = file;
                     }
+                    _shaderPrepare++;
                 }
                 else if (fileName.EndsWith("VertexIndices.txt") || fileName.EndsWith("VertexInputData.txt"))
                 {
                     // _meshInstaller.SetDrawcall(_drawcallFolderPath.Split('/')[^1]);
                     _meshInstaller.AddResource(file);
+                    _hasMesh = true;
                 }
                 else if (fileName.EndsWith("pipeline.txt"))
                 {
@@ -120,6 +144,7 @@ public class DrawcallAnalyzer
             else if (fileName.EndsWith(".png"))
             {
                 _textureAnalyzer.AddResource(file);
+                _hasTexture = true;
             }
             else
             {

@@ -9,6 +9,7 @@ namespace Moonflow
 {
     public class HLSLAnalyzer
     {
+        public bool isComplete = false;
         public ShaderCodePair shaderCodePair;
         public string vsCode;
         public string psCode;
