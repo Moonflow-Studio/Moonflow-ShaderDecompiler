@@ -10,6 +10,9 @@ namespace Moonflow
     
     public class CaptureAnalyzer : EditorWindow
     {
+        private bool _analyzeMesh;
+        private bool _analyzeBuffer;
+        private bool _analyzeShading;
         private string _capturePath;
         private DrawcallAnalyzer[] _drawcallAnalyzers;
         private List<HLSLAnalyzer> _hlslAnalyzers;
@@ -40,6 +43,12 @@ namespace Moonflow
             }
             EditorGUILayout.Space();
             // _drawcallRange = EditorGUILayout.Vector2IntField("Drawcall Range", _drawcallRange);
+            using (new EditorGUILayout.HorizontalScope("box"))
+            {
+                _analyzeMesh = EditorGUILayout.ToggleLeft("Analyze Mesh", _analyzeMesh);
+                _analyzeBuffer = EditorGUILayout.ToggleLeft("Analyze Buffer", _analyzeBuffer);
+                _analyzeShading = EditorGUILayout.ToggleLeft("Analyze Shader", _analyzeShading);
+            }
             if (GUILayout.Button("Analyze Data"))
             {
                 AnalyzeData(_capturePath);
@@ -106,7 +115,7 @@ namespace Moonflow
         {
             foreach (var drawcall in _drawcallAnalyzers)
             {
-                drawcall.Translate(_hlslAnalyzers);
+                drawcall.Translate(_hlslAnalyzers, _analyzeBuffer, _analyzeShading);
             }
         }
 
@@ -128,7 +137,7 @@ namespace Moonflow
                     // string[] folderSplit = correctFolder.Split('/');
                     // int drawcallIndex = int.Parse(folderSplit[^1]);
                     // if(drawcallIndex >= _drawcallRange.x && drawcallIndex <= _drawcallRange.y)
-                    _drawcallAnalyzers[i].Setup(correctFolder, this);
+                    _drawcallAnalyzers[i].Setup(correctFolder, this, _analyzeMesh,  _analyzeBuffer, _analyzeShading);
                 }
             }
             else

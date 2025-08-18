@@ -28,7 +28,7 @@ public class DrawcallAnalyzer
     private bool _hasMesh;
     private int _shaderPrepare;
 
-    public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer)
+    public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer, bool analyzeMesh, bool analyzeBuffer, bool analyzeShading)
     {
         eventId = int.Parse(drawcallFolderPath.Substring(drawcallFolderPath.LastIndexOf('/') + 1));
         _captureAnalyzer = captureAnalyzer;
@@ -39,7 +39,7 @@ public class DrawcallAnalyzer
         Directory.CreateDirectory(_translatedPath);
         Debug.Log($"Create Translated Folder:{_translatedPath}");
         AssetDatabase.SaveAssets();
-        AnalyzeResources();
+        AnalyzeResources(analyzeMesh, analyzeBuffer, analyzeShading);
         //copy buffer linkers
         List<BufferLinker> linker = new List<BufferLinker>();
         foreach (var item in _cbufferAnalyzer.bufferLinkers)
@@ -68,7 +68,7 @@ public class DrawcallAnalyzer
         string relativePath = _translatedPath.Substring(Application.dataPath.Length + 1);
         _meshInstaller.SaveMesh(relativePath,_enableBlend, _cullMode);
     }
-    private void AnalyzeResources()
+    private void AnalyzeResources(bool analyzeMesh, bool analyzeBuffer, bool analyzeShading)
     {
         //get all files from _drawcallFolderPath
         string[] files = Directory.GetFiles(_drawcallFolderPath);
@@ -82,13 +82,13 @@ public class DrawcallAnalyzer
             string fileName = Path.GetFileName(file);
             if (fileName.EndsWith(".txt"))
             {
-                if (fileName.StartsWith("CBuffer"))
+                if (fileName.StartsWith("CBuffer")&&analyzeBuffer)
                 {
                     _cbufferAnalyzer.AddResource(file);
                     _hasCBuffer = true;
                     _shaderPrepare++;
                 }
-                else if (fileName.Contains("_original_"))
+                else if (fileName.Contains("_original_")&&analyzeShading)
                 {
                     string[] split = fileName.Split("_");
                     if (split[0] == "vs")
@@ -103,7 +103,7 @@ public class DrawcallAnalyzer
                     }
                     _shaderPrepare++;
                 }
-                else if (fileName.EndsWith("_output_hlsl.txt"))
+                else if (fileName.EndsWith("_output_hlsl.txt")&&analyzeShading)
                 {
                     string[] split = fileName.Split("_");
                     if (split[0] == "vs")
@@ -116,13 +116,13 @@ public class DrawcallAnalyzer
                     }
                     _shaderPrepare++;
                 }
-                else if (fileName.EndsWith("VertexIndices.txt") || fileName.EndsWith("VertexInputData.txt"))
+                else if ((fileName.EndsWith("VertexIndices.txt") || fileName.EndsWith("VertexInputData.txt"))&&analyzeMesh)
                 {
                     // _meshInstaller.SetDrawcall(_drawcallFolderPath.Split('/')[^1]);
                     _meshInstaller.AddResource(file);
                     _hasMesh = true;
                 }
-                else if (fileName.EndsWith("pipeline.txt"))
+                else if (fileName.EndsWith("pipeline.txt")&&analyzeShading)
                 {
                     using (System.IO.StreamReader sr = new System.IO.StreamReader(file))
                     {
@@ -153,63 +153,43 @@ public class DrawcallAnalyzer
         }
     }
 
-    public void Translate(List<HLSLAnalyzer> hlslAnalyzers)
+    public void Translate(List<HLSLAnalyzer> hlslAnalyzers, bool analyzeBuffer, bool analyzeShading)
     {
         bool isAlphaClip = false;
-        foreach (var hlslAnalyzer in hlslAnalyzers)
+        if (analyzeShading)
         {
-            if (hlslAnalyzer.shaderCodePair.id.vsid == _shaderCodePair.id.vsid && hlslAnalyzer.shaderCodePair.id.psid == _shaderCodePair.id.psid)
+            foreach (var hlslAnalyzer in hlslAnalyzers)
             {
-                _diffuseIndex = hlslAnalyzer.diffuseResIndex;
-                //read file of shaderCodePair.psFilePath
-                string ps = File.ReadAllText(hlslAnalyzer.shaderCodePair.psHLSLPath);
-                if (ps.Contains("discard"))
+                if (hlslAnalyzer.shaderCodePair.id.vsid == _shaderCodePair.id.vsid && hlslAnalyzer.shaderCodePair.id.psid == _shaderCodePair.id.psid)
                 {
-                    isAlphaClip = true;
+                    _diffuseIndex = hlslAnalyzer.diffuseResIndex;
+                    //read file of shaderCodePair.psFilePath
+                    string ps = File.ReadAllText(hlslAnalyzer.shaderCodePair.psHLSLPath);
+                    if (ps.Contains("discard"))
+                    {
+                        isAlphaClip = true;
+                    }
+                    break;
                 }
-                break;
             }
         }
         
         bool needInstance = false;
-        for (int i = 0; i < _cbufferAnalyzer.buffers.Count; i++)
+        if (analyzeBuffer)
         {
-            var data = _cbufferAnalyzer.buffers[i];
-            if (data.dec.bufferName == "UnityPerDraw")
+            for (int i = 0; i < _cbufferAnalyzer.buffers.Count; i++)
             {
-                Matrix4x4 m = new Matrix4x4();
-                try
-                {
-                    m.SetColumn(0,new Vector4(data.variables[0].sub[0].sub[0].value, data.variables[0].sub[0].sub[1].value, data.variables[0].sub[0].sub[2].value, data.variables[0].sub[0].sub[3].value));
-                    m.SetColumn(1,new Vector4(data.variables[0].sub[1].sub[0].value, data.variables[0].sub[1].sub[1].value, data.variables[0].sub[1].sub[2].value, data.variables[0].sub[1].sub[3].value));
-                    m.SetColumn(2,new Vector4(data.variables[0].sub[2].sub[0].value, data.variables[0].sub[2].sub[1].value, data.variables[0].sub[2].sub[2].value, data.variables[0].sub[2].sub[3].value));
-                    m.SetColumn(3,new Vector4(data.variables[0].sub[3].sub[0].value, data.variables[0].sub[3].sub[1].value, data.variables[0].sub[3].sub[2].value, data.variables[0].sub[3].sub[3].value));
-                    _meshInstaller.SetMatrix(m);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    Debug.LogError(_drawcallFolderPath + "没有UnityPerDraw的Buffer或者识别错误导致没有读到obj2World矩阵");
-                    return;
-                }
-                break;
-            }
-            if (data.dec.bufferName == "UnityInstancingPerDraw")
-            {
-                needInstance = true;
-                Matrix4x4[] matrix4X4s = new Matrix4x4[_meshInstaller.instanceCount];
-                for (int j = 0; j < _meshInstaller.instanceCount; j++)
+                var data = _cbufferAnalyzer.buffers[i];
+                if (data.dec.bufferName == "UnityPerDraw")
                 {
                     Matrix4x4 m = new Matrix4x4();
                     try
                     {
-                        //data.variables[0].    sub[j].     sub[0].     sub[0]. sub[0]
-                        //     child0.          child0[0].  obj2world.  m1.     x
-                        m.SetColumn(0,new Vector4(data.variables[0].sub[j].sub[0].sub[0].sub[0].value, data.variables[0].sub[j].sub[0].sub[0].sub[1].value, data.variables[0].sub[j].sub[0].sub[0].sub[2].value, data.variables[0].sub[j].sub[0].sub[0].sub[3].value));
-                        m.SetColumn(1,new Vector4(data.variables[0].sub[j].sub[0].sub[1].sub[0].value, data.variables[0].sub[j].sub[0].sub[1].sub[1].value, data.variables[0].sub[j].sub[0].sub[1].sub[2].value, data.variables[0].sub[j].sub[0].sub[1].sub[3].value));
-                        m.SetColumn(2,new Vector4(data.variables[0].sub[j].sub[0].sub[2].sub[0].value, data.variables[0].sub[j].sub[0].sub[2].sub[1].value, data.variables[0].sub[j].sub[0].sub[2].sub[2].value, data.variables[0].sub[j].sub[0].sub[2].sub[3].value));
-                        m.SetColumn(3,new Vector4(data.variables[0].sub[j].sub[0].sub[3].sub[0].value, data.variables[0].sub[j].sub[0].sub[3].sub[1].value, data.variables[0].sub[j].sub[0].sub[3].sub[2].value, data.variables[0].sub[j].sub[0].sub[3].sub[3].value));
-                        matrix4X4s[j] = m;
+                        m.SetColumn(0,new Vector4(data.variables[0].sub[0].sub[0].value, data.variables[0].sub[0].sub[1].value, data.variables[0].sub[0].sub[2].value, data.variables[0].sub[0].sub[3].value));
+                        m.SetColumn(1,new Vector4(data.variables[0].sub[1].sub[0].value, data.variables[0].sub[1].sub[1].value, data.variables[0].sub[1].sub[2].value, data.variables[0].sub[1].sub[3].value));
+                        m.SetColumn(2,new Vector4(data.variables[0].sub[2].sub[0].value, data.variables[0].sub[2].sub[1].value, data.variables[0].sub[2].sub[2].value, data.variables[0].sub[2].sub[3].value));
+                        m.SetColumn(3,new Vector4(data.variables[0].sub[3].sub[0].value, data.variables[0].sub[3].sub[1].value, data.variables[0].sub[3].sub[2].value, data.variables[0].sub[3].sub[3].value));
+                        _meshInstaller.SetMatrix(m);
                     }
                     catch (Exception e)
                     {
@@ -217,12 +197,37 @@ public class DrawcallAnalyzer
                         Debug.LogError(_drawcallFolderPath + "没有UnityPerDraw的Buffer或者识别错误导致没有读到obj2World矩阵");
                         return;
                     }
+                    break;
                 }
-                _meshInstaller.SetMatrixes(matrix4X4s);
-                break;
+                if (data.dec.bufferName == "UnityInstancingPerDraw")
+                {
+                    needInstance = true;
+                    Matrix4x4[] matrix4X4s = new Matrix4x4[_meshInstaller.instanceCount];
+                    for (int j = 0; j < _meshInstaller.instanceCount; j++)
+                    {
+                        Matrix4x4 m = new Matrix4x4();
+                        try
+                        {
+                            //data.variables[0].    sub[j].     sub[0].     sub[0]. sub[0]
+                            //     child0.          child0[0].  obj2world.  m1.     x
+                            m.SetColumn(0,new Vector4(data.variables[0].sub[j].sub[0].sub[0].sub[0].value, data.variables[0].sub[j].sub[0].sub[0].sub[1].value, data.variables[0].sub[j].sub[0].sub[0].sub[2].value, data.variables[0].sub[j].sub[0].sub[0].sub[3].value));
+                            m.SetColumn(1,new Vector4(data.variables[0].sub[j].sub[0].sub[1].sub[0].value, data.variables[0].sub[j].sub[0].sub[1].sub[1].value, data.variables[0].sub[j].sub[0].sub[1].sub[2].value, data.variables[0].sub[j].sub[0].sub[1].sub[3].value));
+                            m.SetColumn(2,new Vector4(data.variables[0].sub[j].sub[0].sub[2].sub[0].value, data.variables[0].sub[j].sub[0].sub[2].sub[1].value, data.variables[0].sub[j].sub[0].sub[2].sub[2].value, data.variables[0].sub[j].sub[0].sub[2].sub[3].value));
+                            m.SetColumn(3,new Vector4(data.variables[0].sub[j].sub[0].sub[3].sub[0].value, data.variables[0].sub[j].sub[0].sub[3].sub[1].value, data.variables[0].sub[j].sub[0].sub[3].sub[2].value, data.variables[0].sub[j].sub[0].sub[3].sub[3].value));
+                            matrix4X4s[j] = m;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            Debug.LogError(_drawcallFolderPath + "没有UnityPerDraw的Buffer或者识别错误导致没有读到obj2World矩阵");
+                            return;
+                        }
+                    }
+                    _meshInstaller.SetMatrixes(matrix4X4s);
+                    break;
+                }
             }
         }
-
         if (_textureAnalyzer != null && _diffuseIndex!=0)
         {
             if (_textureAnalyzer.textureDeclarations != null)
@@ -238,7 +243,7 @@ public class DrawcallAnalyzer
             }
         }
 
-        if (_diffuseIndex == -1) return;
+        // if (_diffuseIndex == -1) return;
         if (isAlphaClip)
         {
             _meshInstaller.mat.SetFloat("_AlphaClip", 1);
@@ -252,7 +257,8 @@ public class DrawcallAnalyzer
             filter.mesh = _meshInstaller.GetMeshFile();
             if (_meshInstaller.prs == null)
             {
-                Debug.LogError($"Drawcall {_drawcallFolderPath} didn't create prs matrix completely");
+                if(analyzeBuffer)
+                    Debug.LogError($"Drawcall {_drawcallFolderPath} didn't create prs matrix completely");
             }
             else
             {
