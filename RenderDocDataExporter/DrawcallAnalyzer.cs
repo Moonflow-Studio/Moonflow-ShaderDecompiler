@@ -28,11 +28,12 @@ public class DrawcallAnalyzer
     private bool _hasMesh;
     private int _shaderPrepare;
 
-    public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer, bool analyzeMesh, bool analyzeBuffer, bool analyzeShading)
+    public void Setup(string drawcallFolderPath, CaptureAnalyzer captureAnalyzer, bool analyzeMesh, bool analyzeBuffer, bool analyzeShading, bool UEVer)
     {
         eventId = int.Parse(drawcallFolderPath.Substring(drawcallFolderPath.LastIndexOf('/') + 1));
         _captureAnalyzer = captureAnalyzer;
         _cbufferAnalyzer = ScriptableObject.CreateInstance<CBufferAnalyzer>();
+        _cbufferAnalyzer.UEVer = UEVer;
         _drawcallFolderPath = drawcallFolderPath;
         //Create new folder {_drawcallIndex}_Translated for translated files
         _translatedPath = _drawcallFolderPath + "/Translated";
@@ -224,6 +225,25 @@ public class DrawcallAnalyzer
                         }
                     }
                     _meshInstaller.SetMatrixes(matrix4X4s);
+                    break;
+                }
+                if (data.dec.bufferName == "Batch")
+                {
+                    Matrix4x4 m = new Matrix4x4();
+                    try
+                    {
+                        m.SetColumn(0,new Vector4(data.variables[0].sub[0].sub[0].value, data.variables[0].sub[1].sub[0].value, data.variables[0].sub[2].sub[0].value, data.variables[0].sub[3].sub[0].value));
+                        m.SetColumn(1,new Vector4(data.variables[0].sub[0].sub[1].value, data.variables[0].sub[1].sub[1].value, data.variables[0].sub[2].sub[1].value, data.variables[0].sub[3].sub[1].value));
+                        m.SetColumn(2,new Vector4(data.variables[0].sub[0].sub[2].value, data.variables[0].sub[1].sub[2].value, data.variables[0].sub[2].sub[2].value, data.variables[0].sub[3].sub[2].value));
+                        m.SetColumn(3,new Vector4(0,0,0,0/*data.variables[0].sub[0].sub[3].value, data.variables[0].sub[1].sub[3].value, data.variables[0].sub[2].sub[3].value, data.variables[0].sub[3].sub[3].value*/));
+                        _meshInstaller.SetMatrix(m);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Debug.LogError(_drawcallFolderPath + "没有UE的Batch的Buffer或者识别错误导致没有读到World矩阵");
+                        return;
+                    }
                     break;
                 }
             }

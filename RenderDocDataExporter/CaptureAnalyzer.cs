@@ -10,10 +10,12 @@ namespace Moonflow
     
     public class CaptureAnalyzer : EditorWindow
     {
+        private bool _ueVer;
         private bool _analyzeMesh;
         private bool _analyzeBuffer;
         private bool _analyzeShading;
         private string _capturePath;
+        private bool _singleDrawcall;
         private DrawcallAnalyzer[] _drawcallAnalyzers;
         private List<HLSLAnalyzer> _hlslAnalyzers;
         private Dictionary<ShaderCodeIdPair, ShaderCodePair> _shaderCodePairs = new Dictionary<ShaderCodeIdPair, ShaderCodePair>();
@@ -36,6 +38,7 @@ namespace Moonflow
 
         private void OnGUI()
         {
+            _singleDrawcall = EditorGUILayout.ToggleLeft("Single Drawcall", _singleDrawcall);
             EditorGUILayout.LabelField(_capturePath);
             if (GUILayout.Button("Select Folder"))
             {
@@ -43,6 +46,7 @@ namespace Moonflow
             }
             EditorGUILayout.Space();
             // _drawcallRange = EditorGUILayout.Vector2IntField("Drawcall Range", _drawcallRange);
+            _ueVer = EditorGUILayout.Toggle("UE Ver", _ueVer);
             using (new EditorGUILayout.HorizontalScope("box"))
             {
                 _analyzeMesh = EditorGUILayout.ToggleLeft("Analyze Mesh", _analyzeMesh);
@@ -123,26 +127,45 @@ namespace Moonflow
         {
             _shaderCodePairs = new Dictionary<ShaderCodeIdPair, ShaderCodePair>();
             _capturePath = capturePath;
-            if (Directory.Exists(_capturePath))
+            if (!_singleDrawcall)
             {
-                //读取子文件夹列表
-                string[] subFolders = Directory.GetDirectories(capturePath);
-                _drawcallAnalyzers = new DrawcallAnalyzer[subFolders.Length];
-                Debug.Log($"Recognize {subFolders.Length} drawcall in captures");
-                for (int i = 0; i < subFolders.Length; i++)
+                if (Directory.Exists(_capturePath))
                 {
-                    string correctFolder = subFolders[i].Replace('\\', '/');
-                    Debug.Log($"Analyze {correctFolder}");
-                    _drawcallAnalyzers[i] = new DrawcallAnalyzer();
-                    // string[] folderSplit = correctFolder.Split('/');
-                    // int drawcallIndex = int.Parse(folderSplit[^1]);
-                    // if(drawcallIndex >= _drawcallRange.x && drawcallIndex <= _drawcallRange.y)
-                    _drawcallAnalyzers[i].Setup(correctFolder, this, _analyzeMesh,  _analyzeBuffer, _analyzeShading);
+                    //读取子文件夹列表
+                    string[] subFolders = Directory.GetDirectories(capturePath);
+                    _drawcallAnalyzers = new DrawcallAnalyzer[subFolders.Length];
+                    Debug.Log($"Recognize {subFolders.Length} drawcall in captures");
+                    for (int i = 0; i < subFolders.Length; i++)
+                    {
+                        string correctFolder = subFolders[i].Replace('\\', '/');
+                        Debug.Log($"Analyze {correctFolder}");
+                        _drawcallAnalyzers[i] = new DrawcallAnalyzer();
+                        // string[] folderSplit = correctFolder.Split('/');
+                        // int drawcallIndex = int.Parse(folderSplit[^1]);
+                        // if(drawcallIndex >= _drawcallRange.x && drawcallIndex <= _drawcallRange.y)
+                        _drawcallAnalyzers[i].Setup(correctFolder, this, _analyzeMesh,  _analyzeBuffer, _analyzeShading, _ueVer);
+                    }
+                }
+                else
+                {
+                    Debug.LogError("Capture folder is not found!");
                 }
             }
             else
             {
-                Debug.LogError("Capture folder is not found!");
+                if (Directory.Exists(_capturePath))
+                {
+                    //读取子文件夹列表
+                    _drawcallAnalyzers = new DrawcallAnalyzer[1];
+                    Debug.Log($"Recognize 1 drawcall in captures");
+                    string correctFolder = _capturePath.Replace('\\', '/');
+                    Debug.Log($"Analyze {correctFolder}");
+                    _drawcallAnalyzers[0] = new DrawcallAnalyzer();
+                    // string[] folderSplit = correctFolder.Split('/');
+                    // int drawcallIndex = int.Parse(folderSplit[^1]);
+                    // if(drawcallIndex >= _drawcallRange.x && drawcallIndex <= _drawcallRange.y)
+                    _drawcallAnalyzers[0].Setup(correctFolder, this, _analyzeMesh,  _analyzeBuffer, _analyzeShading, _ueVer);
+                }
             }
 
             Debug.Log("Finish setup drawcall data");

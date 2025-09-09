@@ -75,7 +75,8 @@ namespace Moonflow
                         }
                         else if (lineIndex == 1)
                         {
-                            instanceCount = int.Parse(line);
+                            var countTag = line.Split(": ");
+                            instanceCount = int.Parse(countTag[1]);
                         }
                         else if (lineIndex == 2)
                         {
